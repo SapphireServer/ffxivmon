@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace FFXIVMonReborn
 {
@@ -70,27 +67,17 @@ namespace FFXIVMonReborn
                         item.offset = stream.Position;
                         item.OffsetCol = stream.Position.ToString("X");
 
-                        switch (dataType)
-                        {
-                            case "uint8_t":
-                                item.ValueCol = reader.ReadByte().ToString();
-                                item.typeLength = 1;
-                                break;
-                            case "uint16_t":
-                                item.ValueCol = reader.ReadUInt16().ToString();
-                                item.typeLength = 2;
-                                break;
-                            case "uint32_t":
-                                item.ValueCol = reader.ReadUInt32().ToString();
-                                item.typeLength = 4;
-                                break;
-                            case "uint64_t":
-                                item.ValueCol = reader.ReadUInt64().ToString();
-                                item.typeLength = 8;
-                                break;
-                        }
+                        StructListItem[] aryItems = null;
+                        
+                        if (!name.EndsWith("]"))
+                            ParseCType(dataType, reader, ref item);
+                        else
+                            aryItems = ParseCArray(dataType, reader, ref item, name);
 
                         output.Add(item);
+                        
+                        if(aryItems != null)
+                            output.AddRange(aryItems);
 
                         Debug.WriteLine($"{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}");
 
@@ -102,14 +89,55 @@ namespace FFXIVMonReborn
             return output.ToArray();
         }
 
-        private int ResolveCTypeToLength(string type)
+        private static StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name)
         {
-            switch (type)
+            List<StructListItem> output = new List<StructListItem>();
+            
+            int count = int.Parse(SubstringBetweenIndexes(name, name.IndexOf("[") + 1, name.LastIndexOf("]")));
+
+            for (int i = 0; i < count; i++)
             {
+                StructListItem aryItem = new StructListItem();
+                aryItem.NameCol = "  " + SubstringBetweenIndexes(name, 0, name.IndexOf("[")) + $"[{i}]";
+                aryItem.offset = reader.BaseStream.Position;
+                aryItem.OffsetCol = reader.BaseStream.Position.ToString("X");
+                
+                ParseCType(dataType, reader, ref aryItem);
+                
+                output.Add(aryItem);
+            }
+
+            return output.ToArray();
+        }
+        
+        public static string SubstringBetweenIndexes(string value, int startIndex, int endIndex)
+        {
+            return value.Substring(startIndex, endIndex - startIndex);
+        }
+        
+        /// <summary>
+        /// Parse value as string and it's lenght to a StructListItem
+        /// </summary>
+        private static void ParseCType(string dataType, BinaryReader reader, ref StructListItem item)
+        {
+            switch (dataType)
+            {
+                case "uint8_t":
+                    item.ValueCol = reader.ReadByte().ToString();
+                    item.typeLength = 1;
+                    break;
                 case "uint16_t":
-                    return 2;
-                default:
-                    return 0;
+                    item.ValueCol = reader.ReadUInt16().ToString();
+                    item.typeLength = 2;
+                    break;
+                case "uint32_t":
+                    item.ValueCol = reader.ReadUInt32().ToString();
+                    item.typeLength = 4;
+                    break;
+                case "uint64_t":
+                    item.ValueCol = reader.ReadUInt64().ToString();
+                    item.typeLength = 8;
+                    break;
             }
         }
     }

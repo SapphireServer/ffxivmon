@@ -26,7 +26,7 @@
                 </MenuItem>
                 <MenuItem Header="_Database">
                     <MenuItem Header="_Reload DB" Click="ReloadDB"/>
-                    <MenuItem Header="_Redownload Definitions" Click="RedownloadDefs" IsCheckable="True"/>
+                    <MenuItem Header="_Redownload Definitions" Click="RedownloadDefs"/>
                 </MenuItem>
                 <MenuItem Header="Filters">
                     <MenuItem Header="Set Filter" Click="SetFilter"/>

@@ -11,6 +11,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
+using MessageBox = System.Windows.MessageBox;
 
 namespace FFXIVMonReborn
 {
@@ -90,7 +92,7 @@ namespace FFXIVMonReborn
         {
             using (WebClient client = new WebClient())
             {
-                client.DownloadFile($"{repo}{path}", Path.Combine("hFiles", fileName));
+                client.DownloadFile($"{repo}{path}", Path.Combine(Environment.CurrentDirectory, "hFiles", fileName));
             }
         }
 
