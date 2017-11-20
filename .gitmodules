@@ -1,3 +1,6 @@
 [submodule "lib/Machina"]
 	path = lib/Machina
 	url = https://github.com/goaaats/machina
+[submodule "lib/machina"]
+	path = lib/machina
+	url = https://github.com/goaaats/machina
