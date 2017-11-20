@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FFXIVMonReborn.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="RepoUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://raw.githubusercontent.com/SapphireMordred/Sapphire</Value>
+    </Setting>
+    <Setting Name="NetworkMonitorType" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -1,0 +1,99 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Security.Policy;
+using System.Windows;
+
+namespace FFXIVMonReborn
+{
+    public enum FilterType
+    {
+        ActorControl,
+        Message,
+        StringContents,
+        PacketName,
+        ActorControlName
+    }
+
+    public class Filter
+    {
+        public static FilterSet[] Parse(string input)
+        {
+            Debug.WriteLine(input);
+            List<FilterSet> output = new List<FilterSet>();
+
+            if (input.Length == 0)
+                return output.ToArray();
+            while (true)
+            {
+                try
+                {
+                    string thisFilter = "";
+                    FilterType type;
+
+                    thisFilter = input.Substring(0, input.IndexOf(";") + 1);
+                    input = input.Replace(thisFilter, "");
+
+                    object value;
+                    // _A(ActorControlType)
+                    if (thisFilter.Substring(0, "_A(".Length) == "_A(")
+                    {
+                        type = FilterType.ActorControl;
+                        string vstring = thisFilter.Substring(3, thisFilter.IndexOf(')', 3) - 3);
+                        value = int.Parse(vstring, NumberStyles.HexNumber);
+                    }
+                    // _AN(ActorControlName)
+                    else if (thisFilter.Substring(0, "_AN(".Length) == "_AN(")
+                    {
+                        type = FilterType.ActorControlName;
+                        string vstring = thisFilter.Substring(4, thisFilter.IndexOf(')', 4) - 4);
+                        value = vstring;
+                    }
+                    // _S(CharName)
+                    else if (thisFilter.Substring(0, "_S(".Length) == "_S(")
+                    {
+                        type = FilterType.StringContents;
+                        string vstring = thisFilter.Substring(3, thisFilter.IndexOf(')', 3) - 3);
+                        value = vstring;
+                    }
+                    else if (thisFilter.Substring(0, "_N(".Length) == "_N(")
+                    {
+                        type = FilterType.PacketName;
+                        string vstring = thisFilter.Substring(3, thisFilter.IndexOf(')', 3) - 3);
+                        value = vstring;
+                    }
+                    else
+                    {
+                        type = FilterType.Message;
+                        string vstring = thisFilter.Substring(0, thisFilter.Length - 1);
+                        value = int.Parse(vstring, NumberStyles.HexNumber);
+                    }
+
+                    FilterSet set = new FilterSet { type = type, value = value };
+
+                    output.Add(set);
+
+                    Debug.WriteLine(input.Length);
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show(
+                        $"[Filter] Filter Parse error!\n\n{exc}",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                }
+                if (input.Length <= 1)
+                    break;
+            }
+
+            return output.ToArray();
+        }
+    }
+
+    public class FilterSet
+    {
+        public FilterType type;
+        public object value;
+    }
+}
