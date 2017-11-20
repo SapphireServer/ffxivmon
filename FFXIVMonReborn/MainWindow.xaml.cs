@@ -45,11 +45,14 @@ namespace FFXIVMonReborn
         private TCPNetworkMonitor.NetworkMonitorType captureMode;
 
         private bool isFiltered = false;
+        private string currentXmlFile;
+        private System.Threading.Timer hotkeyTimer;
 
         KeyboardHook hook = new KeyboardHook();
 
         public MainWindow()
         {
+            ParseCommandlineArguments();
             InitializeComponent();
             repo = Properties.Settings.Default.RepoUrl;
             db = new Database(repo);
@@ -66,15 +69,41 @@ namespace FFXIVMonReborn
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             // register the control + alt + F12 combination as hot key.
 
+            hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 2);
+
+            if (!string.IsNullOrEmpty(currentXmlFile))
+            {
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
+                var packets = CaptureFileOp.Load(currentXmlFile);
+                foreach (PacketListItem packet in packets)
+                {
+                    AddPacketToListView(packet);
+                }
+            }
+
+            //var test = Struct.Parse(db.GetServerZoneStruct(0x143), new byte[] {});
+        }
+
+        private void TryAssignHotkey(object state)
+        {
             try
             {
                 hook.RegisterHotKey(ModifierKeys.Control,
                     Keys.F12);
             }
-            catch (Exception) {} //Hook already registered, or something weird happened
-            
+            catch (Exception) { } //Hook already registered, or something weird happened
+        }
 
-            //var test = Struct.Parse(db.GetServerZoneStruct(0x143), new byte[] {});
+        private void ParseCommandlineArguments()
+        {
+            var args = Environment.GetCommandLineArgs();
+            for (var i = 1; i + 1 < args.Length; i += 2)
+            {
+                if (args[i] == "--xml")
+                {
+                    currentXmlFile = args[i + 1];
+                }
+            }
         }
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
@@ -235,7 +264,6 @@ namespace FFXIVMonReborn
 
         private void LoadCapture(object sender, RoutedEventArgs e)
         {
-            PacketListView.Items.Clear();
             currentPacketStream = new MemoryStream(new byte[] { });
             isFiltered = false;
 
@@ -245,12 +273,35 @@ namespace FFXIVMonReborn
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
+                MessageBoxResult res;
+                if ((res = MessageBox.Show("No to open in current, Yes to open in new window.", "Open in new window?", MessageBoxButton.YesNoCancel)) == MessageBoxResult.Yes)
+                {
+                    Process.Start(System.IO.Path.Combine(Environment.CurrentDirectory, System.AppDomain.CurrentDomain.FriendlyName), "--xml \"" + openFileDialog.FileName + "\"");
+                    return;
+                }
+                else if (res == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+                else if (res == MessageBoxResult.No)
+                {
+                    PacketListView.Items.Clear();
+                }
+                currentXmlFile = openFileDialog.FileName;
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
                 var packets = CaptureFileOp.Load(openFileDialog.FileName);
                 foreach (PacketListItem packet in packets)
                 {
                     AddPacketToListView(packet);
                 }
             }
+        }
+
+        private void ChangeTitle(string newTitle)
+        {
+            newTitle = string.IsNullOrEmpty(newTitle) ? "FFXIVMonReborn" : newTitle;
+            newTitle = !newTitle.Contains("FFXIVMonReborn") ? "FFXIVMonReborn - " + newTitle : newTitle;
+            this.Title = newTitle;
         }
 
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
