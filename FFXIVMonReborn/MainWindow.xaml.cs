@@ -65,8 +65,14 @@ namespace FFXIVMonReborn
             hook.KeyPressed +=
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             // register the control + alt + F12 combination as hot key.
-            hook.RegisterHotKey(ModifierKeys.Control,
-                Keys.F12);
+
+            try
+            {
+                hook.RegisterHotKey(ModifierKeys.Control,
+                    Keys.F12);
+            }
+            catch (Exception) {} //Hook already registered, or something weird happened
+            
 
             //var test = Struct.Parse(db.GetServerZoneStruct(0x143), new byte[] {});
         }
@@ -499,6 +505,11 @@ namespace FFXIVMonReborn
                 _ApplyFilter(FilterEntry.Text);
             }
 
+        }
+
+        private void NewInstance(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(System.Windows.Forms.Application.ExecutablePath);
         }
     }
 
