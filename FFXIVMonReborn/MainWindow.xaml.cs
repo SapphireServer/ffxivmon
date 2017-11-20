@@ -125,7 +125,7 @@ namespace FFXIVMonReborn
 
             ClearCapture(null, null);
             
-            captureWorker = new MachinaCaptureWorker(this, TCPNetworkMonitor.NetworkMonitorType.RawSocket);
+            captureWorker = new MachinaCaptureWorker(this, (TCPNetworkMonitor.NetworkMonitorType)captureMode);
             captureThread = new Thread(captureWorker.Run);
 
             captureThread.Start();
