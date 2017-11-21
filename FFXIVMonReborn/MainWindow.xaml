@@ -153,7 +153,16 @@
                     <!-- <TextBlock FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Left side</TextBlock> -->
                     <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
                     <!-- <TextBlock Grid.Column="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Right side</TextBlock> -->
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick">
+                        <ListView.Resources>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.Resources>
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Datatype" DisplayMemberBinding="{Binding DataTypeCol}"/>

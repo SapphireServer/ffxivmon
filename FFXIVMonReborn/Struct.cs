@@ -152,5 +152,6 @@ namespace FFXIVMonReborn
         public long offset;
         public byte[] dataChunk;
         public int typeLength;
+        public bool IsVisible { get; set; } = true;
     }
 }

@@ -508,7 +508,8 @@ namespace FFXIVMonReborn
                 ApplyFilterSet(filterEntry);
             }
 
-            ExtensionMethods.Refresh(PacketListView);
+            PacketListView.Refresh();
+            PacketListView.Items.Refresh();
         }
 
         private void ResetFilter_Click(object sender, RoutedEventArgs e)
@@ -561,6 +562,18 @@ namespace FFXIVMonReborn
         private void NewInstance(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start(System.Windows.Forms.Application.ExecutablePath);
+        }
+
+        private void StructListView_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            foreach (var item in StructListView.Items)
+            {
+                if (((StructListItem) item).NameCol.StartsWith("  "))
+                    ((StructListItem) item).IsVisible = !((StructListItem)item).IsVisible;
+            }
+            
+            StructListView.Items.Refresh();
+            StructListView.Refresh();
         }
     }
 
