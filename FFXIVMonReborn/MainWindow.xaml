@@ -34,6 +34,9 @@
                 </MenuItem>
                 <MenuItem Header="Scripting">
                     <MenuItem Header="Run on Capture" Click="Scripting_RunOnCapture"/>
+                    <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="Run on new Packets" IsCheckable="True"/>
+                    <Separator></Separator>
+                    <MenuItem Header="Load scripts" Click="Scripting_LoadScripts"/>
                 </MenuItem>
                 <MenuItem Header="_Options">
                     <MenuItem x:Name="BlankOutIDCheckBox" Header="_Blank out Actor IDs in captured headers" IsCheckable="True"/>
