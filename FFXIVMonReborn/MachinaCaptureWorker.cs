@@ -86,7 +86,7 @@ namespace FFXIVMonReborn
     public class PacketListItem
     {
         public byte[] Data;
-        public bool IsVisible { get; set; }
+        public bool IsVisible { get; set; } = true;
         public int ActorControl { get; set; }
         public int Set { get; set; }
 

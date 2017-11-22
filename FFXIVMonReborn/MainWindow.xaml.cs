@@ -50,6 +50,8 @@ namespace FFXIVMonReborn
 
         KeyboardHook hook = new KeyboardHook();
 
+        private Scripting _scripting = null;
+
         public MainWindow()
         {
             ParseCommandlineArguments();
@@ -144,6 +146,22 @@ namespace FFXIVMonReborn
                 }
             }
 
+            if (RunScriptsOnNewCheckBox.IsChecked)
+            {
+                try
+                {
+                    Scripting_RunOnPacket(new PacketEventArgs(item));
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show(
+                        $"[Main] Script error!\n\n{exc}",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    RunScriptsOnNewCheckBox.IsChecked = false;
+                    return;
+                }
+            }
+            
             PacketListView.Items.Add(item);
         }
 
@@ -508,7 +526,8 @@ namespace FFXIVMonReborn
                 ApplyFilterSet(filterEntry);
             }
 
-            ExtensionMethods.Refresh(PacketListView);
+            PacketListView.Refresh();
+            PacketListView.Items.Refresh();
         }
 
         private void ResetFilter_Click(object sender, RoutedEventArgs e)
@@ -521,9 +540,12 @@ namespace FFXIVMonReborn
             var res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
             if (res == MessageBoxResult.OK)
             {
-                Scripting scripting = new Scripting();
-                scripting.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
-
+                if (_scripting == null)
+                {
+                    _scripting = new Scripting();
+                    _scripting.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
+                }
+                
                 try
                 {
                     foreach (var item in PacketListView.Items)
@@ -532,7 +554,7 @@ namespace FFXIVMonReborn
                         {
                             PacketEventArgs args = new PacketEventArgs((PacketListItem)item);
 
-                            scripting.ExecuteScripts(null, args);
+                            Scripting_RunOnPacket(args);
                         }
                     }
                     MessageBox.Show("Scripts ran successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
@@ -543,10 +565,30 @@ namespace FFXIVMonReborn
                     MessageBox.Show(
                         $"[Main] Script error!\n\n{exc}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    RunScriptsOnNewCheckBox.IsChecked = false;
                     return;
                 }
 
             }
+        }
+
+        private void Scripting_RunOnPacket(PacketEventArgs args)
+        {
+            if (_scripting == null)
+            {
+                MessageBox.Show("No scripts were loaded.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                RunScriptsOnNewCheckBox.IsChecked = false;
+                return;
+            }
+            
+            _scripting.ExecuteScripts(null, args);
+        }
+
+        private void Scripting_LoadScripts(object sender, RoutedEventArgs e)
+        {
+            _scripting = new Scripting();
+            _scripting.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
         }
 
         private void FilterEntry_OnKeyDown(object sender, KeyEventArgs e)
@@ -561,6 +603,18 @@ namespace FFXIVMonReborn
         private void NewInstance(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start(System.Windows.Forms.Application.ExecutablePath);
+        }
+
+        private void StructListView_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            foreach (var item in StructListView.Items)
+            {
+                if (((StructListItem) item).NameCol.StartsWith("  "))
+                    ((StructListItem) item).IsVisible = !((StructListItem)item).IsVisible;
+            }
+            
+            StructListView.Items.Refresh();
+            StructListView.Refresh();
         }
     }
 
