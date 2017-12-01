@@ -77,7 +77,12 @@ namespace FFXIVMonReborn
                             aryItems = ParseCArray(dataType, reader, ref item, name);
 
                         output.Add(item);
-                        ((IDictionary<String, Object>) exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+
+                        try
+                        {
+                            ((IDictionary<String, Object>) exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+                        }catch(Exception) {} //temporary fix till i sort this out
+                        
 
 
                         if (aryItems != null)
