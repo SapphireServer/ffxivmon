@@ -139,7 +139,7 @@
                                     <GridViewColumn Header="S/C" DisplayMemberBinding="{Binding DirectionCol}"/>
                                     <GridViewColumn Header="Message" Width="52" DisplayMemberBinding="{Binding MessageCol}"/>
                                     <GridViewColumn Header="Name" Width="230" DisplayMemberBinding="{Binding NameCol}"/>
-                                    <GridViewColumn Header="For Self?" DisplayMemberBinding="{Binding ForSelfCol}"/>
+                                    <GridViewColumn Header="Route ID" DisplayMemberBinding="{Binding RouteIdCol}"/>
                                     <GridViewColumn Header="Comment" Width="300" DisplayMemberBinding="{Binding CommentCol}"/>
                                     <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding SizeCol}"/>
                                     <GridViewColumn Header="Set" DisplayMemberBinding="{Binding CategoryCol}"/>

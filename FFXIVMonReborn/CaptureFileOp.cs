@@ -36,6 +36,9 @@ namespace FFXIVMonReborn
                         case "Timestamp":
                             packetItem.TimeStampCol = entry.InnerText;
                             break;
+                        case "RouteID":
+                            packetItem.RouteIdCol = entry.InnerText;
+                            break;
                         case "Data":
                             packetItem.Data = Util.StringToByteArray(entry.InnerText);
                             break;
@@ -83,6 +86,7 @@ namespace FFXIVMonReborn
                 packetEntry.Add(new XElement("Direction", packet.DirectionCol));
                 packetEntry.Add(new XElement("Message", packet.MessageCol));
                 packetEntry.Add(new XElement("Timestamp", packet.TimeStampCol));
+                packetEntry.Add(new XElement("RouteID", packet.RouteIdCol));
                 packetEntry.Add(new XElement("Data", Util.ByteArrayToString(packet.Data)));
                 packetEntry.Add(new XElement("Set", packet.Set));
 

@@ -223,11 +223,15 @@ namespace FFXIVMonReborn
 
                 var structEntries = Struct.Parse(structText, item.Data);
 
-                foreach (var entry in structEntries)
+                foreach (var entry in structEntries.Item1)
                 {
                     StructListView.Items.Add(entry);
                 }
-                
+
+                var test = structEntries.Item2;
+
+                Console.WriteLine(test);
+
             }
             catch (Exception exc)
             {

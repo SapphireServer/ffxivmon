@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -8,7 +9,7 @@ namespace FFXIVMonReborn
 {
     class Struct
     {
-        public static StructListItem[] Parse(string data, byte[] packet)
+        public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string data, byte[] packet)
         {
             // Get rid of any comments
             Regex r = new Regex("\\/\\*(.*)\\*\\/");
@@ -19,6 +20,7 @@ namespace FFXIVMonReborn
             Debug.WriteLine(data);
 
             List<StructListItem> output = new List<StructListItem>();
+            ExpandoObject exobj = new ExpandoObject();
 
             var lines = Regex.Split(data, "\r\n|\r|\n");
             int at = 3;
@@ -75,8 +77,10 @@ namespace FFXIVMonReborn
                             aryItems = ParseCArray(dataType, reader, ref item, name);
 
                         output.Add(item);
-                        
-                        if(aryItems != null)
+                        ((IDictionary<String, Object>) exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+
+
+                        if (aryItems != null)
                             output.AddRange(aryItems);
 
                         Debug.WriteLine($"{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}");
@@ -86,7 +90,7 @@ namespace FFXIVMonReborn
                 }
             }
 
-            return output.ToArray();
+            return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
         }
 
         private static StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name)

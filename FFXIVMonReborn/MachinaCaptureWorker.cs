@@ -30,7 +30,9 @@ namespace FFXIVMonReborn
         {
             var res = Parse(message);
 
-            PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "S", CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(), Set = set };
+            PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "S",
+                CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(), 
+                Set = set, RouteIdCol = res.header.RouteID.ToString() };
 
             mainWindow.Dispatcher.Invoke(new Action(() => { mainWindow.AddPacketToListView(item); }));
         }
@@ -39,7 +41,9 @@ namespace FFXIVMonReborn
         {
             var res = Parse(message);
 
-            PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "C", CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(), Set = set };
+            PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "C",
+                CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(),
+                Set = set, RouteIdCol = res.header.RouteID.ToString() };
 
             mainWindow.Dispatcher.Invoke(new Action(() => { mainWindow.AddPacketToListView(item); }));
         }
@@ -93,7 +97,7 @@ namespace FFXIVMonReborn
         public string DirectionCol { get; set; }
         public string MessageCol { get; set; }
         public string NameCol { get; set; }
-        public string ForSelfCol { get; set; }
+        public string RouteIdCol { get; set; }
         public string CommentCol { get; set; }
         public string SizeCol { get; set; }
         public string CategoryCol { get; set; }
