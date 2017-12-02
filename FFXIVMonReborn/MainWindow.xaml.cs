@@ -353,12 +353,13 @@ namespace FFXIVMonReborn
             {
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
                     
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) 
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
+                    int count = 0;
                     foreach (PacketListItem item in items)
                     {
-                        int crc = Crc16.ComputeChecksum(item.Data);
-                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.MessageCol}-{String.Join("_", item.TimeStampCol.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-{crc.ToString("X")}.dat"), item.Data);
+                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.MessageCol}-{String.Join("_", item.TimeStampCol.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"), item.Data);
+                        count++;
                     }
                     MessageBox.Show($"Packets saved to {dialog.SelectedPath}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 }

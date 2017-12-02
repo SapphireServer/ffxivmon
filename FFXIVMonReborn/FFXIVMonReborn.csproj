@@ -168,7 +168,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CaptureFileOp.cs" />
-    <Compile Include="Crc16.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="KeyboardHook.cs" />
