@@ -328,22 +328,40 @@ namespace FFXIVMonReborn
 
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
         {
-            if (PacketListView.SelectedIndex == -1)
+            var items = PacketListView.SelectedItems;
+            
+            if (items.Count == 0)
             {
                 MessageBox.Show("No packet selected.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return;
             }
-
-            var packet = (PacketListItem) PacketListView.Items[PacketListView.SelectedIndex];
-
-            var fileDialog = new System.Windows.Forms.SaveFileDialog();
-            fileDialog.Filter = "DAT|*.dat";
-            var result = fileDialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            else if (items.Count == 1)
             {
-                File.WriteAllBytes(fileDialog.FileName, packet.Data);
-                MessageBox.Show($"Packet saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                var packet = (PacketListItem) PacketListView.Items[PacketListView.SelectedIndex];
+
+                var fileDialog = new System.Windows.Forms.SaveFileDialog();
+                fileDialog.Filter = "DAT|*.dat";
+                var result = fileDialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    File.WriteAllBytes(fileDialog.FileName, packet.Data);
+                    MessageBox.Show($"Packet saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                }
+            }
+            else
+            {
+                FolderBrowserDialog dialog = new FolderBrowserDialog();
+                    
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) 
+                {
+                    foreach (PacketListItem item in items)
+                    {
+                        int crc = Crc16.ComputeChecksum(item.Data);
+                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.MessageCol}-{String.Join("_", item.TimeStampCol.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-{crc.ToString("X")}.dat"), item.Data);
+                    }
+                    MessageBox.Show($"Packets saved to {dialog.SelectedPath}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                }
             }
         }
 
