@@ -345,7 +345,7 @@ namespace FFXIVMonReborn
                 var result = fileDialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    File.WriteAllBytes(fileDialog.FileName, packet.Data);
+                    File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSingle(packet.Data));
                     MessageBox.Show($"Packet saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 }
             }
@@ -358,7 +358,9 @@ namespace FFXIVMonReborn
                     int count = 0;
                     foreach (PacketListItem item in items)
                     {
-                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.MessageCol}-{String.Join("_", item.TimeStampCol.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"), item.Data);
+                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.MessageCol}-{String.Join("_", item.TimeStampCol.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"),
+                            InjectablePacketBuilder.BuildSingle(item.Data));
+                        
                         count++;
                     }
                     MessageBox.Show($"Packets saved to {dialog.SelectedPath}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
