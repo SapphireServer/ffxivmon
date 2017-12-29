@@ -71,7 +71,7 @@ namespace FFXIVMonReborn
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             // register the control + alt + F12 combination as hot key.
 
-            hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 5);
+            hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 500);
 
             if (!string.IsNullOrEmpty(currentXmlFile))
             {
@@ -195,6 +195,16 @@ namespace FFXIVMonReborn
                 e.Cancel = true;
                 MessageBox.Show("A capture is in progress - you cannot close this window now.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
+                return;
+            }
+
+            if (PacketListView.Items.Count != 0 && currentXmlFile == "")
+            {
+                MessageBoxResult res = MessageBox.Show("Currently captured packets were not yet saved.\nDo you want to quit without saving?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res == MessageBoxResult.No)
+                {
+                    e.Cancel = true;
+                }
             }
         }
 
@@ -257,6 +267,9 @@ namespace FFXIVMonReborn
             //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
 
             filterString = "";
+            
+            currentXmlFile = "";
+            ChangeTitle("");
         }
 
         private void ReloadDB(object sender, RoutedEventArgs e)
@@ -282,6 +295,8 @@ namespace FFXIVMonReborn
             {
                 CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName);
                 MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                currentXmlFile = fileDialog.FileName;
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
             }
         }
 
