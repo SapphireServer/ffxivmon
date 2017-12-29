@@ -232,11 +232,6 @@ namespace FFXIVMonReborn
                 {
                     StructListView.Items.Add(entry);
                 }
-
-                //var test = structEntries.Item2;
-
-                //Console.WriteLine(test);
-
             }
             catch (Exception exc)
             {
@@ -681,6 +676,12 @@ namespace FFXIVMonReborn
             
             StructListView.Items.Refresh();
             StructListView.Refresh();
+        }
+
+        private void AboutButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "FFXIVMon Reborn\n\nA FFXIV Packet analysis thing for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
     }
 
