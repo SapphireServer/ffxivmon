@@ -296,6 +296,8 @@ namespace FFXIVMonReborn
                 _currentXmlFile = fileDialog.FileName;
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
             }
+
+            UpdateInfoLabel();
         }
 
         private void LoadCapture(object sender, RoutedEventArgs e)
