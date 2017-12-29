@@ -4,27 +4,15 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Machina;
-using Machina.FFXIV;
 using Microsoft.VisualBasic;
-using WpfHexaEditor;
 using MessageBox = System.Windows.MessageBox;
-using System.Runtime.InteropServices;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace FFXIVMonReborn
@@ -34,19 +22,19 @@ namespace FFXIVMonReborn
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MachinaCaptureWorker captureWorker;
-        private Thread captureThread;
+        private MachinaCaptureWorker _captureWorker;
+        private Thread _captureThread;
 
-        private MemoryStream currentPacketStream;
+        private MemoryStream _currentPacketStream;
 
         private Database db;
 
-        private string repo;
-        private TCPNetworkMonitor.NetworkMonitorType captureMode;
+        private string _repo;
+        private TCPNetworkMonitor.NetworkMonitorType _captureMode;
 
-        private string filterString = "";
-        private string currentXmlFile;
-        private System.Threading.Timer hotkeyTimer;
+        private string _filterString = "";
+        private string _currentXmlFile = "";
+        private System.Threading.Timer _hotkeyTimer;
 
         KeyboardHook hook = new KeyboardHook();
 
@@ -56,12 +44,12 @@ namespace FFXIVMonReborn
         {
             ParseCommandlineArguments();
             InitializeComponent();
-            repo = Properties.Settings.Default.RepoUrl;
-            db = new Database(repo);
+            _repo = Properties.Settings.Default.RepoUrl;
+            db = new Database(_repo);
 
-            captureMode = (TCPNetworkMonitor.NetworkMonitorType) Properties.Settings.Default.NetworkMonitorType;
+            _captureMode = (TCPNetworkMonitor.NetworkMonitorType) Properties.Settings.Default.NetworkMonitorType;
 
-            if (captureMode == TCPNetworkMonitor.NetworkMonitorType.RawSocket)
+            if (_captureMode == TCPNetworkMonitor.NetworkMonitorType.RawSocket)
                 SwitchModeSockets.IsChecked = true;
             else
                 SwitchModePcap.IsChecked = true;
@@ -71,19 +59,19 @@ namespace FFXIVMonReborn
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             // register the control + alt + F12 combination as hot key.
 
-            hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 500);
+            _hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 500);
 
-            if (!string.IsNullOrEmpty(currentXmlFile))
+            if (!string.IsNullOrEmpty(_currentXmlFile))
             {
-                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
-                var packets = CaptureFileOp.Load(currentXmlFile);
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+                var packets = CaptureFileOp.Load(_currentXmlFile);
                 foreach (PacketListItem packet in packets)
                 {
                     AddPacketToListView(packet);
                 }
             }
 
-            //var test = Struct.Parse(db.GetServerZoneStruct(0x143), new byte[] {});
+            UpdateInfoLabel();
         }
 
         private void TryAssignHotkey(object state)
@@ -103,14 +91,14 @@ namespace FFXIVMonReborn
             {
                 if (args[i] == "--xml")
                 {
-                    currentXmlFile = args[i + 1];
+                    _currentXmlFile = args[i + 1];
                 }
             }
         }
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
-            if(captureWorker == null)
+            if(_captureWorker == null)
                 StartCapture(null, null);
             else
                 StopCapture(null, null);
@@ -163,34 +151,40 @@ namespace FFXIVMonReborn
             }
             
             PacketListView.Items.Add(item);
+
+            UpdateInfoLabel();
         }
 
         private void StartCapture(object sender, RoutedEventArgs e)
         {
-            if(captureWorker != null)
+            if(_captureWorker != null)
                 return;
 
             ClearCapture(null, null);
             
-            captureWorker = new MachinaCaptureWorker(this, (TCPNetworkMonitor.NetworkMonitorType)captureMode);
-            captureThread = new Thread(captureWorker.Run);
+            _captureWorker = new MachinaCaptureWorker(this, _captureMode);
+            _captureThread = new Thread(_captureWorker.Run);
 
-            captureThread.Start();
+            _captureThread.Start();
+
+            UpdateInfoLabel();
         }
 
         private void StopCapture(object sender, RoutedEventArgs e)
         {
-            if(captureWorker == null)
+            if(_captureWorker == null)
                 return;
 
-            captureWorker.Stop();
-            captureThread.Join();
-            captureWorker = null;
+            _captureWorker.Stop();
+            _captureThread.Join();
+            _captureWorker = null;
+
+            UpdateInfoLabel();
         }
 
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
-            if (captureWorker != null)
+            if (_captureWorker != null)
             {
                 e.Cancel = true;
                 MessageBox.Show("A capture is in progress - you cannot close this window now.", "Error", MessageBoxButton.OK,
@@ -198,7 +192,7 @@ namespace FFXIVMonReborn
                 return;
             }
 
-            if (PacketListView.Items.Count != 0 && currentXmlFile == "")
+            if (PacketListView.Items.Count != 0 && _currentXmlFile == "")
             {
                 MessageBoxResult res = MessageBox.Show("Currently captured packets were not yet saved.\nDo you want to quit without saving?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (res == MessageBoxResult.No)
@@ -215,8 +209,8 @@ namespace FFXIVMonReborn
 
             var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
 
-            currentPacketStream = new MemoryStream(item.Data);
-            HexEditor.Stream = currentPacketStream;
+            _currentPacketStream = new MemoryStream(item.Data);
+            HexEditor.Stream = _currentPacketStream;
 
             StructListView.Items.Clear();
 
@@ -250,11 +244,13 @@ namespace FFXIVMonReborn
                     $"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}\n\n{exc}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+            UpdateInfoLabel();
         }
 
         private void ClearCapture(object sender, RoutedEventArgs e)
         {
-            if (captureWorker != null)
+            if (_captureWorker != null)
             {
                 MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -263,13 +259,15 @@ namespace FFXIVMonReborn
             PacketListView.SelectedIndex = -1;
             PacketListView.Items.Clear();
             
-            currentPacketStream = new MemoryStream(new byte[] {});
+            _currentPacketStream = new MemoryStream(new byte[] {});
             //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
 
-            filterString = "";
+            _filterString = "";
             
-            currentXmlFile = "";
+            _currentXmlFile = "";
             ChangeTitle("");
+
+            UpdateInfoLabel();
         }
 
         private void ReloadDB(object sender, RoutedEventArgs e)
@@ -281,7 +279,7 @@ namespace FFXIVMonReborn
 
         private void SaveCapture(object sender, RoutedEventArgs e)
         {
-            if (captureWorker != null)
+            if (_captureWorker != null)
             {
                 MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -295,15 +293,15 @@ namespace FFXIVMonReborn
             {
                 CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName);
                 MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                currentXmlFile = fileDialog.FileName;
-                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
+                _currentXmlFile = fileDialog.FileName;
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
             }
         }
 
         private void LoadCapture(object sender, RoutedEventArgs e)
         {
-            currentPacketStream = new MemoryStream(new byte[] { });
-            filterString = "";
+            _currentPacketStream = new MemoryStream(new byte[] { });
+            _filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "XML|*.xml";
@@ -325,8 +323,8 @@ namespace FFXIVMonReborn
                 {
                     return;
                 }
-                currentXmlFile = openFileDialog.FileName;
-                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
+                _currentXmlFile = openFileDialog.FileName;
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
 
                 var packets = CaptureFileOp.Load(openFileDialog.FileName);
                 foreach (PacketListItem packet in packets)
@@ -334,6 +332,8 @@ namespace FFXIVMonReborn
                     AddPacketToListView(packet);
                 }
             }
+
+            UpdateInfoLabel();
         }
 
         private void ChangeTitle(string newTitle)
@@ -341,6 +341,20 @@ namespace FFXIVMonReborn
             newTitle = string.IsNullOrEmpty(newTitle) ? "FFXIVMonReborn" : newTitle;
             newTitle = !newTitle.Contains("FFXIVMonReborn") ? "FFXIVMonReborn - " + newTitle : newTitle;
             this.Title = newTitle;
+        }
+
+        private void UpdateInfoLabel()
+        {
+            CaptureInfoLabel.Content = "Amount of Packets: " + PacketListView.Items.Count;
+
+            if (_currentXmlFile.Length != 0)
+                CaptureInfoLabel.Content += " | File: " + _currentXmlFile;
+            if (_captureWorker != null)
+                CaptureInfoLabel.Content += " | Capturing ";
+            else
+                CaptureInfoLabel.Content += " | Idle";
+            if (_currentPacketStream != null)
+                CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
         }
 
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
@@ -478,50 +492,50 @@ namespace FFXIVMonReborn
 
         private void SetRepository(object sender, RoutedEventArgs e)
         {
-            repo = Interaction.InputBox("Enter the repository URL for the definition files to be downloaded from.\nThis has to point to the raw files.", "FFXIVMon Reborn", Properties.Settings.Default.RepoUrl);
-            Properties.Settings.Default.RepoUrl = repo;
+            _repo = Interaction.InputBox("Enter the repository URL for the definition files to be downloaded from.\nThis has to point to the raw files.", "FFXIVMon Reborn", Properties.Settings.Default.RepoUrl);
+            Properties.Settings.Default.RepoUrl = _repo;
             Properties.Settings.Default.Save();
-            db.SetRepo(repo);
+            db.SetRepo(_repo);
         }
 
         private void SwitchModeSockets_OnClick(object sender, RoutedEventArgs e)
         {
-            if (captureWorker != null)
+            if (_captureWorker != null)
             {
                 MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return;
             }
 
-            captureMode = TCPNetworkMonitor.NetworkMonitorType.RawSocket;
+            _captureMode = TCPNetworkMonitor.NetworkMonitorType.RawSocket;
             SwitchModePcap.IsChecked = false;
             SwitchModeSockets.IsChecked = true;
 
-            Properties.Settings.Default.NetworkMonitorType = captureMode;
+            Properties.Settings.Default.NetworkMonitorType = _captureMode;
             Properties.Settings.Default.Save();
         }
 
         private void SwitchModePcap_OnClick(object sender, RoutedEventArgs e)
         {
-            if (captureWorker != null)
+            if (_captureWorker != null)
             {
                 MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return;
             }
 
-            captureMode = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
+            _captureMode = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
             SwitchModePcap.IsChecked = true;
             SwitchModeSockets.IsChecked = false;
 
-            Properties.Settings.Default.NetworkMonitorType = captureMode;
+            Properties.Settings.Default.NetworkMonitorType = _captureMode;
             Properties.Settings.Default.Save();
         }
 
         private void SetFilter(object sender, RoutedEventArgs e)
         {
 
-            string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", filterString);
+            string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", _filterString);
 
             _ApplyFilter(filter);
         }
@@ -533,7 +547,7 @@ namespace FFXIVMonReborn
 
         private void _ResetFilter()
         {
-            filterString = "";
+            _filterString = "";
             PacketListView.Items.Filter = null;
 
             ExtensionMethods.Refresh(PacketListView);
@@ -541,9 +555,9 @@ namespace FFXIVMonReborn
 
         private void _ApplyFilter(string filter)
         {
-            filterString = filter;
+            _filterString = filter;
 
-            if (filterString == "")
+            if (_filterString == "")
             {
                 _ResetFilter();
                 return;
@@ -552,7 +566,7 @@ namespace FFXIVMonReborn
             FilterSet[] filters = null;
             try
             {
-                filters = Filter.Parse(filterString);
+                filters = Filter.Parse(_filterString);
             }
             catch (Exception exc)
             {

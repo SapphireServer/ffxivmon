@@ -153,7 +153,19 @@
                         <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" />
 
                         <!-- <TextBlock Grid.Row="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Bottom</TextBlock> -->
-                        <wpfHexaEditor:HexEditor Grid.Row="2" x:Name="HexEditor" FontSize="14" ReadOnlyMode="True" AllowBuildinCtrlv="False" AllowBuildinCtrlz="False" ByteSpacerWidthTickness="Small" Grid.ColumnSpan="2"></wpfHexaEditor:HexEditor>
+                        
+                        <Grid Grid.Row="2" Grid.ColumnSpan="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0*"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="25" />
+                            </Grid.RowDefinitions>
+                            <wpfHexaEditor:HexEditor Grid.Row="0" x:Name="HexEditor" FontSize="14" ReadOnlyMode="True" AllowBuildinCtrlv="False" AllowBuildinCtrlz="False" ByteSpacerWidthTickness="Small" Grid.ColumnSpan="2"></wpfHexaEditor:HexEditor>
+                            <Label x:Name="CaptureInfoLabel"  Grid.Row="1" Grid.Column="1"></Label>
+                        </Grid>
                     </Grid>
                     <!-- <TextBlock FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Left side</TextBlock> -->
                     <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
