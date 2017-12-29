@@ -102,5 +102,6 @@ namespace FFXIVMonReborn
         public string SizeCol { get; set; }
         public string CategoryCol { get; set; }
         public string TimeStampCol { get; set; }
+
     }
 }
