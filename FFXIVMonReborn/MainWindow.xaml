@@ -79,6 +79,8 @@
                                 <ContextMenu>
                                     <MenuItem Header="Export to DAT"
                                               Click="ExportSelectedPacketToDat" />
+                                    <MenuItem Header="Export Set"
+                                              Click="ExportSelectedPacketSetToDat" />
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.Resources>

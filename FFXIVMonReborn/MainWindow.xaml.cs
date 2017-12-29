@@ -384,6 +384,62 @@ namespace FFXIVMonReborn
                 }
             }
         }
+        
+        private void ExportSelectedPacketSetToDat(object sender, RoutedEventArgs e)
+        {
+            var items = PacketListView.SelectedItems;
+            
+            if (items.Count == 0)
+            {
+                MessageBox.Show("No packet selected.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            else if (items.Count == 1)
+            {
+                var startPacket = (PacketListItem) PacketListView.Items[PacketListView.SelectedIndex];
+
+                List<byte[]> packets = new List<byte[]>();
+                packets.Add(startPacket.Data);
+
+                int at = PacketListView.SelectedIndex - 1;
+                while (true)
+                {
+                    if(((PacketListItem) PacketListView.Items[at]).Set == startPacket.Set)
+                        packets.Insert(0, ((PacketListItem) PacketListView.Items[at]).Data);
+                    else
+                        break;
+                    at--;
+                }
+                
+                at = PacketListView.SelectedIndex + 1;
+                while (true)
+                {
+                    if(((PacketListItem) PacketListView.Items[at]).Set == startPacket.Set)
+                        packets.Add(((PacketListItem) PacketListView.Items[at]).Data);
+                    else
+                        break;
+                    at++;
+                }
+                
+                Console.WriteLine(packets.Count);
+                
+                var fileDialog = new System.Windows.Forms.SaveFileDialog();
+                fileDialog.Filter = "DAT|*.dat";
+                var result = fileDialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSet(packets));
+                    MessageBox.Show($"Packet Set containing {packets.Count} packets saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please only select one packet.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+        }
 
         private void ReloadCurrentPackets()
         {
