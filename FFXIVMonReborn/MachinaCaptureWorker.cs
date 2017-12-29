@@ -102,5 +102,56 @@ namespace FFXIVMonReborn
         public string SizeCol { get; set; }
         public string CategoryCol { get; set; }
         public string TimeStampCol { get; set; }
+
+        public bool IsApplicableForFilterSet( FilterSet set )
+        {
+            bool isApplicable = false;
+
+            switch (set.type)
+            {
+                case FilterType.Message:
+                    if (this.MessageCol == ((int)set.value).ToString("X4"))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.ActorControl:
+                    if (this.ActorControl == (int)set.value)
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.ActorControlName:
+                    if (this.ActorControl != -1 && this.NameCol.ToLower().Contains(((string)set.value).ToLower()))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.PacketName:
+                    if (this.NameCol.ToLower().Contains(((string)set.value).ToLower()))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.StringContents:
+                    var findStr = Convert.ToString(set.value).ToLower();
+                    var packetStr = Encoding.UTF8.GetString(this.Data).ToLower();
+
+                    if (packetStr.Contains(findStr))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            return isApplicable;
+        }
     }
 }

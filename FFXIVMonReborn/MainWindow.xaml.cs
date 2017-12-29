@@ -44,7 +44,7 @@ namespace FFXIVMonReborn
         private string repo;
         private TCPNetworkMonitor.NetworkMonitorType captureMode;
 
-        private bool isFiltered = false;
+        private string filterString = "";
         private string currentXmlFile;
         private System.Threading.Timer hotkeyTimer;
 
@@ -71,7 +71,7 @@ namespace FFXIVMonReborn
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             // register the control + alt + F12 combination as hot key.
 
-            hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 2);
+            hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 5);
 
             if (!string.IsNullOrEmpty(currentXmlFile))
             {
@@ -209,6 +209,7 @@ namespace FFXIVMonReborn
             HexEditor.Stream = currentPacketStream;
 
             StructListView.Items.Clear();
+
             try
             {
                 var structText = db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
@@ -228,9 +229,9 @@ namespace FFXIVMonReborn
                     StructListView.Items.Add(entry);
                 }
 
-                var test = structEntries.Item2;
+                //var test = structEntries.Item2;
 
-                Console.WriteLine(test);
+                //Console.WriteLine(test);
 
             }
             catch (Exception exc)
@@ -255,7 +256,7 @@ namespace FFXIVMonReborn
             currentPacketStream = new MemoryStream(new byte[] {});
             //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
 
-            isFiltered = false;
+            filterString = "";
         }
 
         private void ReloadDB(object sender, RoutedEventArgs e)
@@ -287,7 +288,7 @@ namespace FFXIVMonReborn
         private void LoadCapture(object sender, RoutedEventArgs e)
         {
             currentPacketStream = new MemoryStream(new byte[] { });
-            isFiltered = false;
+            filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "XML|*.xml";
@@ -295,22 +296,23 @@ namespace FFXIVMonReborn
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                MessageBoxResult res;
-                if ((res = MessageBox.Show("No to open in current, Yes to open in new window.", "Open in new window?", MessageBoxButton.YesNoCancel)) == MessageBoxResult.Yes)
+                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new window.", "Open in new window?", MessageBoxButton.YesNoCancel);
+                if (res == MessageBoxResult.Yes)
                 {
                     Process.Start(System.IO.Path.Combine(Environment.CurrentDirectory, System.AppDomain.CurrentDomain.FriendlyName), "--xml \"" + openFileDialog.FileName + "\"");
-                    return;
-                }
-                else if (res == MessageBoxResult.Cancel)
-                {
                     return;
                 }
                 else if (res == MessageBoxResult.No)
                 {
                     PacketListView.Items.Clear();
                 }
+                else
+                {
+                    return;
+                }
                 currentXmlFile = openFileDialog.FileName;
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(currentXmlFile));
+
                 var packets = CaptureFileOp.Load(openFileDialog.FileName);
                 foreach (PacketListItem packet in packets)
                 {
@@ -424,7 +426,7 @@ namespace FFXIVMonReborn
             SwitchModePcap.IsChecked = false;
             SwitchModeSockets.IsChecked = true;
 
-            Properties.Settings.Default.NetworkMonitorType = (int)captureMode;
+            Properties.Settings.Default.NetworkMonitorType = captureMode;
             Properties.Settings.Default.Save();
         }
 
@@ -441,63 +443,14 @@ namespace FFXIVMonReborn
             SwitchModePcap.IsChecked = true;
             SwitchModeSockets.IsChecked = false;
 
-            Properties.Settings.Default.NetworkMonitorType = (int) captureMode;
+            Properties.Settings.Default.NetworkMonitorType = captureMode;
             Properties.Settings.Default.Save();
-        }
-
-        private void ApplyFilterSet(FilterSet set)
-        {
-            foreach (var packetListEntry in PacketListView.Items.OfType<PacketListItem>())
-            {
-                switch (set.type)
-                {
-                    case FilterType.Message:
-                        if (packetListEntry.MessageCol == ((int)set.value).ToString("X4"))
-                        {
-                            packetListEntry.IsVisible = true;
-                        }
-                        break;
-                    case FilterType.ActorControl:
-                        if (packetListEntry.ActorControl == (int)set.value)
-                        {
-                            packetListEntry.IsVisible = true;
-                        }
-                        break;
-                    case FilterType.ActorControlName:
-                        if (packetListEntry.ActorControl != -1 && packetListEntry.NameCol.ToLower().Contains(((string)set.value).ToLower()))
-                        {
-                            packetListEntry.IsVisible = true;
-                        }
-                        break;
-                    case FilterType.PacketName:
-                        if (packetListEntry.NameCol.ToLower().Contains(((string)set.value).ToLower()))
-                        {
-                            packetListEntry.IsVisible = true;
-                        }
-                        break;
-                    case FilterType.StringContents:
-                        var findStr = Convert.ToString(set.value).ToLower();
-                        var packetStr = Encoding.UTF8.GetString(packetListEntry.Data).ToLower();
-                        if (packetStr.Contains(findStr))
-                        {
-                            packetListEntry.IsVisible = true;
-                        }
-                        break;
-                }
-            }
         }
 
         private void SetFilter(object sender, RoutedEventArgs e)
         {
-            // todo: use FilterTextBox in favour of this
-            if (isFiltered)
-            {
-                MessageBox.Show("Please reset Filters first.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
 
-            string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", "");
+            string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", filterString);
 
             _ApplyFilter(filter);
         }
@@ -509,26 +462,26 @@ namespace FFXIVMonReborn
 
         private void _ResetFilter()
         {
-            isFiltered = false;
-
-            foreach (var item in PacketListView.Items)
-            {
-                ((PacketListItem)item).IsVisible = true;
-            }
+            filterString = "";
+            PacketListView.Items.Filter = null;
 
             ExtensionMethods.Refresh(PacketListView);
         }
 
         private void _ApplyFilter(string filter)
         {
-            if (filter == "")
+            filterString = filter;
+
+            if (filterString == "")
             {
                 _ResetFilter();
+                return;
             }
+
             FilterSet[] filters = null;
             try
             {
-                filters = Filter.Parse(filter);
+                filters = Filter.Parse(filterString);
             }
             catch (Exception exc)
             {
@@ -538,18 +491,19 @@ namespace FFXIVMonReborn
                 return;
             }
 
-
-            isFiltered = true;
-
-            foreach (var item in PacketListView.Items)
+            PacketListView.Items.Filter = new Predicate<object>((object item) =>
             {
-                ((PacketListItem)item).IsVisible = false;
-            }
+                bool predResult = false;
+                foreach (var filterEntry in filters)
+                {
+                    predResult = filterEntry.IsApplicableForFilterSet((PacketListItem)item);
 
-            foreach (var filterEntry in filters)
-            {
-                ApplyFilterSet(filterEntry);
-            }
+                    if (predResult)
+                        return predResult;
+                }
+
+                return predResult;
+            });
 
             PacketListView.Refresh();
             PacketListView.Items.Refresh();
