@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:self="clr-namespace:FFXIVMonReborn"
         xmlns:wpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
-        Title="FFXIVMonReborn" Height="757.458" Width="1363.958" ><!--Closing="MainWindow_OnClosing" -->
+        Title="FFXIVMonReborn" Height="757.458" Width="1363.958" Closing="MainWindow_OnClosing">
     <Window.Resources>
         <DataTemplate DataType="{x:Type local:XivMonTab}">
             <local:XivMonTab/>

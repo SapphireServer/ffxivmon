@@ -193,6 +193,21 @@ namespace FFXIVMonReborn
 
             return true;
         }
+
+        public bool IsCloseAllowed()
+        {
+            if (_captureWorker != null)
+            {
+                return false;
+            }
+
+            if (PacketListView.Items.Count != 0 && _currentXmlFile == "")
+            {
+                return false;
+            }
+
+            return true;
+        }
         #endregion
 
         private void TryAssignHotkey(object state)
