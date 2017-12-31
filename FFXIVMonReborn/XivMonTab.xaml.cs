@@ -87,11 +87,113 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
+        #region General
+        private void UpdateInfoLabel()
+        {
+            CaptureInfoLabel.Content = "Amount of Packets: " + PacketListView.Items.Count;
+
+            if (_currentXmlFile.Length != 0)
+                CaptureInfoLabel.Content += " | File: " + _currentXmlFile;
+            if (_captureWorker != null)
+                CaptureInfoLabel.Content += " | Capturing ";
+            else
+                CaptureInfoLabel.Content += " | Idle";
+            if (_currentPacketStream != null)
+                CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
+        }
+
         public void SetParents(TabItem me, MainWindow mainWindow)
         {
             _thisTabItem = me;
             _mainWindow = mainWindow;
         }
+
+        private void ClearCapture(object sender, RoutedEventArgs e)
+        {
+            if (_captureWorker != null)
+            {
+                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            PacketListView.SelectedIndex = -1;
+            PacketListView.Items.Clear();
+
+            _currentPacketStream = new MemoryStream(new byte[] { });
+            //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
+
+            _filterString = "";
+
+            _currentXmlFile = "";
+            ChangeTitle("");
+
+            UpdateInfoLabel();
+        }
+
+        private void ChangeTitle(string newTitle)
+        {
+            string windowTitle = string.IsNullOrEmpty(newTitle) ? "FFXIVMonReborn" : newTitle;
+            windowTitle = !windowTitle.Contains("FFXIVMonReborn") ? "FFXIVMonReborn - " + windowTitle : windowTitle;
+            _mainWindow.Title = windowTitle;
+
+            string header = string.IsNullOrEmpty(newTitle) ? "New Capture" : newTitle;
+            _thisTabItem.Header = header;
+        }
+
+        public void OnTabFocus()
+        {
+            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+        }
+
+        private void NewInstance(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(System.Windows.Forms.Application.ExecutablePath);
+        }
+
+        private void AboutButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "FFXIVMon Reborn\n\nA FFXIV Packet analysis thing for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+        }
+
+        private void NewTab(object sender, RoutedEventArgs e)
+        {
+            _mainWindow.AddTab(null);
+        }
+
+        private void ReloadCurrentPackets()
+        {
+            PacketListItem[] array = new PacketListItem[PacketListView.Items.Count];
+            PacketListView.Items.CopyTo(array, 0);
+            PacketListView.Items.Clear();
+
+            foreach (var item in array)
+            {
+                AddPacketToListView(item);
+            }
+        }
+
+        public bool RequestClose()
+        {
+            if (_captureWorker != null)
+            {
+                MessageBox.Show("A capture is in progress - you cannot close this tab now.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return false;
+            }
+
+            if (PacketListView.Items.Count != 0 && _currentXmlFile == "")
+            {
+                MessageBoxResult res = MessageBox.Show("Currently captured packets were not yet saved.\nDo you want to close without saving?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res == MessageBoxResult.No)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        #endregion
 
         private void TryAssignHotkey(object state)
         {
@@ -123,6 +225,77 @@ namespace FFXIVMonReborn
                 StopCapture(null, null);
 
             System.Media.SystemSounds.Asterisk.Play();
+        }
+
+        #region CaptureHandling
+        private void StartCapture(object sender, RoutedEventArgs e)
+        {
+            if (_captureWorker != null)
+                return;
+
+            ClearCapture(null, null);
+
+            _captureWorker = new MachinaCaptureWorker(this, _captureMode);
+            _captureThread = new Thread(_captureWorker.Run);
+
+            _captureThread.Start();
+
+            UpdateInfoLabel();
+        }
+
+        private void StopCapture(object sender, RoutedEventArgs e)
+        {
+            if (_captureWorker == null)
+                return;
+
+            _captureWorker.Stop();
+            _captureThread.Join();
+            _captureWorker = null;
+
+            UpdateInfoLabel();
+        }
+        #endregion
+
+        #region PacketListHandling
+        private void PacketListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PacketListView.SelectedIndex == -1)
+                return;
+
+            var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
+
+            _currentPacketStream = new MemoryStream(item.Data);
+            HexEditor.Stream = _currentPacketStream;
+
+            StructListView.Items.Clear();
+
+            try
+            {
+                var structText = db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+
+                if (structText == null)
+                {
+                    StructListItem infoItem = new StructListItem();
+                    infoItem.NameCol = "No Struct found";
+                    StructListView.Items.Add(infoItem);
+                    return;
+                }
+
+                var structEntries = Struct.Parse(structText, item.Data);
+
+                foreach (var entry in structEntries.Item1)
+                {
+                    StructListView.Items.Add(entry);
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show(
+                    $"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}\n\n{exc}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            UpdateInfoLabel();
         }
 
         public void AddPacketToListView(PacketListItem item)
@@ -174,116 +347,7 @@ namespace FFXIVMonReborn
 
             UpdateInfoLabel();
         }
-
-        private void StartCapture(object sender, RoutedEventArgs e)
-        {
-            if (_captureWorker != null)
-                return;
-
-            ClearCapture(null, null);
-
-            _captureWorker = new MachinaCaptureWorker(this, _captureMode);
-            _captureThread = new Thread(_captureWorker.Run);
-
-            _captureThread.Start();
-
-            UpdateInfoLabel();
-        }
-
-        private void StopCapture(object sender, RoutedEventArgs e)
-        {
-            if (_captureWorker == null)
-                return;
-
-            _captureWorker.Stop();
-            _captureThread.Join();
-            _captureWorker = null;
-
-            UpdateInfoLabel();
-        }
-
-        private void MainWindow_OnClosing(object sender, CancelEventArgs e)
-        {
-            if (_captureWorker != null)
-            {
-                e.Cancel = true;
-                MessageBox.Show("A capture is in progress - you cannot close this window now.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
-
-            if (PacketListView.Items.Count != 0 && _currentXmlFile == "")
-            {
-                MessageBoxResult res = MessageBox.Show("Currently captured packets were not yet saved.\nDo you want to quit without saving?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (res == MessageBoxResult.No)
-                {
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        private void PacketListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (PacketListView.SelectedIndex == -1)
-                return;
-
-            var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
-
-            _currentPacketStream = new MemoryStream(item.Data);
-            HexEditor.Stream = _currentPacketStream;
-
-            StructListView.Items.Clear();
-
-            try
-            {
-                var structText = db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
-
-                if (structText == null)
-                {
-                    StructListItem infoItem = new StructListItem();
-                    infoItem.NameCol = "No Struct found";
-                    StructListView.Items.Add(infoItem);
-                    return;
-                }
-
-                var structEntries = Struct.Parse(structText, item.Data);
-
-                foreach (var entry in structEntries.Item1)
-                {
-                    StructListView.Items.Add(entry);
-                }
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(
-                    $"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}\n\n{exc}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            UpdateInfoLabel();
-        }
-
-        private void ClearCapture(object sender, RoutedEventArgs e)
-        {
-            if (_captureWorker != null)
-            {
-                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
-            PacketListView.SelectedIndex = -1;
-            PacketListView.Items.Clear();
-
-            _currentPacketStream = new MemoryStream(new byte[] { });
-            //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
-
-            _filterString = "";
-
-            _currentXmlFile = "";
-            ChangeTitle("");
-
-            UpdateInfoLabel();
-        }
+        #endregion
 
         private void ReloadDB(object sender, RoutedEventArgs e)
         {
@@ -292,6 +356,7 @@ namespace FFXIVMonReborn
             MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
+        #region SaveLoad
         private void SaveCaptureMenuClick(object sender, RoutedEventArgs e)
         {
             if (_captureWorker != null)
@@ -340,7 +405,7 @@ namespace FFXIVMonReborn
                 {
                     return;
                 }
-                
+
             }
 
             UpdateInfoLabel();
@@ -358,36 +423,9 @@ namespace FFXIVMonReborn
                 AddPacketToListView(packet);
             }
         }
+        #endregion
 
-        private void ChangeTitle(string newTitle)
-        {
-            string windowTitle = string.IsNullOrEmpty(newTitle) ? "FFXIVMonReborn" : newTitle;
-            windowTitle = !windowTitle.Contains("FFXIVMonReborn") ? "FFXIVMonReborn - " + windowTitle : windowTitle;
-            _mainWindow.Title = windowTitle;
-
-            string header = string.IsNullOrEmpty(newTitle) ? "New Capture" : newTitle;
-            _thisTabItem.Header = header;
-        }
-
-        public void OnTabFocus()
-        {
-            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-        }
-
-        private void UpdateInfoLabel()
-        {
-            CaptureInfoLabel.Content = "Amount of Packets: " + PacketListView.Items.Count;
-
-            if (_currentXmlFile.Length != 0)
-                CaptureInfoLabel.Content += " | File: " + _currentXmlFile;
-            if (_captureWorker != null)
-                CaptureInfoLabel.Content += " | Capturing ";
-            else
-                CaptureInfoLabel.Content += " | Idle";
-            if (_currentPacketStream != null)
-                CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
-        }
-
+        #region PacketExporting
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
         {
             var items = PacketListView.SelectedItems;
@@ -485,29 +523,7 @@ namespace FFXIVMonReborn
                 return;
             }
         }
-
-        private void ReloadCurrentPackets()
-        {
-            PacketListItem[] array = new PacketListItem[PacketListView.Items.Count];
-            PacketListView.Items.CopyTo(array, 0);
-            PacketListView.Items.Clear();
-
-            foreach (var item in array)
-            {
-                AddPacketToListView(item);
-            }
-        }
-
-        private void StructListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (StructListView.Items.Count == 0)
-                return;
-
-            var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            HexEditor.SetPosition(item.offset);
-            HexEditor.SelectionStart = item.offset;
-            HexEditor.SelectionStop = item.offset + item.typeLength;
-        }
+        #endregion
 
         private void RedownloadDefs(object sender, RoutedEventArgs e)
         {
@@ -562,6 +578,8 @@ namespace FFXIVMonReborn
             Properties.Settings.Default.NetworkMonitorType = _captureMode;
             Properties.Settings.Default.Save();
         }
+
+        #region Filtering
 
         private void SetFilter(object sender, RoutedEventArgs e)
         {
@@ -630,6 +648,17 @@ namespace FFXIVMonReborn
             _ResetFilter();
         }
 
+        private void FilterEntry_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                _ApplyFilter(FilterEntry.Text);
+            }
+
+        }
+        #endregion
+
+        #region Scripting
         private void Scripting_RunOnCapture(object sender, RoutedEventArgs e)
         {
             var res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
@@ -685,21 +714,9 @@ namespace FFXIVMonReborn
             _scripting = new Scripting();
             _scripting.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
         }
+        #endregion
 
-        private void FilterEntry_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                _ApplyFilter(FilterEntry.Text);
-            }
-
-        }
-
-        private void NewInstance(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(System.Windows.Forms.Application.ExecutablePath);
-        }
-
+        #region StructListHandling
         private void StructListView_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             foreach (var item in StructListView.Items)
@@ -712,16 +729,17 @@ namespace FFXIVMonReborn
             StructListView.Refresh();
         }
 
-        private void AboutButton_OnClick(object sender, RoutedEventArgs e)
+        private void StructListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            MessageBox.Show(
-                "FFXIVMon Reborn\n\nA FFXIV Packet analysis thing for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-        }
+            if (StructListView.Items.Count == 0)
+                return;
 
-        private void NewTab(object sender, RoutedEventArgs e)
-        {
-            _mainWindow.AddTab(null);
+            var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
+            HexEditor.SetPosition(item.offset);
+            HexEditor.SelectionStart = item.offset;
+            HexEditor.SelectionStop = item.offset + item.typeLength;
         }
+        #endregion
     }
 
     public static class ExtensionMethods

@@ -15,9 +15,36 @@
     </Window.Resources>
     <Grid>
         <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged">
-            
+            <!-- Events do not fire from here for some reason, investigate
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Close Tab"
+                                          Click="MenuItem_OnClick" />
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.ItemContainerStyle>
         </TabControl>
+        -->
 
+            <TabControl.ContextMenu>
+
+                <ContextMenu
+                    Name="mnuTabContext1">
+
+                    <MenuItem
+                        Header="_Close Current Tab"
+                        Name="mnuVerticalTab1" Click="TabCloseClick"></MenuItem>
+
+                </ContextMenu>
+
+            </TabControl.ContextMenu>
+
+        </TabControl>
     </Grid>
 </Window>
 

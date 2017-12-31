@@ -51,7 +51,44 @@ namespace FFXIVMonReborn
 
         private void MainTabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ((XivMonTab)((TabItem)MainTabControl.Items[MainTabControl.SelectedIndex]).Content).OnTabFocus();
+            ((XivMonTab) MainTabControl.SelectedContent)?.OnTabFocus();
+        }
+
+        /*
+        private void MainWindow_OnClosing(object sender, CancelEventArgs e)
+        {
+            if (_captureWorker != null)
+            {
+                e.Cancel = true;
+                MessageBox.Show("A capture is in progress - you cannot close this window now.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            if (PacketListView.Items.Count != 0 && _currentXmlFile == "")
+            {
+                MessageBoxResult res = MessageBox.Show("Currently captured packets were not yet saved.\nDo you want to quit without saving?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res == MessageBoxResult.No)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+        */
+
+        private void TabCloseClick(object sender, RoutedEventArgs e)
+        {
+            if (MainTabControl.Items.Count == 1)
+            {
+                MessageBox.Show("You can't close your last remaining tab.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            if (((XivMonTab) ((TabItem) MainTabControl.Items[MainTabControl.SelectedIndex]).Content).RequestClose())
+            {
+                MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
+            }
         }
     }
 }
