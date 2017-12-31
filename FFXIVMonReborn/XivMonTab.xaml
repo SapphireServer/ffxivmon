@@ -20,8 +20,8 @@
                     <MenuItem Header="_New Instance" Click="NewInstance"/>
                 </MenuItem>
                 <MenuItem Header="_Capture">
-                    <MenuItem Header="_Start(CTRL+F12)" Click="StartCapture"/>
-                    <MenuItem Header="_Stop(CTRL+F12)" Click="StopCapture"/>
+                    <MenuItem Header="_Start (CTRL+ALT+F12)" Click="StartCapture"/>
+                    <MenuItem Header="_Stop (CTRL+ALT+F12)" Click="StopCapture"/>
                 </MenuItem>
                 <MenuItem Header="_Database">
                     <MenuItem Header="_Reload DB" Click="ReloadDB"/>

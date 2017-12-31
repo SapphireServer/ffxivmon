@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Media;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,16 +23,65 @@ namespace FFXIVMonReborn
     /// </summary>
     public partial class MainWindow : Window
     {
+        private KeyboardHook _kbHook = new KeyboardHook();
+
         public MainWindow()
         {
             InitializeComponent();
 
-            var item = new TabItem();
+            bool loadedByArg = false;
+            var args = Environment.GetCommandLineArgs();
+            for (var i = 1; i + 1 < args.Length; i += 2)
+            {
+                if (args[i] == "--xml")
+                {
+                    var tab = new TabItem();
 
-            item.Content = new XivMonTab();
-            item.Header = "New Capture";
-            ((XivMonTab)item.Content).SetParents(item, this);
-            MainTabControl.Items.Add(item);
+                    tab.Content = new XivMonTab();
+                    tab.Header = "New Capture";
+                    ((XivMonTab)tab.Content).SetParents(tab, this);
+                    MainTabControl.Items.Add(tab);
+                    ((XivMonTab)tab.Content).LoadCapture(args[i+1]);
+
+                    loadedByArg = true;
+                }
+            }
+
+            if (!loadedByArg)
+            {
+                var item = new TabItem();
+                item.Content = new XivMonTab();
+                item.Header = "New Capture";
+                ((XivMonTab)item.Content).SetParents(item, this);
+                MainTabControl.Items.Add(item);
+            }
+
+
+            // register the event that is fired after the key press.
+            _kbHook.KeyPressed +=
+                new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+
+            try
+            {
+                _kbHook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, Keys.F12);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
+        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        {
+            var tab = (XivMonTab) MainTabControl.SelectedContent;
+
+            if (!tab.IsCapturing())
+                tab.StartCapture(null, null);
+            else
+                tab.StopCapture(null, null);
+
+            SystemSounds.Asterisk.Play();
+            this.FlashWindow(3);
         }
 
         public void AddTab(string toLoad)
@@ -53,7 +103,6 @@ namespace FFXIVMonReborn
         {
             ((XivMonTab) MainTabControl.SelectedContent)?.OnTabFocus();
         }
-
         
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
@@ -69,12 +118,15 @@ namespace FFXIVMonReborn
                     }
                     else
                     {
+                        foreach (var closeTab in MainTabControl.Items)
+                        {
+                            ((XivMonTab)((TabItem)closeTab).Content).StopCapture(null, null);
+                        }
                         return;
                     }
                 }
             }
         }
-        
 
         private void TabCloseClick(object sender, RoutedEventArgs e)
         {

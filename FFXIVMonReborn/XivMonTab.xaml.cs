@@ -47,15 +47,11 @@ namespace FFXIVMonReborn
 
         private string _filterString = "";
         private string _currentXmlFile = "";
-        private System.Threading.Timer _hotkeyTimer;
-
-        KeyboardHook hook = new KeyboardHook();
 
         private Scripting _scripting = null;
 
         public XivMonTab()
         {
-            ParseCommandlineArguments();
             InitializeComponent();
             _repo = Properties.Settings.Default.RepoUrl;
             db = new Database(_repo);
@@ -66,13 +62,6 @@ namespace FFXIVMonReborn
                 SwitchModeSockets.IsChecked = true;
             else
                 SwitchModePcap.IsChecked = true;
-
-            // register the event that is fired after the key press.
-            hook.KeyPressed +=
-                new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
-            // register the control + alt + F12 combination as hot key.
-
-            _hotkeyTimer = new System.Threading.Timer(TryAssignHotkey, null, 0, 500);
 
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
@@ -108,7 +97,7 @@ namespace FFXIVMonReborn
             _mainWindow = mainWindow;
         }
 
-        private void ClearCapture(object sender, RoutedEventArgs e)
+        public void ClearCapture(object sender, RoutedEventArgs e)
         {
             if (_captureWorker != null)
             {
@@ -208,42 +197,17 @@ namespace FFXIVMonReborn
 
             return true;
         }
+
+        public bool IsCapturing()
+        {
+            if (_captureWorker != null)
+                return true;
+            return false;
+        }
         #endregion
 
-        private void TryAssignHotkey(object state)
-        {
-            try
-            {
-                hook.RegisterHotKey(ModifierKeys.Control,
-                    Keys.F12);
-            }
-            catch (Exception) { } //Hook already registered, or something weird happened
-        }
-
-        private void ParseCommandlineArguments()
-        {
-            var args = Environment.GetCommandLineArgs();
-            for (var i = 1; i + 1 < args.Length; i += 2)
-            {
-                if (args[i] == "--xml")
-                {
-                    _currentXmlFile = args[i + 1];
-                }
-            }
-        }
-
-        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
-        {
-            if (_captureWorker == null)
-                StartCapture(null, null);
-            else
-                StopCapture(null, null);
-
-            System.Media.SystemSounds.Asterisk.Play();
-        }
-
         #region CaptureHandling
-        private void StartCapture(object sender, RoutedEventArgs e)
+        public void StartCapture(object sender, RoutedEventArgs e)
         {
             if (_captureWorker != null)
                 return;
@@ -258,7 +222,7 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
-        private void StopCapture(object sender, RoutedEventArgs e)
+        public void StopCapture(object sender, RoutedEventArgs e)
         {
             if (_captureWorker == null)
                 return;
@@ -755,16 +719,6 @@ namespace FFXIVMonReborn
             HexEditor.SelectionStop = item.offset + item.typeLength;
         }
         #endregion
-    }
-
-    public static class ExtensionMethods
-    {
-        private static Action EmptyDelegate = delegate () { };
-
-        public static void Refresh(this UIElement uiElement)
-        {
-            uiElement.Dispatcher.Invoke(DispatcherPriority.Render, EmptyDelegate);
-        }
     }
 }
 

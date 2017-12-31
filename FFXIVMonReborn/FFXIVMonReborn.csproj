@@ -169,6 +169,7 @@
     </ApplicationDefinition>
     <Compile Include="CaptureFileOp.cs" />
     <Compile Include="Database.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="InjectablePacketBuilder.cs" />
     <Compile Include="KeyboardHook.cs" />
