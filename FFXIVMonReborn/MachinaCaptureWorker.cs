@@ -15,12 +15,12 @@ namespace FFXIVMonReborn
 {
     class MachinaCaptureWorker
     {
-        private MainWindow mainWindow;
+        private XivMonTab mainWindow;
         private TCPNetworkMonitor.NetworkMonitorType monitorType;
 
         private volatile bool _shouldStop;
 
-        public MachinaCaptureWorker(MainWindow window, TCPNetworkMonitor.NetworkMonitorType monitorType)
+        public MachinaCaptureWorker(XivMonTab window, TCPNetworkMonitor.NetworkMonitorType monitorType)
         {
             this.mainWindow = window;
             this.monitorType = monitorType;
