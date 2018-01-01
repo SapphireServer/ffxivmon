@@ -188,6 +188,11 @@ namespace FFXIVMonReborn
             Properties.Settings.Default.Save();
         }
 
+        private void MainTabControl_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            AddTab(null);
+        }
+        
         private bool AreTabsCapturing()
         {
             foreach (var tab in MainTabControl.Items)

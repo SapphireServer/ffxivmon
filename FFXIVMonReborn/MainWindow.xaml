@@ -53,8 +53,7 @@
                 </MenuItem>
             </Menu>
         
-        <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged">
-            
+        <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged" MouseDoubleClick="MainTabControl_OnMouseDoubleClick">
             <TabControl.ItemContainerStyle>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="ContextMenu">
@@ -72,22 +71,6 @@
                     </Setter>
                 </Style>
             </TabControl.ItemContainerStyle>
-        
-        
-
-            <TabControl.ContextMenu>
-
-                <ContextMenu
-                    Name="mnuTabContext1">
-
-                    <MenuItem
-                        Header="_Close Current Tab"
-                        Name="mnuVerticalTab1" Click="TabCloseClick"></MenuItem>
-
-                </ContextMenu>
-
-            </TabControl.ContextMenu>
-
         </TabControl>
         </DockPanel>
         
