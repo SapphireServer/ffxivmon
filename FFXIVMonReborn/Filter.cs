@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Policy;
+using System.Text;
 using System.Windows;
 
 namespace FFXIVMonReborn
@@ -25,7 +26,7 @@ namespace FFXIVMonReborn
 
             if (input.Length == 0)
                 return output.ToArray();
-            while (true)
+            for( int i = 0; i < input.Length; i++ )
             {
                 try
                 {
@@ -95,5 +96,56 @@ namespace FFXIVMonReborn
     {
         public FilterType type;
         public object value;
+
+        public bool IsApplicableForFilterSet(PacketListItem item)
+        {
+            bool isApplicable = false;
+
+            switch (this.type)
+            {
+                case FilterType.Message:
+                    if (item.MessageCol == ((int)this.value).ToString("X4"))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.ActorControl:
+                    if (item.ActorControl == (int)this.value)
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.ActorControlName:
+                    if (item.ActorControl != -1 && item.NameCol.ToLower().Contains(((string)this.value).ToLower()))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.PacketName:
+                    if (item.NameCol.ToLower().Contains(((string)this.value).ToLower()))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                case FilterType.StringContents:
+                    var findStr = Convert.ToString(this.value).ToLower();
+                    var packetStr = Encoding.UTF8.GetString(item.Data).ToLower();
+
+                    if (packetStr.Contains(findStr))
+                    {
+                        isApplicable = true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            return isApplicable;
+        }
     }
 }

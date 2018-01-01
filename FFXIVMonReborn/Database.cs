@@ -74,9 +74,10 @@ namespace FFXIVMonReborn
                 if (!Directory.Exists("hFiles"))
                     Directory.CreateDirectory("hFiles");
 
-                DownloadFile(repo, "/master/src/servers/Server_Common/Network/PacketDef/Ipcs.h", "Ipcs.h");
-                DownloadFile(repo, "/master/src/servers/Server_Common/Common.h", "Common.h");
-                DownloadFile(repo, "/master/src/servers/Server_Common/Network/PacketDef/Zone/ServerZoneDef.h",
+                //TODO: Integrate these paths into future version control
+                DownloadFile(repo, "/master/src/common/Network/PacketDef/Ipcs.h", "Ipcs.h");
+                DownloadFile(repo, "/master/src/common/Common.h", "Common.h");
+                DownloadFile(repo, "/master/src/common/Network/PacketDef/Zone/ServerZoneDef.h",
                     "ServerZoneDef.h");
             }
             catch (Exception exc)
@@ -92,6 +93,7 @@ namespace FFXIVMonReborn
         {
             using (WebClient client = new WebClient())
             {
+                Debug.WriteLine($"Downloading {repo}{path}");
                 client.DownloadFile($"{repo}{path}", Path.Combine(Environment.CurrentDirectory, "hFiles", fileName));
             }
         }
