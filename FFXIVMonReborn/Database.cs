@@ -16,7 +16,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace FFXIVMonReborn
 {
-    class Database
+    public class Database
     {
         private Dictionary<int, Tuple<string, string>> ServerLobbyIpcType;
         private Dictionary<int, Tuple<string, string>> ClientLobbyIpcType;
@@ -45,7 +45,7 @@ namespace FFXIVMonReborn
             this.repo = repo;
         }
 
-        public void Reload()
+        public bool Reload()
         {
             ServerZoneIpcType.Clear();
             ClientZoneIpcType.Clear();;
@@ -57,14 +57,15 @@ namespace FFXIVMonReborn
                 ParseIpcs(File.ReadAllText(Path.Combine("hFiles", "Ipcs.h")));
                 ParseCommon(File.ReadAllText(Path.Combine("hFiles", "Common.h")));
                 ParseServerZoneStructs(File.ReadAllText(Path.Combine("hFiles", "ServerZoneDef.h")));
+                return true;
             }
             catch (Exception exc)
             {
                 MessageBox.Show(
                     $"[Database] Could not parse files.\n\n{exc}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
-            
         }
 
         public void DownloadDefinitions()

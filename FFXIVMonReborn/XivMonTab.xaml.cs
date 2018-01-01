@@ -40,28 +40,18 @@ namespace FFXIVMonReborn
 
         private MemoryStream _currentPacketStream;
 
-        private Database db;
+        private Database _db;
 
         private string _repo;
-        private TCPNetworkMonitor.NetworkMonitorType _captureMode;
 
         private string _filterString = "";
         private string _currentXmlFile = "";
-
-        private Scripting _scripting = null;
 
         public XivMonTab()
         {
             InitializeComponent();
             _repo = Properties.Settings.Default.RepoUrl;
-            db = new Database(_repo);
-
-            _captureMode = (TCPNetworkMonitor.NetworkMonitorType)Properties.Settings.Default.NetworkMonitorType;
-
-            if (_captureMode == TCPNetworkMonitor.NetworkMonitorType.RawSocket)
-                SwitchModeSockets.IsChecked = true;
-            else
-                SwitchModePcap.IsChecked = true;
+            _db = new Database(_repo);
 
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
@@ -97,7 +87,7 @@ namespace FFXIVMonReborn
             _mainWindow = mainWindow;
         }
 
-        public void ClearCapture(object sender, RoutedEventArgs e)
+        public void ClearCapture()
         {
             if (_captureWorker != null)
             {
@@ -126,28 +116,16 @@ namespace FFXIVMonReborn
             _mainWindow.Title = windowTitle;
 
             string header = string.IsNullOrEmpty(newTitle) ? "New Capture" : newTitle;
+
+            if (_captureWorker != null)
+                header = "• " + header;
+            
             _thisTabItem.Header = header;
         }
 
         public void OnTabFocus()
         {
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-        }
-
-        private void NewInstance(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(System.Windows.Forms.Application.ExecutablePath);
-        }
-
-        private void AboutButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show(
-                "FFXIVMon Reborn\n\nA FFXIV Packet analysis thing for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-        }
-
-        private void NewTab(object sender, RoutedEventArgs e)
-        {
-            _mainWindow.AddTab(null);
         }
 
         private void ReloadCurrentPackets()
@@ -207,22 +185,23 @@ namespace FFXIVMonReborn
         #endregion
 
         #region CaptureHandling
-        public void StartCapture(object sender, RoutedEventArgs e)
+        public void StartCapture()
         {
             if (_captureWorker != null)
                 return;
 
-            ClearCapture(null, null);
+            ClearCapture();
 
-            _captureWorker = new MachinaCaptureWorker(this, _captureMode);
+            _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode);
             _captureThread = new Thread(_captureWorker.Run);
 
             _captureThread.Start();
 
             UpdateInfoLabel();
+            ChangeTitle(_currentXmlFile);
         }
 
-        public void StopCapture(object sender, RoutedEventArgs e)
+        public void StopCapture()
         {
             if (_captureWorker == null)
                 return;
@@ -232,6 +211,7 @@ namespace FFXIVMonReborn
             _captureWorker = null;
 
             UpdateInfoLabel();
+            ChangeTitle(_currentXmlFile);
         }
         #endregion
 
@@ -250,7 +230,7 @@ namespace FFXIVMonReborn
 
             try
             {
-                var structText = db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
 
                 if (structText == null)
                 {
@@ -281,13 +261,13 @@ namespace FFXIVMonReborn
         {
             if (item.DirectionCol == "S")
             {
-                item.NameCol = db.GetServerZoneOpName(int.Parse(item.MessageCol, NumberStyles.HexNumber));
-                item.CommentCol = db.GetServerZoneOpComment(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                item.NameCol = _db.GetServerZoneOpName(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                item.CommentCol = _db.GetServerZoneOpComment(int.Parse(item.MessageCol, NumberStyles.HexNumber));
             }
             else
             {
-                item.NameCol = db.GetClientZoneOpName(int.Parse(item.MessageCol, NumberStyles.HexNumber));
-                item.CommentCol = db.GetClientZoneOpComment(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                item.NameCol = _db.GetClientZoneOpName(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                item.CommentCol = _db.GetClientZoneOpComment(int.Parse(item.MessageCol, NumberStyles.HexNumber));
             }
 
             item.CategoryCol = item.Set.ToString();
@@ -301,12 +281,12 @@ namespace FFXIVMonReborn
                         stream.Position = 0x20;
                         int category = reader.ReadUInt16();
                         item.ActorControl = category;
-                        item.NameCol = db.GetActorControlTypeName(category);
+                        item.NameCol = _db.GetActorControlTypeName(category);
                     }
                 }
             }
 
-            if (RunScriptsOnNewCheckBox.IsChecked)
+            if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
             {
                 try
                 {
@@ -317,7 +297,7 @@ namespace FFXIVMonReborn
                     MessageBox.Show(
                         $"[Main] Script error!\n\n{exc}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    RunScriptsOnNewCheckBox.IsChecked = false;
+                    _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
                     return;
                 }
             }
@@ -328,15 +308,39 @@ namespace FFXIVMonReborn
         }
         #endregion
 
-        private void ReloadDB(object sender, RoutedEventArgs e)
+        #region Database
+        public void ReloadDB()
         {
-            db.Reload();
-            ReloadCurrentPackets();
-            MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            if (_db.Reload())
+            {
+                ReloadCurrentPackets();
+                MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);  
+            }
+        }
+        
+        public void RedownloadDefs()
+        {
+            var res = MessageBox.Show($"Do you want to redownload definition files from the repo? This will override all local changes.", "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+            if (res == MessageBoxResult.OK)
+            {
+                _db.DownloadDefinitions();
+                _db.Reload();
+                ReloadCurrentPackets();
+                MessageBox.Show($"Definitions downloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
         }
 
+        public void SetRepository()
+        {
+            _repo = Interaction.InputBox("Enter the repository URL for the definition files to be downloaded from.\nThis has to point to the raw files.", "FFXIVMon Reborn", Properties.Settings.Default.RepoUrl);
+            Properties.Settings.Default.RepoUrl = _repo;
+            Properties.Settings.Default.Save();
+            _db.SetRepo(_repo);
+        }
+        #endregion
+
         #region SaveLoad
-        private void SaveCaptureMenuClick(object sender, RoutedEventArgs e)
+        public void SaveCapture()
         {
             if (_captureWorker != null)
             {
@@ -359,7 +363,7 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
-        private void LoadCaptureMenuClick(object sender, RoutedEventArgs e)
+        public void LoadCapture()
         {
             _currentPacketStream = new MemoryStream(new byte[] { });
             _filterString = "";
@@ -504,63 +508,9 @@ namespace FFXIVMonReborn
         }
         #endregion
 
-        private void RedownloadDefs(object sender, RoutedEventArgs e)
-        {
-            var res = MessageBox.Show($"Do you want to redownload definition files from the repo? This will override all local changes.", "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-            if (res == MessageBoxResult.OK)
-            {
-                db.DownloadDefinitions();
-                db.Reload();
-                ReloadCurrentPackets();
-                MessageBox.Show($"Definitions downloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-            }
-        }
-
-        private void SetRepository(object sender, RoutedEventArgs e)
-        {
-            _repo = Interaction.InputBox("Enter the repository URL for the definition files to be downloaded from.\nThis has to point to the raw files.", "FFXIVMon Reborn", Properties.Settings.Default.RepoUrl);
-            Properties.Settings.Default.RepoUrl = _repo;
-            Properties.Settings.Default.Save();
-            db.SetRepo(_repo);
-        }
-
-        private void SwitchModeSockets_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (_captureWorker != null)
-            {
-                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
-
-            _captureMode = TCPNetworkMonitor.NetworkMonitorType.RawSocket;
-            SwitchModePcap.IsChecked = false;
-            SwitchModeSockets.IsChecked = true;
-
-            Properties.Settings.Default.NetworkMonitorType = _captureMode;
-            Properties.Settings.Default.Save();
-        }
-
-        private void SwitchModePcap_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (_captureWorker != null)
-            {
-                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
-
-            _captureMode = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
-            SwitchModePcap.IsChecked = true;
-            SwitchModeSockets.IsChecked = false;
-
-            Properties.Settings.Default.NetworkMonitorType = _captureMode;
-            Properties.Settings.Default.Save();
-        }
-
         #region Filtering
 
-        private void SetFilter(object sender, RoutedEventArgs e)
+        public void SetFilter()
         {
 
             string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", _filterString);
@@ -568,7 +518,7 @@ namespace FFXIVMonReborn
             _ApplyFilter(filter);
         }
 
-        private void ResetToOriginal(object sender, RoutedEventArgs e)
+        public void ResetToOriginal()
         {
             _ResetFilter();
         }
@@ -638,15 +588,15 @@ namespace FFXIVMonReborn
         #endregion
 
         #region Scripting
-        private void Scripting_RunOnCapture(object sender, RoutedEventArgs e)
+        public void Scripting_RunOnCapture()
         {
             var res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
             if (res == MessageBoxResult.OK)
             {
-                if (_scripting == null)
+                if (_mainWindow.ScriptProvider == null)
                 {
-                    _scripting = new Scripting();
-                    _scripting.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
+                    _mainWindow.ScriptProvider = new Scripting();
+                    _mainWindow.ScriptProvider.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
                 }
 
                 try
@@ -668,7 +618,7 @@ namespace FFXIVMonReborn
                     MessageBox.Show(
                         $"[Main] Script error!\n\n{exc}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    RunScriptsOnNewCheckBox.IsChecked = false;
+                    _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
                     return;
                 }
 
@@ -677,21 +627,15 @@ namespace FFXIVMonReborn
 
         private void Scripting_RunOnPacket(PacketEventArgs args)
         {
-            if (_scripting == null)
+            if (_mainWindow.ScriptProvider == null)
             {
                 MessageBox.Show("No scripts were loaded.", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                RunScriptsOnNewCheckBox.IsChecked = false;
+                _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
                 return;
             }
 
-            _scripting.ExecuteScripts(null, args);
-        }
-
-        private void Scripting_LoadScripts(object sender, RoutedEventArgs e)
-        {
-            _scripting = new Scripting();
-            _scripting.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
+            _mainWindow.ScriptProvider.ExecuteScripts(null, args);
         }
         #endregion
 

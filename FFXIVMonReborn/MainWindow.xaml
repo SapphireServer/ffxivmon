@@ -14,6 +14,45 @@
         </DataTemplate>
     </Window.Resources>
     <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open" Click="LoadCaptureRelay"/>
+                    <MenuItem Header="_Save" Click="SaveCaptureRelay"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Clear" Click="ClearCaptureRelay"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_New Tab" Click="NewTab"/>
+                    <MenuItem Header="_New Instance" Click="NewInstance"/>
+                </MenuItem>
+                <MenuItem Header="_Capture">
+                    <MenuItem Header="_Start (CTRL+ALT+F12)" Click="StartCaptureRelay"/>
+                    <MenuItem Header="_Stop (CTRL+ALT+F12)" Click="StopCaptureRelay"/>
+                </MenuItem>
+                <MenuItem Header="_Database">
+                    <MenuItem Header="_Reload DB" Click="ReloadDBRelay"/>
+                    <MenuItem Header="_Redownload Definitions" Click="RedownloadDefsRelay"/>
+                </MenuItem>
+                <MenuItem Header="Filters">
+                    <MenuItem Header="Set Filter" Click="SetFilterRelay"/>
+                    <MenuItem Header="Reset" Click="ResetToOriginalRelay"/>
+                </MenuItem>
+                <MenuItem Header="Scripting">
+                    <MenuItem Header="Run on Capture" Click="Scripting_RunOnCaptureRelay"/>
+                    <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="Run on new Packets" IsCheckable="True"/>
+                    <Separator></Separator>
+                    <MenuItem Header="Load scripts" Click="Scripting_LoadScripts"/>
+                </MenuItem>
+                <MenuItem Header="_Options">
+                    <MenuItem Header="_Set Repository" Click="SetRepositoryRelay"/>
+                    <Separator></Separator>
+                    <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>
+                    <MenuItem x:Name="SwitchModePcap" Header="_Capture mode: WinPCap" Click="SwitchModePcap_OnClick"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_About" Click="AboutButton_OnClick"/>
+                </MenuItem>
+            </Menu>
+        
         <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged">
             
             <TabControl.ItemContainerStyle>
@@ -50,6 +89,8 @@
             </TabControl.ContextMenu>
 
         </TabControl>
+        </DockPanel>
+        
     </Grid>
 </Window>
 
