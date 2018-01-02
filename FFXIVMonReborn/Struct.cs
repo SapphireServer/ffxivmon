@@ -3,12 +3,23 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace FFXIVMonReborn
 {
     class Struct
     {
+        private static readonly Dictionary<string, Tuple<Type, int, bool>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, bool>> // Name - (C# Type - Length - Print as char)
+        {
+            { "uint8_t", new Tuple<Type, int, bool>(typeof(byte), 1, false) },
+            { "uint16_t", new Tuple<Type, int, bool>(typeof(UInt16), 2, false) },
+            { "uint32_t", new Tuple<Type, int, bool>(typeof(UInt32), 4, false) },
+            { "uint64_t", new Tuple<Type, int, bool>(typeof(UInt64), 8, false) },
+            { "char", new Tuple<Type, int, bool>(typeof(byte), 1, true) }
+        };
+
         public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string data, byte[] packet)
         {
             // Get rid of any comments
@@ -102,12 +113,12 @@ namespace FFXIVMonReborn
         {
             List<StructListItem> output = new List<StructListItem>();
             
-            int count = int.Parse(SubstringBetweenIndexes(name, name.IndexOf("[") + 1, name.LastIndexOf("]")));
+            int count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
 
             for (int i = 0; i < count; i++)
             {
                 StructListItem aryItem = new StructListItem();
-                aryItem.NameCol = "  " + SubstringBetweenIndexes(name, 0, name.IndexOf("[")) + $"[{i}]";
+                aryItem.NameCol = "  " + name.SubstringBetweenIndexes(0, name.IndexOf("[")) + $"[{i}]";
                 aryItem.offset = reader.BaseStream.Position;
                 aryItem.OffsetCol = reader.BaseStream.Position.ToString("X");
                 
@@ -118,35 +129,23 @@ namespace FFXIVMonReborn
 
             return output.ToArray();
         }
-        
-        public static string SubstringBetweenIndexes(string value, int startIndex, int endIndex)
-        {
-            return value.Substring(startIndex, endIndex - startIndex);
-        }
-        
+
         /// <summary>
         /// Parse value as string and it's lenght to a StructListItem
         /// </summary>
         private static void ParseCType(string dataType, BinaryReader reader, ref StructListItem item)
         {
-            switch (dataType)
+            Tuple<Type, int, bool> type;
+            if (_dataTypeDictionary.TryGetValue(dataType, out type))
             {
-                case "uint8_t":
-                    item.ValueCol = reader.ReadByte().ToString();
-                    item.typeLength = 1;
-                    break;
-                case "uint16_t":
-                    item.ValueCol = reader.ReadUInt16().ToString();
-                    item.typeLength = 2;
-                    break;
-                case "uint32_t":
-                    item.ValueCol = reader.ReadUInt32().ToString();
-                    item.typeLength = 4;
-                    break;
-                case "uint64_t":
-                    item.ValueCol = reader.ReadUInt64().ToString();
-                    item.typeLength = 8;
-                    break;
+                byte[] data = reader.ReadBytes(type.Item2);
+                var value = data.GetValueByType(type.Item1, 0);
+
+                item.ValueCol = value.ToString();
+                item.typeLength = type.Item2;
+
+                if (type.Item3)
+                    item.ValueCol = ((char) value).ToString();
             }
         }
     }

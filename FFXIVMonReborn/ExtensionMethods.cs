@@ -69,5 +69,20 @@ namespace FFXIVMonReborn
         {
             uiElement.Dispatcher.Invoke(DispatcherPriority.Render, EmptyDelegate);
         }
+     
+        public static string SubstringBetweenIndexes(this string value, int startIndex, int endIndex)
+        {
+            return value.Substring(startIndex, endIndex - startIndex);
+        }
+
+        public static object GetValueByType(this byte[] buffer, Type typeOfReturnedValue, int offsetInDataSection)
+        {
+            GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            int offset = 0;
+            IntPtr addressInPinnedObject = (handle.AddrOfPinnedObject() + offset);
+            object returnedObject = Marshal.PtrToStructure(addressInPinnedObject, typeOfReturnedValue);
+            handle.Free();
+            return returnedObject;
+        }
     }
 }
