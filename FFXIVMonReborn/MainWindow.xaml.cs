@@ -167,7 +167,7 @@ namespace FFXIVMonReborn
             SwitchModePcap.IsChecked = false;
             SwitchModeSockets.IsChecked = true;
 
-            Properties.Settings.Default.NetworkMonitorType = CaptureMode;
+            Properties.Settings.Default.NetworkMonitorType = (int)CaptureMode;
             Properties.Settings.Default.Save();
         }
 
@@ -184,7 +184,7 @@ namespace FFXIVMonReborn
             SwitchModePcap.IsChecked = true;
             SwitchModeSockets.IsChecked = false;
 
-            Properties.Settings.Default.NetworkMonitorType = CaptureMode;
+            Properties.Settings.Default.NetworkMonitorType = (int)CaptureMode;
             Properties.Settings.Default.Save();
         }
 
@@ -197,7 +197,7 @@ namespace FFXIVMonReborn
         {
             foreach (var tab in MainTabControl.Items)
             {
-                if (!((XivMonTab) ((TabItem) tab).Content).IsCapturing())
+                if (((XivMonTab) ((TabItem) tab).Content).IsCapturing())
                 {
                     return true;
                 }

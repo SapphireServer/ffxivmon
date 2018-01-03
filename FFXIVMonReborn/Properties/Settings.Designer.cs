@@ -38,12 +38,56 @@ namespace FFXIVMonReborn.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public Machina.TCPNetworkMonitor.NetworkMonitorType NetworkMonitorType {
+        public int NetworkMonitorType {
             get {
-                return ((Machina.TCPNetworkMonitor.NetworkMonitorType)(this["NetworkMonitorType"]));
+                return ((int)(this["NetworkMonitorType"]));
             }
             set {
                 this["NetworkMonitorType"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color ColorServerSet0 {
+            get {
+                return ((global::System.Drawing.Color)(this["ColorServerSet0"]));
+            }
+            set {
+                this["ColorServerSet0"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color ColorServerSet1 {
+            get {
+                return ((global::System.Drawing.Color)(this["ColorServerSet1"]));
+            }
+            set {
+                this["ColorServerSet1"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color ColorClientSet0 {
+            get {
+                return ((global::System.Drawing.Color)(this["ColorClientSet0"]));
+            }
+            set {
+                this["ColorClientSet0"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color ColorClientSet1 {
+            get {
+                return ((global::System.Drawing.Color)(this["ColorClientSet1"]));
+            }
+            set {
+                this["ColorClientSet1"] = value;
             }
         }
     }

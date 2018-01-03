@@ -15,6 +15,14 @@ namespace FFXIVMonReborn
 {
     class MachinaCaptureWorker
     {
+        [Flags]
+        public enum ConfigFlags
+        {
+            None = 0,
+            StripHeaderActors = 1,
+            DontUsePacketTimestamp = 2
+        }
+
         private XivMonTab mainWindow;
         private TCPNetworkMonitor.NetworkMonitorType monitorType;
 
