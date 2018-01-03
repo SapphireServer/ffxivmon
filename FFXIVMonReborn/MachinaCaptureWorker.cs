@@ -23,15 +23,15 @@ namespace FFXIVMonReborn
             DontUsePacketTimestamp = 2
         }
 
-        private XivMonTab mainWindow;
-        private TCPNetworkMonitor.NetworkMonitorType monitorType;
+        private readonly XivMonTab _myTab;
+        private readonly TCPNetworkMonitor.NetworkMonitorType _monitorType;
 
         private volatile bool _shouldStop;
 
         public MachinaCaptureWorker(XivMonTab window, TCPNetworkMonitor.NetworkMonitorType monitorType)
         {
-            this.mainWindow = window;
-            this.monitorType = monitorType;
+            this._myTab = window;
+            this._monitorType = monitorType;
         }
 
         private void MessageReceived(long epoch, byte[] message, int set)
@@ -42,7 +42,7 @@ namespace FFXIVMonReborn
                 CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(), 
                 Set = set, RouteIdCol = res.header.RouteID.ToString() };
 
-            mainWindow.Dispatcher.Invoke(new Action(() => { mainWindow.AddPacketToListView(item); }));
+            _myTab.Dispatcher.Invoke(new Action(() => { _myTab.AddPacketToListView(item); }));
         }
 
         private void MessageSent(long epoch, byte[] message, int set)
@@ -53,7 +53,7 @@ namespace FFXIVMonReborn
                 CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(),
                 Set = set, RouteIdCol = res.header.RouteID.ToString() };
 
-            mainWindow.Dispatcher.Invoke(new Action(() => { mainWindow.AddPacketToListView(item); }));
+            _myTab.Dispatcher.Invoke(new Action(() => { _myTab.AddPacketToListView(item); }));
         }
 
         private static ParseResult Parse(byte[] data)
@@ -72,7 +72,7 @@ namespace FFXIVMonReborn
         public void Run()
         {
             FFXIVNetworkMonitor monitor = new FFXIVNetworkMonitor();
-            monitor.MonitorType = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
+            monitor.MonitorType = _monitorType;
             monitor.MessageReceived = (long epoch, byte[] message, int set) => MessageReceived(epoch, message, set);
             monitor.MessageSent = (long epoch, byte[] message, int set) => MessageSent(epoch, message, set);
             monitor.Start();

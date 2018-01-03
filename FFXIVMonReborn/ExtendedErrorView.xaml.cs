@@ -26,6 +26,8 @@ namespace FFXIVMonReborn
             ErrorMessage.Content = message;
             InfoBox.AppendText(info);
             this.Title = title;
+
+            System.Media.SystemSounds.Exclamation.Play();
         }
 
         public ExtendedErrorView(string message, string info, string title, WindowStartupLocation startupLocation)
@@ -36,6 +38,8 @@ namespace FFXIVMonReborn
             ErrorMessage.Content = message;
             InfoBox.AppendText(info);
             this.Title = title;
+
+            System.Media.SystemSounds.Exclamation.Play();
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)

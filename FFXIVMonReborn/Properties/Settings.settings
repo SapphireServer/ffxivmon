@@ -9,16 +9,22 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="ColorServerSet0" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">255, 198, 95</Value>
     </Setting>
     <Setting Name="ColorServerSet1" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">253, 218, 153</Value>
     </Setting>
     <Setting Name="ColorClientSet0" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">140, 226, 255</Value>
     </Setting>
     <Setting Name="ColorClientSet1" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">183, 227, 255</Value>
+    </Setting>
+    <Setting Name="DontUsePacketTimestamp" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="StripHeaderActors" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

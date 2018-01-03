@@ -49,6 +49,7 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("255, 198, 95")]
         public global::System.Drawing.Color ColorServerSet0 {
             get {
                 return ((global::System.Drawing.Color)(this["ColorServerSet0"]));
@@ -60,6 +61,7 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("253, 218, 153")]
         public global::System.Drawing.Color ColorServerSet1 {
             get {
                 return ((global::System.Drawing.Color)(this["ColorServerSet1"]));
@@ -71,6 +73,7 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("140, 226, 255")]
         public global::System.Drawing.Color ColorClientSet0 {
             get {
                 return ((global::System.Drawing.Color)(this["ColorClientSet0"]));
@@ -82,12 +85,37 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("183, 227, 255")]
         public global::System.Drawing.Color ColorClientSet1 {
             get {
                 return ((global::System.Drawing.Color)(this["ColorClientSet1"]));
             }
             set {
                 this["ColorClientSet1"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DontUsePacketTimestamp {
+            get {
+                return ((bool)(this["DontUsePacketTimestamp"]));
+            }
+            set {
+                this["DontUsePacketTimestamp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool StripHeaderActors {
+            get {
+                return ((bool)(this["StripHeaderActors"]));
+            }
+            set {
+                this["StripHeaderActors"] = value;
             }
         }
     }

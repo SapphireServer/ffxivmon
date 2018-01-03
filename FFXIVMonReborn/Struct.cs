@@ -35,23 +35,23 @@ namespace FFXIVMonReborn
             { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") }, //TODO: Special handling for this?
         };
 
-        public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string data, byte[] packet)
+        public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
         {
             string debugMsg = "";
             try
             {
                 // Get rid of any comments
                 Regex r = new Regex("\\/\\*(.*)\\*\\/");
-                data = r.Replace(data, "");
+                structText = r.Replace(structText, "");
                 r = new Regex("\\/\\/(.*)");
-                data = r.Replace(data, "");
+                structText = r.Replace(structText, "");
 
-                Debug.WriteLine(data);
+                Debug.WriteLine(structText);
 
                 List<StructListItem> output = new List<StructListItem>();
                 ExpandoObject exobj = new ExpandoObject();
 
-                var lines = Regex.Split(data, "\r\n|\r|\n");
+                var lines = Regex.Split(structText, "\r\n|\r|\n");
                 int at = 3;
 
                 using (MemoryStream stream = new MemoryStream(packet))
@@ -140,7 +140,7 @@ namespace FFXIVMonReborn
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw new Exception($"\nBase Exception:\n{e}\n\nTrace:\n{debugMsg}\n\nStruct:\n{data}");
+                throw new Exception($"\nBase Exception:\n{e}\n\nTrace:\n{debugMsg}\n\nStruct:\n{structText}");
             }
         }
 
