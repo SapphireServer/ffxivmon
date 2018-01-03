@@ -84,5 +84,15 @@ namespace FFXIVMonReborn
             handle.Free();
             return returnedObject;
         }
+
+        public static string ToHexString(this byte[] value)
+        {
+            string output = "";
+            foreach (var b in value)
+            {
+                output += b.ToString("X") + " ";
+            }
+            return output;
+        }
     }
 }

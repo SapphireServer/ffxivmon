@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -12,14 +11,28 @@ namespace FFXIVMonReborn
 {
     class Struct
     {
-        private static readonly Dictionary<string, Tuple<Type, int, bool, string>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, bool, string>>
+        internal enum TypePrintMode
         {
-            // Name -               (C# Type - Length - Print as char - IDA Compatible Type)
-            { "uint8_t",  new Tuple<Type, int, bool, string>(typeof(byte), 1, false, "") },
-            { "uint16_t", new Tuple<Type, int, bool, string>(typeof(UInt16), 2, false, "") },
-            { "uint32_t", new Tuple<Type, int, bool, string>(typeof(UInt32), 4, false, "") },
-            { "uint64_t", new Tuple<Type, int, bool, string>(typeof(UInt64), 8, false, "") },
-            { "char",     new Tuple<Type, int, bool, string>(typeof(byte), 1, true, "") }
+            Raw,
+            ObjectToString,
+            Char
+        }
+
+        private static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
+        {
+            // Name -               (C# Type - Length - Print Mode - IDA Compatible Type)
+
+            // Base Types
+            { "uint8_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.ObjectToString, "") },
+            { "uint16_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt16), 2, TypePrintMode.ObjectToString, "") },
+            { "uint32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt32), 4, TypePrintMode.ObjectToString, "") },
+            { "uint64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt64), 8, TypePrintMode.ObjectToString, "") },
+            { "char",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
+            { "float",     new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
+
+            //Sapphire Types
+            { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
+            { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") }, //TODO: Special handling for this?
         };
 
         public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string data, byte[] packet)
@@ -161,17 +174,25 @@ namespace FFXIVMonReborn
         /// </summary>
         private static void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
         {
-            Tuple<Type, int, bool, string> type;
+            Tuple<Type, int, TypePrintMode, string> type;
             if (_dataTypeDictionary.TryGetValue(dataType, out type))
             {
                 byte[] data = reader.ReadBytes(type.Item2);
-                var value = data.GetValueByType(type.Item1, 0);
-
-                item.ValueCol = value.ToString();
                 item.typeLength = type.Item2;
 
-                if (type.Item3)
-                    item.ValueCol = Encoding.ASCII.GetString(data);
+                switch (type.Item3)
+                {
+                    case TypePrintMode.ObjectToString:
+                        var value = data.GetValueByType(type.Item1, 0);
+                        item.ValueCol = value.ToString();
+                        break;
+                    case TypePrintMode.Char:
+                        item.ValueCol = Encoding.ASCII.GetString(data);
+                        break;
+                    case TypePrintMode.Raw:
+                        item.ValueCol = data.ToHexString();
+                        break;;
+                }
             }
             else
             {
