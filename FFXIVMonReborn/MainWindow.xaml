@@ -53,7 +53,7 @@
                 </MenuItem>
             </Menu>
         
-        <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged" MouseDoubleClick="MainTabControl_OnMouseDoubleClick">
+        <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged"> <!--MouseDoubleClick="MainTabControl_OnMouseDoubleClick" TODO:This makes every double click in XivMonTab spawn a new tab - investigate better methods -->
             <TabControl.ItemContainerStyle>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="ContextMenu">

@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows;
 
 namespace FFXIVMonReborn
 {
@@ -22,91 +23,101 @@ namespace FFXIVMonReborn
 
         public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string data, byte[] packet)
         {
-            // Get rid of any comments
-            Regex r = new Regex("\\/\\*(.*)\\*\\/");
-            data = r.Replace(data,"");
-            r = new Regex("\\/\\/(.*)");
-            data = r.Replace(data, "");
-
-            Debug.WriteLine(data);
-
-            List<StructListItem> output = new List<StructListItem>();
-            ExpandoObject exobj = new ExpandoObject();
-
-            var lines = Regex.Split(data, "\r\n|\r|\n");
-            int at = 3;
-
-            using (MemoryStream stream = new MemoryStream(packet))
+            string debugMsg = "";
+            try
             {
-                stream.Position = 0x20;
-                using (BinaryReader reader = new BinaryReader(stream))
+                // Get rid of any comments
+                Regex r = new Regex("\\/\\*(.*)\\*\\/");
+                data = r.Replace(data, "");
+                r = new Regex("\\/\\/(.*)");
+                data = r.Replace(data, "");
+
+                Debug.WriteLine(data);
+
+                List<StructListItem> output = new List<StructListItem>();
+                ExpandoObject exobj = new ExpandoObject();
+
+                var lines = Regex.Split(data, "\r\n|\r|\n");
+                int at = 3;
+
+                using (MemoryStream stream = new MemoryStream(packet))
                 {
-                    while (at != lines.Length - 1)
+                    stream.Position = 0x20;
+                    using (BinaryReader reader = new BinaryReader(stream))
                     {
-                        StructListItem item = new StructListItem();
-
-                        var line = lines[at];
-
-                        int pos = 0;
-                        while (!Char.IsLetter(line[pos]))
+                        while (at != lines.Length - 1)
                         {
-                            ++pos;
-                        }
+                            StructListItem item = new StructListItem();
 
-                        string dataType = "";
+                            var line = lines[at];
 
-                        while (line[pos] != ' ')
-                        {
-                            dataType += line[pos];
+                            int pos = 0;
+                            while (!Char.IsLetter(line[pos]))
+                            {
+                                ++pos;
+                            }
+
+                            string dataType = "";
+
+                            while (line[pos] != ' ')
+                            {
+                                dataType += line[pos];
+                                pos++;
+                            }
+
+                            Debug.WriteLine(dataType);
+                            item.DataTypeCol = dataType;
+
                             pos++;
+
+                            string name = "";
+
+                            while (line[pos] != ';')
+                            {
+                                name += line[pos];
+                                pos++;
+                            }
+
+                            Debug.WriteLine(name);
+                            item.NameCol = name;
+
+                            item.offset = stream.Position;
+                            item.OffsetCol = stream.Position.ToString("X");
+
+                            StructListItem[] aryItems = null;
+
+                            if (!name.EndsWith("]"))
+                                ParseCType(dataType, reader, ref item);
+                            else
+                                aryItems = ParseCArray(dataType, reader, ref item, name);
+
+                            output.Add(item);
+
+                            try
+                            {
+                                ((IDictionary<String, Object>)exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+                            }
+                            catch (Exception) { } //temporary fix till i sort this out
+
+
+
+                            if (aryItems != null)
+                                output.AddRange(aryItems);
+
+                            debugMsg += $"{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n";
+
+                            at++;
                         }
-
-                        Debug.WriteLine(dataType);
-                        item.DataTypeCol = dataType;
-
-                        pos++;
-
-                        string name = "";
-
-                        while (line[pos] != ';')
-                        {
-                            name += line[pos];
-                            pos++;
-                        }
-
-                        Debug.WriteLine(name);
-                        item.NameCol = name;
-
-                        item.offset = stream.Position;
-                        item.OffsetCol = stream.Position.ToString("X");
-
-                        StructListItem[] aryItems = null;
-                        
-                        if (!name.EndsWith("]"))
-                            ParseCType(dataType, reader, ref item);
-                        else
-                            aryItems = ParseCArray(dataType, reader, ref item, name);
-
-                        output.Add(item);
-
-                        try
-                        {
-                            ((IDictionary<String, Object>) exobj).Add(item.NameCol, int.Parse(item.ValueCol));
-                        }catch(Exception) {} //temporary fix till i sort this out
-                        
-
-
-                        if (aryItems != null)
-                            output.AddRange(aryItems);
-
-                        Debug.WriteLine($"{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}");
-
-                        at++;
                     }
                 }
-            }
 
-            return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
+                return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new Exception($"\nBase Exception:\n{e}\n\nTrace:\n{debugMsg}");
+            }
         }
 
         private static StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name)
@@ -146,6 +157,12 @@ namespace FFXIVMonReborn
 
                 if (type.Item3)
                     item.ValueCol = ((char) value).ToString();
+            }
+            else
+            {
+                MessageBox.Show(
+                    $"[Struct] No info for native type: {dataType}.\nPlease add this type in Struct.cs.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
