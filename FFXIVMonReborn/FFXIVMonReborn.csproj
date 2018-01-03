@@ -169,6 +169,9 @@
     </ApplicationDefinition>
     <Compile Include="CaptureFileOp.cs" />
     <Compile Include="Database.cs" />
+    <Compile Include="ExtendedErrorView.xaml.cs">
+      <DependentUpon>ExtendedErrorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="InjectablePacketBuilder.cs" />
@@ -181,6 +184,10 @@
     <Compile Include="XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="ExtendedErrorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -12,13 +12,14 @@ namespace FFXIVMonReborn
 {
     class Struct
     {
-        private static readonly Dictionary<string, Tuple<Type, int, bool>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, bool>> // Name - (C# Type - Length - Print as char)
+        private static readonly Dictionary<string, Tuple<Type, int, bool, string>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, bool, string>>
         {
-            { "uint8_t", new Tuple<Type, int, bool>(typeof(byte), 1, false) },
-            { "uint16_t", new Tuple<Type, int, bool>(typeof(UInt16), 2, false) },
-            { "uint32_t", new Tuple<Type, int, bool>(typeof(UInt32), 4, false) },
-            { "uint64_t", new Tuple<Type, int, bool>(typeof(UInt64), 8, false) },
-            { "char", new Tuple<Type, int, bool>(typeof(byte), 1, true) }
+            // Name -               (C# Type - Length - Print as char - IDA Compatible Type)
+            { "uint8_t",  new Tuple<Type, int, bool, string>(typeof(byte), 1, false, "") },
+            { "uint16_t", new Tuple<Type, int, bool, string>(typeof(UInt16), 2, false, "") },
+            { "uint32_t", new Tuple<Type, int, bool, string>(typeof(UInt32), 4, false, "") },
+            { "uint64_t", new Tuple<Type, int, bool, string>(typeof(UInt64), 8, false, "") },
+            { "char",     new Tuple<Type, int, bool, string>(typeof(byte), 1, true, "") }
         };
 
         public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string data, byte[] packet)
@@ -51,6 +52,13 @@ namespace FFXIVMonReborn
 
                             var line = lines[at];
 
+                            if (String.IsNullOrEmpty(line))
+                            {
+                                debugMsg += $"Line {at} is empty\n";
+                                at++;
+                                continue;
+                            }
+
                             int pos = 0;
                             while (!Char.IsLetter(line[pos]))
                             {
@@ -78,6 +86,8 @@ namespace FFXIVMonReborn
                                 pos++;
                             }
 
+                            debugMsg += $"Expected:{name} - {dataType} - {line} - {at}\n";
+
                             Debug.WriteLine(name);
                             item.NameCol = name;
 
@@ -87,9 +97,9 @@ namespace FFXIVMonReborn
                             StructListItem[] aryItems = null;
 
                             if (!name.EndsWith("]"))
-                                ParseCType(dataType, reader, ref item);
+                                ParseCType(dataType, reader, ref item, ref debugMsg);
                             else
-                                aryItems = ParseCArray(dataType, reader, ref item, name);
+                                aryItems = ParseCArray(dataType, reader, ref item, name, ref debugMsg);
 
                             output.Add(item);
 
@@ -104,27 +114,32 @@ namespace FFXIVMonReborn
                             if (aryItems != null)
                                 output.AddRange(aryItems);
 
-                            debugMsg += $"{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n";
+                            debugMsg += $"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n";
 
                             at++;
                         }
                     }
                 }
 
+                if(debugMsg.Contains("No info for native type"))
+                    new ExtendedErrorView($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs.", debugMsg, "Error", WindowStartupLocation.CenterScreen).ShowDialog();
+
                 return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw new Exception($"\nBase Exception:\n{e}\n\nTrace:\n{debugMsg}");
+                throw new Exception($"\nBase Exception:\n{e}\n\nTrace:\n{debugMsg}\n\nStruct:\n{data}");
             }
         }
 
-        private static StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name)
+        private static StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref string debugMsg)
         {
             List<StructListItem> output = new List<StructListItem>();
             
             int count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
+
+            debugMsg += $"Array Start - {name} - {count} - {dataType}\n";
 
             for (int i = 0; i < count; i++)
             {
@@ -133,9 +148,11 @@ namespace FFXIVMonReborn
                 aryItem.offset = reader.BaseStream.Position;
                 aryItem.OffsetCol = reader.BaseStream.Position.ToString("X");
                 
-                ParseCType(dataType, reader, ref aryItem);
+                ParseCType(dataType, reader, ref aryItem, ref debugMsg);
                 
                 output.Add(aryItem);
+
+                debugMsg += $"  ->{aryItem.NameCol} - {aryItem.OffsetCol} - {aryItem.DataTypeCol} - {aryItem.ValueCol}\n";
             }
 
             return output.ToArray();
@@ -144,9 +161,9 @@ namespace FFXIVMonReborn
         /// <summary>
         /// Parse value as string and it's lenght to a StructListItem
         /// </summary>
-        private static void ParseCType(string dataType, BinaryReader reader, ref StructListItem item)
+        private static void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
         {
-            Tuple<Type, int, bool> type;
+            Tuple<Type, int, bool, string> type;
             if (_dataTypeDictionary.TryGetValue(dataType, out type))
             {
                 byte[] data = reader.ReadBytes(type.Item2);
@@ -156,13 +173,11 @@ namespace FFXIVMonReborn
                 item.typeLength = type.Item2;
 
                 if (type.Item3)
-                    item.ValueCol = ((char) value).ToString();
+                    item.ValueCol = Encoding.ASCII.GetString(data);
             }
             else
             {
-                MessageBox.Show(
-                    $"[Struct] No info for native type: {dataType}.\nPlease add this type in Struct.cs.",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                debugMsg += $"No info for native type: {dataType}. Please add this type in Struct.cs.\n\n";
             }
         }
     }

@@ -249,9 +249,7 @@ namespace FFXIVMonReborn
             }
             catch (Exception exc)
             {
-                MessageBox.Show(
-                    $"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}\n\n{exc}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                new ExtendedErrorView($"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
             }
 
             UpdateInfoLabel();
