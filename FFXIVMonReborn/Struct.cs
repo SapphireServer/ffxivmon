@@ -73,7 +73,6 @@ namespace FFXIVMonReborn
                                 pos++;
                             }
 
-                            Debug.WriteLine(dataType);
                             item.DataTypeCol = dataType;
 
                             pos++;
@@ -88,7 +87,6 @@ namespace FFXIVMonReborn
 
                             debugMsg += $"Expected:{name} - {dataType} - {line} - {at}\n";
 
-                            Debug.WriteLine(name);
                             item.NameCol = name;
 
                             item.offset = stream.Position;

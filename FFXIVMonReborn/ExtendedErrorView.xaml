@@ -9,7 +9,13 @@
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto" x:Name="ErrorMessage">Error Message that is very important and should be respected by everyone, so please look at it and don't ignore</Label>
-            <RichTextBox FontFamily="MS Gothic" VerticalScrollBarVisibility="Visible" IsReadOnly="True" x:Name="InfoBox" Height="330"/>
+            <RichTextBox FontFamily="MS Gothic" VerticalScrollBarVisibility="Visible" IsReadOnly="True" x:Name="InfoBox" Height="330">
+                <RichTextBox.Resources>
+                    <Style TargetType="{x:Type Paragraph}">
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                </RichTextBox.Resources>
+            </RichTextBox>
             <Button HorizontalAlignment="Right" Margin="0,5,5,5" Width="57" Height="24" Click="ButtonBase_OnClick">OK</Button>
         </StackPanel>
     </Grid>
