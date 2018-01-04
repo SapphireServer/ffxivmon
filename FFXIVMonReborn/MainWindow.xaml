@@ -44,6 +44,8 @@
                     <MenuItem Header="Load scripts" Click="Scripting_LoadScripts"/>
                 </MenuItem>
                 <MenuItem Header="_Options">
+                    <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
+                    <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepositoryRelay"/>
                     <Separator></Separator>
                     <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>

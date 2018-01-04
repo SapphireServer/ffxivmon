@@ -192,7 +192,7 @@ namespace FFXIVMonReborn
 
             ClearCapture();
 
-            _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode);
+            _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode, _mainWindow.CaptureFlags);
             _captureThread = new Thread(_captureWorker.Run);
 
             _captureThread.Start();

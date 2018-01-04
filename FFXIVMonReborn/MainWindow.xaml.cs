@@ -28,6 +28,7 @@ namespace FFXIVMonReborn
         public Scripting ScriptProvider = null;
         
         public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
+        public MachinaCaptureWorker.ConfigFlags CaptureFlags;
 
         public MainWindow()
         {
@@ -80,6 +81,19 @@ namespace FFXIVMonReborn
                 SwitchModeSockets.IsChecked = true;
             else
                 SwitchModePcap.IsChecked = true;
+
+            if(!Properties.Settings.Default.DontUsePacketTimestamp)
+            {
+                CaptureFlags ^= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
+                DontUsePacketTimestamp.IsChecked = false;
+                Properties.Settings.Default.DontUsePacketTimestamp = false;
+            }
+            else
+            {
+                CaptureFlags |= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
+                DontUsePacketTimestamp.IsChecked = true;
+                Properties.Settings.Default.DontUsePacketTimestamp = true;
+            }
         }
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
@@ -283,5 +297,30 @@ namespace FFXIVMonReborn
             ((XivMonTab)MainTabControl.SelectedContent).SetRepository();
         }
         #endregion
+
+        private void DontUsePacketTimestamp_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (AreTabsCapturing())
+            {
+                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            if (DontUsePacketTimestamp.IsChecked)
+            {
+                CaptureFlags ^= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
+                DontUsePacketTimestamp.IsChecked = false;
+                Properties.Settings.Default.DontUsePacketTimestamp = false;
+            }
+            else
+            {
+                CaptureFlags |= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
+                DontUsePacketTimestamp.IsChecked = true;
+                Properties.Settings.Default.DontUsePacketTimestamp = true;
+            }
+            
+            Properties.Settings.Default.Save();
+        }
     }
 }
