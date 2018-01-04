@@ -240,7 +240,8 @@ namespace FFXIVMonReborn
                     return;
                 }
 
-                var structEntries = Struct.Parse(structText, item.Data);
+                var structProvider = new Struct();
+                var structEntries = structProvider.Parse(structText, item.Data);
 
                 foreach (var entry in structEntries.Item1)
                 {

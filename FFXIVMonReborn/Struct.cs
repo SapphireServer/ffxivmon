@@ -33,9 +33,12 @@ namespace FFXIVMonReborn
             //Sapphire Types
             { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
             { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") }, //TODO: Special handling for this?
+            { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 12, TypePrintMode.ObjectToString, "") },
         };
 
-        public static Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
+        private Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
+
+        public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
         {
             string debugMsg = "";
             try
@@ -53,6 +56,9 @@ namespace FFXIVMonReborn
 
                 var lines = Regex.Split(structText, "\r\n|\r|\n");
                 int at = 3;
+
+                List<StructParseDirective> currentNestedStruct = null;
+                string currentNestedStructName = null;
 
                 using (MemoryStream stream = new MemoryStream(packet))
                 {
@@ -78,12 +84,47 @@ namespace FFXIVMonReborn
                                 ++pos;
                             }
 
+                            if (currentNestedStructName != null)
+                            {
+                                if (line.Contains("}"))
+                                {
+                                    _nestedStructDictionary.Add(currentNestedStructName, currentNestedStruct);
+                                    debugMsg += $"Finished nested struct:{currentNestedStructName} - {currentNestedStruct.Count} Entries\n\n";
+
+                                    output.AddRange(ParseCNestedArray(currentNestedStruct, reader, line, currentNestedStructName,
+                                        ref debugMsg));
+
+                                    currentNestedStructName = null;
+                                    currentNestedStruct = null;
+                                    at++;
+                                    continue;
+                                }
+                            }
+
                             string dataType = "";
 
                             while (line[pos] != ' ')
                             {
                                 dataType += line[pos];
                                 pos++;
+                            }
+
+                            if (dataType == "struct")
+                            {
+                                string structName = "";
+
+                                pos++;
+                                while (pos < line.Length)
+                                {
+                                    structName += line[pos];
+                                    pos++;
+                                }
+                                currentNestedStruct = new List<StructParseDirective>();
+                                currentNestedStructName = structName;
+
+                                debugMsg += $"Start nested struct parse of {currentNestedStructName}\n";
+                                at += 2;
+                                continue;
                             }
 
                             item.DataTypeCol = dataType;
@@ -105,28 +146,34 @@ namespace FFXIVMonReborn
                             item.offset = stream.Position;
                             item.OffsetCol = stream.Position.ToString("X");
 
-                            StructListItem[] aryItems = null;
-
-                            if (!name.EndsWith("]"))
-                                ParseCType(dataType, reader, ref item, ref debugMsg);
-                            else
-                                aryItems = ParseCArray(dataType, reader, ref item, name, ref debugMsg);
-
-                            output.Add(item);
-
-                            try
+                            if (currentNestedStructName == null)
                             {
-                                ((IDictionary<String, Object>)exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+                                StructListItem[] aryItems = null;
+
+                                if (!name.EndsWith("]"))
+                                    ParseCType(dataType, reader, ref item, ref debugMsg);
+                                else
+                                    aryItems = ParseCArray(dataType, reader, ref item, name, ref debugMsg);
+
+                                output.Add(item);
+
+                                try
+                                {
+                                    ((IDictionary<String, Object>)exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+                                }
+                                catch (Exception) { } //temporary fix till i sort this out
+
+                                debugMsg += $"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n";
+
+                                if (aryItems != null)
+                                    output.AddRange(aryItems);
+
                             }
-                            catch (Exception) { } //temporary fix till i sort this out
-
-
-
-                            if (aryItems != null)
-                                output.AddRange(aryItems);
-
-                            debugMsg += $"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n";
-
+                            else
+                            {
+                                currentNestedStruct.Add(new StructParseDirective { ArrayCount = 0, Name = item.NameCol, DataType = item.DataTypeCol});
+                                debugMsg += $"Added to nested:{item.NameCol} - {item.DataTypeCol}\n\n";
+                            }
                             at++;
                         }
                     }
@@ -144,7 +191,38 @@ namespace FFXIVMonReborn
             }
         }
 
-        private static StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref string debugMsg)
+        private StructListItem[] ParseCNestedArray(List<StructParseDirective> nestedStruct, BinaryReader reader,
+            string name, string structName, ref string debugMsg)
+        {
+            List<StructListItem> output = new List<StructListItem>();
+
+            int count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
+
+            debugMsg += $"Nested Array Start - {name} - {count}\n";
+
+            output.Add(new StructListItem{DataTypeCol = structName, NameCol = name.Replace("}", "").Replace(";", "").Replace(" ", ""), OffsetCol = reader.BaseStream.Position.ToString()});
+
+            for (int i = 0; i < count; i++)
+            {
+                output.Add(new StructListItem { DataTypeCol = structName, NameCol = $"  {structName}[{i}]", OffsetCol = reader.BaseStream.Position.ToString() });
+                foreach (var directive in nestedStruct)
+                {
+                    StructListItem item = new StructListItem();
+                    item.NameCol = "    ->" + directive.Name;
+                    item.DataTypeCol = directive.DataType;
+                    item.OffsetCol = reader.BaseStream.Position.ToString();
+                    item.offset = reader.BaseStream.Position;
+
+                    ParseCType(item.DataTypeCol, reader, ref item, ref debugMsg);
+                    
+                    output.Add(item);
+                }
+            }
+
+            return output.ToArray();
+        }
+
+        private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref string debugMsg)
         {
             List<StructListItem> output = new List<StructListItem>();
             
@@ -172,7 +250,7 @@ namespace FFXIVMonReborn
         /// <summary>
         /// Parse value as string and it's lenght to a StructListItem
         /// </summary>
-        private static void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
+        private void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
         {
             Tuple<Type, int, TypePrintMode, string> type;
             if (_dataTypeDictionary.TryGetValue(dataType, out type))
@@ -198,6 +276,13 @@ namespace FFXIVMonReborn
             {
                 debugMsg += $"No info for native type: {dataType}. Please add this type in Struct.cs.\n\n";
             }
+        }
+
+        internal class StructParseDirective
+        {
+            public string Name { get; set; }
+            public string DataType { get; set; }
+            public int ArrayCount { get; set; }
         }
     }
 
