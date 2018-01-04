@@ -84,7 +84,6 @@ namespace FFXIVMonReborn
 
             if(!Properties.Settings.Default.DontUsePacketTimestamp)
             {
-                CaptureFlags ^= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
                 DontUsePacketTimestamp.IsChecked = false;
                 Properties.Settings.Default.DontUsePacketTimestamp = false;
             }
