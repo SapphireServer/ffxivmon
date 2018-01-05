@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Machina;
 using Machina.FFXIV;
@@ -89,7 +90,11 @@ namespace FFXIVMonReborn
             monitor.MessageSent = (long epoch, byte[] message, int set) => MessageSent(epoch, message, set);
             monitor.Start();
 
-            while (!_shouldStop);
+            while (!_shouldStop)
+            {
+                // So don't burn the cpu while doing nothing
+                Thread.Sleep(1);
+            }
 
             Console.WriteLine("MachinaCaptureWorker: Terminating");
             monitor.Stop();
