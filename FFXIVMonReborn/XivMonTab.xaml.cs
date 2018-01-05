@@ -505,6 +505,25 @@ namespace FFXIVMonReborn
                 return;
             }
         }
+
+        private void ExportSelectedPacketsToSet(object sender, RoutedEventArgs e)
+        {
+            var packets = new List<byte[]>();
+
+            foreach (var item in PacketListView.SelectedItems)
+            {
+                packets.Add(((PacketListItem)item).Data);
+            }
+
+            var fileDialog = new System.Windows.Forms.SaveFileDialog();
+            fileDialog.Filter = "DAT|*.dat";
+            var result = fileDialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSet(packets));
+                MessageBox.Show($"Packet Set containing {packets.Count} packets saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
+        }
         #endregion
 
         #region Filtering
