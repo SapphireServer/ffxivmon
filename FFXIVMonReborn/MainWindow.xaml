@@ -45,6 +45,7 @@
                 </MenuItem>
                 <MenuItem Header="_Options">
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
+                    <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepositoryRelay"/>
                     <Separator></Separator>

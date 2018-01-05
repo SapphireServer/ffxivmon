@@ -118,5 +118,17 @@ namespace FFXIVMonReborn.Properties {
                 this["StripHeaderActors"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ForceRealtimePriority {
+            get {
+                return ((bool)(this["ForceRealtimePriority"]));
+            }
+            set {
+                this["ForceRealtimePriority"] = value;
+            }
+        }
     }
 }

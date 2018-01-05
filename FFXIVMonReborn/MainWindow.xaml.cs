@@ -93,6 +93,12 @@ namespace FFXIVMonReborn
                 DontUsePacketTimestamp.IsChecked = true;
                 Properties.Settings.Default.DontUsePacketTimestamp = true;
             }
+
+            if (Properties.Settings.Default.ForceRealtimePriority)
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+                ForceRealtimePriority.IsChecked = true;
+            }
         }
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
@@ -319,6 +325,28 @@ namespace FFXIVMonReborn
                 Properties.Settings.Default.DontUsePacketTimestamp = true;
             }
             
+            Properties.Settings.Default.Save();
+        }
+
+        private void ForceRealtimePriority_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (!ForceRealtimePriority.IsChecked)
+            {
+                MessageBoxResult res = MessageBox.Show("This will set the process priority of FFXIVMon to Realtime, which can prevent dropped packets. This, however, can have unintended side effects.\nContinue?", "Enable RealTime", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res == MessageBoxResult.Yes)
+                {
+                    Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+                    ForceRealtimePriority.IsChecked = true;
+                    Properties.Settings.Default.ForceRealtimePriority = true;
+                }
+            }
+            else
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Normal;
+                ForceRealtimePriority.IsChecked = false;
+                Properties.Settings.Default.ForceRealtimePriority = false;
+            }
+
             Properties.Settings.Default.Save();
         }
     }
