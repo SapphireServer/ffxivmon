@@ -524,7 +524,7 @@ namespace FFXIVMonReborn
 
                     Console.WriteLine(packets.Count);
                     
-                    File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{startPacket.PacketUnixTime}-No{count}.dat"),
+                    File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{startPacket.PacketUnixTime.ToString("D10")}-No{count}.dat"),
                         InjectablePacketBuilder.BuildSet(packets));
                     count++;
                 }
