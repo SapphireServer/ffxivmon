@@ -47,6 +47,8 @@ namespace FFXIVMonReborn
         private string _filterString = "";
         private string _currentXmlFile = "";
 
+        private bool _wasCapturedMs = false;
+
         public XivMonTab()
         {
             InitializeComponent();
@@ -56,11 +58,12 @@ namespace FFXIVMonReborn
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-                var packets = CaptureFileOp.Load(_currentXmlFile);
-                foreach (PacketListItem packet in packets)
+                var capture = CaptureFileOp.Load(_currentXmlFile);
+                foreach (PacketListItem packet in capture.Packets)
                 {
                     AddPacketToListView(packet);
                 }
+                _wasCapturedMs = capture.UsingSystemTime;
             }
 
             UpdateInfoLabel();
@@ -79,6 +82,11 @@ namespace FFXIVMonReborn
                 CaptureInfoLabel.Content += " | Idle";
             if (_currentPacketStream != null)
                 CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
+            if(PacketListView.Items.Count != 0)
+                if(_wasCapturedMs)
+                    CaptureInfoLabel.Content += " | Using system time";
+                else
+                    CaptureInfoLabel.Content += " | Using packet time";
         }
 
         public void SetParents(TabItem me, MainWindow mainWindow)
@@ -107,6 +115,8 @@ namespace FFXIVMonReborn
             ChangeTitle("");
 
             UpdateInfoLabel();
+
+            _wasCapturedMs = false;
         }
 
         private void ChangeTitle(string newTitle)
@@ -199,6 +209,8 @@ namespace FFXIVMonReborn
 
             UpdateInfoLabel();
             ChangeTitle(_currentXmlFile);
+
+            _wasCapturedMs = _mainWindow.DontUsePacketTimestamp.IsChecked;
         }
 
         public void StopCapture()
@@ -353,7 +365,7 @@ namespace FFXIVMonReborn
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName);
+                CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs);
                 MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 _currentXmlFile = fileDialog.FileName;
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
@@ -399,11 +411,14 @@ namespace FFXIVMonReborn
             _currentXmlFile = path;
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
 
-            var packets = CaptureFileOp.Load(path);
-            foreach (PacketListItem packet in packets)
+            var capture = CaptureFileOp.Load(path);
+            foreach (PacketListItem packet in capture.Packets)
             {
                 AddPacketToListView(packet);
             }
+            _wasCapturedMs = capture.UsingSystemTime;
+            
+            UpdateInfoLabel();
         }
         #endregion
 

@@ -10,12 +10,25 @@ namespace FFXIVMonReborn
 {
     public class CaptureFileOp
     {
-        public static PacketListItem[] Load(string path)
+        public static CaptureContainer Load(string path)
         {
             List<PacketListItem> output = new List<PacketListItem>();
-
+            bool usingSystemTime = false;
+            
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
+
+            XmlNode settings = doc.DocumentElement.SelectSingleNode("/Capture");
+
+            foreach (XmlNode node in settings.ChildNodes)
+            {
+                switch (node.Name)
+                {
+                    case "UsingSystemTime":
+                        usingSystemTime = bool.Parse(node.InnerText);
+                        break;
+                }
+            }
 
             XmlNode packets = doc.DocumentElement.SelectSingleNode("/Capture/Packets");
 
@@ -54,10 +67,16 @@ namespace FFXIVMonReborn
             }
 
             Debug.WriteLine($"Loaded Packets: {output.Count}");
-            return output.ToArray();
+            return new CaptureContainer { Packets = output.ToArray(), UsingSystemTime = usingSystemTime };
         }
 
-        public static void Save(ItemCollection packetCollection, string path)
+        public class CaptureContainer
+        {
+            public PacketListItem[] Packets { get; set; }
+            public bool UsingSystemTime { get; set; }
+        }
+
+        public static void Save(ItemCollection packetCollection, string path, bool usingSystemTime)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
@@ -68,6 +87,8 @@ namespace FFXIVMonReborn
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("Capture");
+                
+                writer.WriteElementString("UsingSystemTime", usingSystemTime.ToString());
 
                 writer.WriteStartElement("Packets");
                 writer.WriteEndElement();
