@@ -43,7 +43,7 @@ namespace FFXIVMonReborn
 
             PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "S",
                 CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(), 
-                Set = set, RouteIdCol = res.header.RouteID.ToString() };
+                Set = set, RouteIdCol = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds };
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
@@ -59,7 +59,7 @@ namespace FFXIVMonReborn
 
             PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "C",
                 CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(),
-                Set = set, RouteIdCol = res.header.RouteID.ToString() };
+                Set = set, RouteIdCol = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds };
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
@@ -118,6 +118,7 @@ namespace FFXIVMonReborn
         public bool IsVisible { get; set; } = true;
         public int ActorControl { get; set; }
         public int Set { get; set; }
+        public uint PacketUnixTime { get; set; }
 
         public string DirectionCol { get; set; }
         public string MessageCol { get; set; }

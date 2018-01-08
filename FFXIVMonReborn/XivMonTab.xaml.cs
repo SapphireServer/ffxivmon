@@ -465,6 +465,74 @@ namespace FFXIVMonReborn
             }
         }
 
+        private void ExportSelectedSetsForReplay(object sender, RoutedEventArgs e)
+        {
+            var items = PacketListView.SelectedItems;
+            
+            if (items.Count == 0)
+            {
+                MessageBox.Show("No packets selected.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                List<int> inSetIndexes = new List<int>();
+
+                int count = 0;
+                
+                foreach (var item in items)
+                {
+                    var startPacket = (PacketListItem) item;
+
+                    int index = PacketListView.Items.IndexOf(startPacket);
+                    
+                    if(inSetIndexes.Contains(index))
+                        continue;
+                
+                    List<byte[]> packets = new List<byte[]>();
+                    packets.Add(startPacket.Data);
+
+                    int at = index - 1;
+                    while (true && at != 0 && at != -1)
+                    {
+                        if (((PacketListItem) PacketListView.Items[at]).Set == startPacket.Set)
+                        {
+                            packets.Insert(0, ((PacketListItem)PacketListView.Items[at]).Data);
+                            inSetIndexes.Add(at);
+                        }
+                        else
+                            break;
+                        at--;
+                    }
+
+                    at = index + 1;
+                    while (true && at < PacketListView.Items.Count)
+                    {
+                        if (((PacketListItem) PacketListView.Items[at]).Set == startPacket.Set)
+                        {
+                            packets.Add(((PacketListItem)PacketListView.Items[at]).Data);
+                            inSetIndexes.Add(at);
+                        }
+                        else
+                            break;
+                        at++;
+                    }
+
+                    Console.WriteLine(packets.Count);
+                    
+                    File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{startPacket.PacketUnixTime}-No{count}.dat"),
+                        InjectablePacketBuilder.BuildSet(packets));
+                    count++;
+                }
+                MessageBox.Show($"{count} Sets saved to {dialog.SelectedPath}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
+            
+        }
+
         private void ExportSelectedPacketSetToDat(object sender, RoutedEventArgs e)
         {
             var items = PacketListView.SelectedItems;

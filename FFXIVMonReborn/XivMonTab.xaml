@@ -43,6 +43,8 @@
                                               Click="ExportSelectedPacketSetToDat" />
                                     <MenuItem Header="Build Set from selected Packets"
                                               Click="ExportSelectedPacketsToSet" />
+                                    <MenuItem Header="Export selected sets for Replay"
+                                              Click="ExportSelectedSetsForReplay" />
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.Resources>
