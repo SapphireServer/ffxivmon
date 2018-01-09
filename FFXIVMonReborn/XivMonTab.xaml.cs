@@ -80,8 +80,12 @@ namespace FFXIVMonReborn
                 CaptureInfoLabel.Content += " | Capturing ";
             else
                 CaptureInfoLabel.Content += " | Idle";
-            if (_currentPacketStream != null)
-                CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
+            try
+            {
+                if (_currentPacketStream != null)
+                    CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
+            }catch(ObjectDisposedException){ } // wats this
+            
             if(PacketListView.Items.Count != 0)
                 if(_wasCapturedMs)
                     CaptureInfoLabel.Content += " | Using system time";
@@ -236,7 +240,15 @@ namespace FFXIVMonReborn
             var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
 
             _currentPacketStream = new MemoryStream(item.Data);
-            HexEditor.Stream = _currentPacketStream;
+            try
+            {
+                HexEditor.Stream = _currentPacketStream;
+            }
+            catch (Exception exception)
+            {
+                new ExtendedErrorView("Failed to load packet.", exception.ToString(), "Error").ShowDialog();
+            }
+            
 
             StructListView.Items.Clear();
 
@@ -490,7 +502,7 @@ namespace FFXIVMonReborn
 
                     int index = PacketListView.Items.IndexOf(startPacket);
                     
-                    if(inSetIndexes.Contains(index))
+                    if(inSetIndexes.Contains(index) || startPacket.DirectionCol == "C")
                         continue;
                 
                     List<byte[]> packets = new List<byte[]>();
@@ -524,7 +536,7 @@ namespace FFXIVMonReborn
 
                     Console.WriteLine(packets.Count);
                     
-                    File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{startPacket.PacketUnixTime.ToString("D10")}-No{count}.dat"),
+                    File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{startPacket.SystemMsTime.ToString("D14")}-No{count}.dat"),
                         InjectablePacketBuilder.BuildSet(packets));
                     count++;
                 }

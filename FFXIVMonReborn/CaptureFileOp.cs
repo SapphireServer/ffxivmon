@@ -61,6 +61,9 @@ namespace FFXIVMonReborn
                         case "PacketUnixTime":
                             packetItem.PacketUnixTime = uint.Parse(entry.InnerText);
                             break;
+                        case "SystemMsTime":
+                            packetItem.SystemMsTime = long.Parse(entry.InnerText);
+                            break;
                     }
                 }
 
@@ -114,6 +117,7 @@ namespace FFXIVMonReborn
                 packetEntry.Add(new XElement("Data", Util.ByteArrayToString(packet.Data)));
                 packetEntry.Add(new XElement("Set", packet.Set));
                 packetEntry.Add(new XElement("PacketUnixTime", packet.PacketUnixTime));
+                packetEntry.Add(new XElement("SystemMsTime", packet.SystemMsTime));
 
                 doc.Element("Capture").Element("Packets").Add(packetEntry);
             }
