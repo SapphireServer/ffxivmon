@@ -1,0 +1,6 @@
+version: 1.0.{build}
+build:
+  verbosity: minimal
+clone_script:
+- cmd: git clone -q --recursive --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
+- cmd: git checkout -qf %APPVEYOR_REPO_COMMIT%
