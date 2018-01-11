@@ -1,4 +1,4 @@
-### FFXIVMon Reborn          [![Build status](https://ci.appveyor.com/api/projects/status/hvqfvrj5puf96f0b?svg=true)](https://ci.appveyor.com/SapphireMordred/ffxivmon)
+### FFXIVMon Reborn          [![Build status](https://ci.appveyor.com/api/projects/status/hvqfvrj5puf96f0b?svg=true)](https://ci.appveyor.com/project/SapphireMordred/ffxivmon)
 
 --------
 
