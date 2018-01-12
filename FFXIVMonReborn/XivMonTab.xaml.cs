@@ -271,6 +271,9 @@ namespace FFXIVMonReborn
                 {
                     StructListView.Items.Add(entry);
                 }
+
+                if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                    new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
             }
             catch (Exception exc)
             {
@@ -313,7 +316,29 @@ namespace FFXIVMonReborn
             {
                 try
                 {
-                    Scripting_RunOnPacket(new PacketEventArgs(item));
+                    
+                    PacketEventArgs args = null;
+                            
+                    var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+
+                    if (structText != null)
+                    {
+                        var structProvider = new Struct();
+                        var structEntries = structProvider.Parse(structText, item.Data);
+
+                        foreach (var entry in structEntries.Item1)
+                        {
+                            StructListView.Items.Add(entry);
+                        }
+                            
+                        args = new PacketEventArgs(item, structEntries.Item2);
+                    }
+                    else
+                    {
+                        args = new PacketEventArgs(item, null);
+                    }
+                    
+                    Scripting_RunOnPacket(args);
                 }
                 catch (Exception exc)
                 {
@@ -718,8 +743,26 @@ namespace FFXIVMonReborn
                     {
                         if (((PacketListItem)item).IsVisible)
                         {
-                            PacketEventArgs args = new PacketEventArgs((PacketListItem)item);
+                            PacketEventArgs args = null;
+                            
+                            var structText = _db.GetServerZoneStruct(int.Parse(((PacketListItem)item).MessageCol, NumberStyles.HexNumber));
 
+                            if (structText != null)
+                            {
+                                var structProvider = new Struct();
+                                var structEntries = structProvider.Parse(structText, ((PacketListItem)item).Data);
+
+                                foreach (var entry in structEntries.Item1)
+                                {
+                                    StructListView.Items.Add(entry);
+                                }
+                            
+                                args = new PacketEventArgs((PacketListItem)item, structEntries.Item2);
+                            }
+                            else
+                            {
+                                args = new PacketEventArgs((PacketListItem)item, null);
+                            }
                             Scripting_RunOnPacket(args);
                         }
                     }

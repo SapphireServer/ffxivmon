@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -62,11 +63,13 @@ namespace FFXIVMonReborn
     public class PacketEventArgs : EventArgs
     {
         // Used by event handlers
-        public readonly PacketListItem packet;
+        public readonly PacketListItem Packet;
+        public readonly ExpandoObject PacketObj;
 
-        public PacketEventArgs(PacketListItem packet)
+        public PacketEventArgs(PacketListItem packet, ExpandoObject packetobj)
         {
-            this.packet = packet;
+            this.Packet = packet;
+            this.PacketObj = packetobj;
         }
     }
 }

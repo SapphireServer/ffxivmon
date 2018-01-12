@@ -91,8 +91,18 @@ namespace FFXIVMonReborn
                                     _nestedStructDictionary.Add(currentNestedStructName, currentNestedStruct);
                                     debugMsg += $"Finished nested struct:{currentNestedStructName} - {currentNestedStruct.Count} Entries\n\n";
 
-                                    output.AddRange(ParseCNestedArray(currentNestedStruct, reader, line, currentNestedStructName,
-                                        ref debugMsg));
+                                    var aryItems = ParseCNestedArray(currentNestedStruct, reader, line, currentNestedStructName, ref exobj
+                                        , ref debugMsg);
+                                    
+                                    output.AddRange(aryItems);
+                                    
+                                    List<Object> values = new List<object>();
+                                    foreach (var aryItem in aryItems)
+                                    {
+                                        values.Add(aryItem.RawValue);   
+                                    }
+                                    
+                                    ((IDictionary<String, Object>) exobj).Add(Regex.Replace(aryItems[0].NameCol, "(\\[.*\\])|(\".*\")|('.*')|(\\(.*\\))", ""), values.ToArray());
 
                                     currentNestedStructName = null;
                                     currentNestedStruct = null;
@@ -153,15 +163,22 @@ namespace FFXIVMonReborn
                                 if (!name.EndsWith("]"))
                                     ParseCType(dataType, reader, ref item, ref debugMsg);
                                 else
-                                    aryItems = ParseCArray(dataType, reader, ref item, name, ref debugMsg);
+                                    aryItems = ParseCArray(dataType, reader, ref item, name, ref exobj, ref debugMsg);
 
                                 output.Add(item);
 
-                                try
+                                if (aryItems == null)
+                                    ((IDictionary<String, Object>) exobj).Add(item.NameCol, item.RawValue);
+                                else
                                 {
-                                    ((IDictionary<String, Object>)exobj).Add(item.NameCol, int.Parse(item.ValueCol));
+                                    List<Object> values = new List<object>();
+                                    foreach (var aryItem in aryItems)
+                                    {
+                                        values.Add(aryItem.RawValue);   
+                                    }
+                                    
+                                    ((IDictionary<String, Object>) exobj).Add(Regex.Replace(aryItems[0].NameCol, "(\\[.*\\])|(\".*\")|('.*')|(\\(.*\\))", ""), values.ToArray());
                                 }
-                                catch (Exception) { } //temporary fix till i sort this out
 
                                 debugMsg += $"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n";
 
@@ -192,7 +209,7 @@ namespace FFXIVMonReborn
         }
 
         private StructListItem[] ParseCNestedArray(List<StructParseDirective> nestedStruct, BinaryReader reader,
-            string name, string structName, ref string debugMsg)
+            string name, string structName, ref ExpandoObject exobj, ref string debugMsg)
         {
             List<StructListItem> output = new List<StructListItem>();
 
@@ -222,7 +239,7 @@ namespace FFXIVMonReborn
             return output.ToArray();
         }
 
-        private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref string debugMsg)
+        private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref ExpandoObject exobj, ref string debugMsg)
         {
             List<StructListItem> output = new List<StructListItem>();
             
@@ -263,12 +280,15 @@ namespace FFXIVMonReborn
                     case TypePrintMode.ObjectToString:
                         var value = data.GetValueByType(type.Item1, 0);
                         item.ValueCol = value.ToString();
+                        item.RawValue = value;
                         break;
                     case TypePrintMode.Char:
                         item.ValueCol = Encoding.ASCII.GetString(data);
+                        item.RawValue = (char)data[0];
                         break;
                     case TypePrintMode.Raw:
                         item.ValueCol = data.ToHexString();
+                        item.RawValue = data;
                         break;;
                 }
             }
@@ -296,6 +316,7 @@ namespace FFXIVMonReborn
         public long offset;
         public byte[] dataChunk;
         public int typeLength;
+        public object RawValue { get; set; }
         public bool IsVisible { get; set; } = true;
     }
 }
