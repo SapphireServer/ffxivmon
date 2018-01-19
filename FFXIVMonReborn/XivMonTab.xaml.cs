@@ -274,26 +274,36 @@ namespace FFXIVMonReborn
 
             try
             {
-                var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                if (item.DirectionCol == "S")
+                {
+                    var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
 
-                if (structText == null)
+                    if (structText == null)
+                    {
+                        StructListItem infoItem = new StructListItem();
+                        infoItem.NameCol = "No Struct found";
+                        StructListView.Items.Add(infoItem);
+                        return;
+                    }
+
+                    var structProvider = new Struct();
+                    var structEntries = structProvider.Parse(structText, item.Data);
+
+                    foreach (var entry in structEntries.Item1)
+                    {
+                        StructListView.Items.Add(entry);
+                    }
+
+                    if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                        new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
+                }
+                else
                 {
                     StructListItem infoItem = new StructListItem();
-                    infoItem.NameCol = "No Struct found";
+                    infoItem.NameCol = "Client Packet";
                     StructListView.Items.Add(infoItem);
                     return;
                 }
-
-                var structProvider = new Struct();
-                var structEntries = structProvider.Parse(structText, item.Data);
-
-                foreach (var entry in structEntries.Item1)
-                {
-                    StructListView.Items.Add(entry);
-                }
-
-                if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
-                    new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
             }
             catch (Exception exc)
             {
