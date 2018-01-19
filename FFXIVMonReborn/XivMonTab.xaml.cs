@@ -204,17 +204,27 @@ namespace FFXIVMonReborn
             if (_captureWorker != null)
                 return;
 
-            ClearCapture();
+            try
+            {
+                ClearCapture();
 
-            _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode, _mainWindow.CaptureFlags);
-            _captureThread = new Thread(_captureWorker.Run);
+                _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode, _mainWindow.CaptureFlags);
+                _captureThread = new Thread(_captureWorker.Run);
 
-            _captureThread.Start();
+                _captureThread.Start();
 
-            UpdateInfoLabel();
-            ChangeTitle(_currentXmlFile);
+                UpdateInfoLabel();
+                ChangeTitle(_currentXmlFile);
 
-            _wasCapturedMs = _mainWindow.DontUsePacketTimestamp.IsChecked;
+                _wasCapturedMs = _mainWindow.DontUsePacketTimestamp.IsChecked;
+            }
+            catch (Exception e)
+            {
+                new ExtendedErrorView("Failed to initialize MachinaCaptureWorker. Try switching your capture mode.",
+                    e.ToString(), "Error").ShowDialog();
+                _captureWorker = null;
+                _captureThread = null;
+            }
         }
 
         public void StopCapture()
@@ -222,12 +232,22 @@ namespace FFXIVMonReborn
             if (_captureWorker == null)
                 return;
 
-            _captureWorker.Stop();
-            _captureThread.Join();
-            _captureWorker = null;
+            try
+            {
+                _captureWorker.Stop();
+                _captureThread.Join();
+                _captureWorker = null;
 
-            UpdateInfoLabel();
-            ChangeTitle(_currentXmlFile);
+                UpdateInfoLabel();
+                ChangeTitle(_currentXmlFile);
+            }
+            catch (Exception e)
+            {
+                new ExtendedErrorView("Failed to shut down MachinaCaptureWorker. Try switching your capture mode.",
+                    e.ToString(), "Error").ShowDialog();
+                _captureWorker = null;
+                _captureThread = null;
+            }   
         }
         #endregion
 

@@ -6,7 +6,7 @@
       <Value Profile="(Default)">https://raw.githubusercontent.com/SapphireMordred/Sapphire</Value>
     </Setting>
     <Setting Name="NetworkMonitorType" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">2</Value>
     </Setting>
     <Setting Name="ColorServerSet0" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">255, 198, 95</Value>
