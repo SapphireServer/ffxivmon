@@ -33,15 +33,16 @@
                     <MenuItem Header="_Reload DB" Click="ReloadDBRelay"/>
                     <MenuItem Header="_Redownload Definitions" Click="RedownloadDefsRelay"/>
                 </MenuItem>
-                <MenuItem Header="Filters">
-                    <MenuItem Header="Set Filter" Click="SetFilterRelay"/>
-                    <MenuItem Header="Reset" Click="ResetToOriginalRelay"/>
+                <MenuItem Header="_Filters">
+                    <MenuItem Header="_Set Filter" Click="SetFilterRelay"/>
+                    <MenuItem Header="_Reset" Click="ResetToOriginalRelay"/>
                 </MenuItem>
-                <MenuItem Header="Scripting">
-                    <MenuItem Header="Run on Capture" Click="Scripting_RunOnCaptureRelay"/>
-                    <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="Run on new Packets" IsCheckable="True"/>
+                <MenuItem Header="_Scripting">
+                    <MenuItem Header="_Run on Capture" Click="Scripting_RunOnCaptureRelay"/>
+                    <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="_Run on new Packets" IsCheckable="True"/>
                     <Separator></Separator>
-                    <MenuItem Header="Load scripts" Click="Scripting_LoadScripts"/>
+                    <MenuItem Header="Select scripts" Click="Scripting_SelectScripts"/>
+                    <MenuItem Header="Reload scripts" Click="Scripting_ReloadScripts"/>
                     <MenuItem x:Name="ShowObjectMapCheckBox" Header="Show map of parsed Struct objects" IsCheckable="True"/>
                 </MenuItem>
                 <MenuItem Header="_Options">

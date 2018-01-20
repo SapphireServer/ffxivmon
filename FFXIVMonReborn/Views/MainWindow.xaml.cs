@@ -26,6 +26,7 @@ namespace FFXIVMonReborn
         private KeyboardHook _kbHook = new KeyboardHook();
 
         public Scripting ScriptProvider = null;
+        private string[] _selectedScripts = new string[0];
         
         public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
         public MachinaCaptureWorker.ConfigFlags CaptureFlags;
@@ -240,10 +241,29 @@ namespace FFXIVMonReborn
                 "FFXIVMon Reborn\n\nA FFXIV Packet analysis thing for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         
-        private void Scripting_LoadScripts(object sender, RoutedEventArgs e)
+        private void Scripting_SelectScripts(object sender, RoutedEventArgs e)
         {
+            var scriptView = new ScriptSelectView("Scripts");
+            scriptView.ShowDialog();
+            var toLoad = scriptView.GetSelectedScripts();
+
             ScriptProvider = new Scripting();
-            ScriptProvider.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
+            ScriptProvider.LoadScripts(toLoad);
+
+            _selectedScripts = toLoad;
+        }
+
+        private void Scripting_ReloadScripts(object sender, RoutedEventArgs e)
+        {
+            if (_selectedScripts.Length == 0)
+            {
+                MessageBox.Show("No scripts were selected.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            ScriptProvider = new Scripting();
+            ScriptProvider.LoadScripts(_selectedScripts);
         }
 
         #region TabRelays

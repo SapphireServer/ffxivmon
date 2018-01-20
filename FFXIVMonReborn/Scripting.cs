@@ -24,6 +24,27 @@ namespace FFXIVMonReborn
                     "FFXIVMonReborn");
         }
 
+        public void LoadScripts(string[] files)
+        {
+            scripts.Clear();
+
+            // Get each path
+            foreach (string filePath in files)
+            {
+                // Load the file's contents as text
+                string contents = File.ReadAllText(filePath);
+
+                // Create a new Script instance from the contents
+                Script<object> script = CSharpScript.Create(contents, scriptOptions, typeof(PacketEventArgs));
+
+                // Compile it
+                script.Compile();
+
+                // Add the Script to the List
+                scripts.Add(script);
+            }
+        }
+
         public void LoadScripts(string path)
         {
             scripts.Clear();

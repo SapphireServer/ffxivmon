@@ -170,7 +170,10 @@
     </ApplicationDefinition>
     <Compile Include="CaptureFileOp.cs" />
     <Compile Include="Database.cs" />
-    <Compile Include="ExtendedErrorView.xaml.cs">
+    <Compile Include="Views\ScriptSelectView.xaml.cs">
+      <DependentUpon>ScriptSelectView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExtendedErrorView.xaml.cs">
       <DependentUpon>ExtendedErrorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ExtensionMethods.cs" />
@@ -182,14 +185,18 @@
     <Compile Include="Struct.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="WPF\WindowEx.cs" />
-    <Compile Include="XivMonTab.xaml.cs">
+    <Compile Include="Views\XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
-    <Page Include="ExtendedErrorView.xaml">
+    <Page Include="Views\ScriptSelectView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ExtendedErrorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -197,11 +204,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="XivMonTab.xaml">
+    <Page Include="Views\XivMonTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
