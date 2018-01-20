@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Threading;
 using System.Windows;
@@ -368,6 +369,22 @@ namespace FFXIVMonReborn
             }
 
             Properties.Settings.Default.Save();
+        }
+
+        private void Diff_BasedOnPacketLength(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "XML|*.xml";
+            openFileDialog.Title = "Select a Capture to diff against";
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                var toDiff = CaptureFileOp.Load(openFileDialog.FileName).Packets;
+                var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
+
+                new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
+                    CaptureDiff.GenerateLenghtBasedReport(baseCap, toDiff), "FFXIVMon Reborn").ShowDialog();
+            }
         }
     }
 }

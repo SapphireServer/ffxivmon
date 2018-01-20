@@ -168,6 +168,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CaptureDiff.cs" />
     <Compile Include="CaptureFileOp.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="Views\ScriptSelectView.xaml.cs">

@@ -45,6 +45,9 @@
                     <MenuItem Header="Reload scripts" Click="Scripting_ReloadScripts"/>
                     <MenuItem x:Name="ShowObjectMapCheckBox" Header="Show map of parsed Struct objects" IsCheckable="True"/>
                 </MenuItem>
+                <MenuItem Header="_Diff">
+                    <MenuItem Header="_Diff based on packet length" Click="Diff_BasedOnPacketLength"/>
+                </MenuItem>
                 <MenuItem Header="_Options">
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
