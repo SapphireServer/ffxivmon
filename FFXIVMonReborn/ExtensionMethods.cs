@@ -95,6 +95,21 @@ namespace FFXIVMonReborn
             }
             return output;
         }
+
+        public static bool DeepCompare(this byte[] value, byte[] toCompare)
+        {
+            int length = (toCompare.Length < value.Length) ? toCompare.Length : value.Length;
+            
+            for (int i = 0; i < length; i++)
+            {
+                if (value[i] != toCompare[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         
         public static string Print(this ExpandoObject dynamicObject)
         {

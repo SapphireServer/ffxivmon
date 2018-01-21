@@ -47,6 +47,7 @@
                 </MenuItem>
                 <MenuItem Header="_Diff">
                     <MenuItem Header="_Diff based on packet length" Click="Diff_BasedOnPacketLength"/>
+                    <MenuItem Header="_Diff based on packet data" Click="Diff_BasedOnPacketData"/>
                 </MenuItem>
                 <MenuItem Header="_Options">
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>

@@ -38,5 +38,36 @@ namespace FFXIVMonReborn
 
             return output;
         }
+        
+        public static string GenerateDataBasedReport(PacketListItem[] baseCap, PacketListItem[] toDiff)
+        {
+            Dictionary<string, string> newOpMap = new Dictionary<string, string>();
+
+            foreach (var baseCapPacket in baseCap)
+            {
+                Debug.WriteLine($"Diff for {baseCapPacket.MessageCol}");
+
+                if (!newOpMap.ContainsKey(baseCapPacket.MessageCol))
+                {
+                    foreach (var toDiffPacket in toDiff)
+                    {
+                        if (baseCapPacket.Data.DeepCompare(toDiffPacket.Data) || toDiffPacket.Data.DeepCompare(baseCapPacket.Data))
+                        {
+                            newOpMap.Add(baseCapPacket.MessageCol, $"{toDiffPacket.MessageCol}(0x{toDiffPacket.Data.Length.ToString("X")})");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            string output = "";
+
+            foreach (var entry in newOpMap)
+            {
+                output += $"{entry.Value} -> {entry.Key}\n";
+            }
+
+            return output;
+        }
     }
 }

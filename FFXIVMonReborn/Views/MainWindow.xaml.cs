@@ -386,5 +386,21 @@ namespace FFXIVMonReborn
                     CaptureDiff.GenerateLenghtBasedReport(baseCap, toDiff), "FFXIVMon Reborn").ShowDialog();
             }
         }
+        
+        private void Diff_BasedOnPacketData(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "XML|*.xml";
+            openFileDialog.Title = "Select a Capture to diff against";
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                var toDiff = CaptureFileOp.Load(openFileDialog.FileName).Packets;
+                var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
+
+                new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
+                    CaptureDiff.GenerateDataBasedReport(baseCap, toDiff), "FFXIVMon Reborn").ShowDialog();
+            }
+        }
     }
 }
