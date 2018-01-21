@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 
 namespace FFXIVMonReborn
 {
     public static class CaptureDiff
     {
         private const int MaxLengthDiff = 0x1;
+        private const int HeadSizeToSkip = 0x20;
 
         public static string GenerateLenghtBasedReport(PacketListItem[] baseCap, PacketListItem[] toDiff)
         {
@@ -33,7 +36,7 @@ namespace FFXIVMonReborn
 
             foreach (var entry in newOpMap)
             {
-                output += $"{entry.Value} -> {entry.Key}\n";
+                output += $"{entry.Key} -> {entry.Value}\n";
             }
 
             return output;
@@ -41,32 +44,53 @@ namespace FFXIVMonReborn
         
         public static string GenerateDataBasedReport(PacketListItem[] baseCap, PacketListItem[] toDiff)
         {
-            Dictionary<string, string> newOpMap = new Dictionary<string, string>();
+            Dictionary<string, List<KeyValuePair<float, string>>> newOpMap = new Dictionary<string, List<KeyValuePair<float, string>>>();
 
-            foreach (var baseCapPacket in baseCap)
+            for(int i = 0; i < baseCap.Length; i++)
             {
-                Debug.WriteLine($"Diff for {baseCapPacket.MessageCol}");
+                var skippedBaseData = baseCap[i].Data.Skip(HeadSizeToSkip).ToArray();
+                if(skippedBaseData.Length == 0)
+                    continue;
+                
+                Debug.WriteLine($"Diff for {baseCap[i].MessageCol}");
 
-                if (!newOpMap.ContainsKey(baseCapPacket.MessageCol))
+                if (!newOpMap.ContainsKey(baseCap[i].MessageCol))
                 {
-                    foreach (var toDiffPacket in toDiff)
+                    List<KeyValuePair<float, string>> thisKey = new List<KeyValuePair<float, string>>();
+                    for (int j = 0; j < toDiff.Length; j++)
                     {
-                        if (baseCapPacket.Data.DeepCompare(toDiffPacket.Data) || toDiffPacket.Data.DeepCompare(baseCapPacket.Data))
+                        var skippedToDiffData = toDiff[j].Data.Skip(HeadSizeToSkip).ToArray();
+
+                        if(skippedToDiffData.Length == 0)
+                            continue;
+                        
+                        var pctBase = skippedBaseData.DeepComparePercent(skippedToDiffData);
+                        var pctToDiff = skippedToDiffData.DeepComparePercent(skippedBaseData);
+                        
+                        if(pctBase > 50 || pctToDiff > 50)
                         {
-                            newOpMap.Add(baseCapPacket.MessageCol, $"{toDiffPacket.MessageCol}(0x{toDiffPacket.Data.Length.ToString("X")})");
+                            thisKey.Add(new KeyValuePair<float, string>(pctBase, $"Candidate: {baseCap[i].MessageCol} -> {toDiff[j].MessageCol}({pctBase}% - {pctToDiff}%)[{i} - {j}]\n"));
+                            Debug.WriteLine($"Candidate: {baseCap[i].MessageCol} -> {toDiff[j].MessageCol}({pctBase}% - {pctToDiff}%)[{i} - {j}]\n");
                             break;
                         }
                     }
+                    
+                    newOpMap.Add(baseCap[i].MessageCol, thisKey);
                 }
             }
-
             string output = "";
 
             foreach (var entry in newOpMap)
             {
-                output += $"{entry.Value} -> {entry.Key}\n";
+                entry.Value.Sort((x, y) => y.Key.CompareTo(x.Key));
+                output += $"OPCODE {entry.Key}:\n";
+                
+                foreach (var listentry in entry.Value)
+                {
+                    output += $"    ->{listentry.Key}%: {listentry.Value}";
+                }
             }
-
+            
             return output;
         }
     }

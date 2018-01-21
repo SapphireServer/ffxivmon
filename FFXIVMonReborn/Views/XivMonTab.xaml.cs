@@ -83,7 +83,11 @@ namespace FFXIVMonReborn
             try
             {
                 if (_currentPacketStream != null)
+                {
                     CaptureInfoLabel.Content += " | Packet Length: 0x" + _currentPacketStream.Length.ToString("X");
+                    CaptureInfoLabel.Content += " | Index: " + PacketListView.SelectedIndex;
+                }
+                    
             }catch(ObjectDisposedException){ } // wats this
             
             if(PacketListView.Items.Count != 0)

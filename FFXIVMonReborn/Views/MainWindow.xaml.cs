@@ -383,7 +383,7 @@ namespace FFXIVMonReborn
                 var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
 
                 new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
-                    CaptureDiff.GenerateLenghtBasedReport(baseCap, toDiff), "FFXIVMon Reborn").ShowDialog();
+                    CaptureDiff.GenerateLenghtBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
             }
         }
         
@@ -399,7 +399,7 @@ namespace FFXIVMonReborn
                 var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
 
                 new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
-                    CaptureDiff.GenerateDataBasedReport(baseCap, toDiff), "FFXIVMon Reborn").ShowDialog();
+                    CaptureDiff.GenerateDataBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
             }
         }
     }
