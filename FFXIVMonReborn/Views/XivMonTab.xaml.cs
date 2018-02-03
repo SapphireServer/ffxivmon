@@ -435,7 +435,7 @@ namespace FFXIVMonReborn
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs);
+                CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs, _version);
                 MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 _currentXmlFile = fileDialog.FileName;
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
@@ -513,13 +513,14 @@ namespace FFXIVMonReborn
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
 
             var capture = CaptureFileOp.Load(path);
+
+            _version = capture.Version;
+            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             foreach (PacketListItem packet in capture.Packets)
             {
                 AddPacketToListView(packet);
             }
             _wasCapturedMs = capture.UsingSystemTime;
-            _version = capture.Version;
-            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             
             UpdateInfoLabel();
         }

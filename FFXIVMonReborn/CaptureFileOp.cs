@@ -87,7 +87,7 @@ namespace FFXIVMonReborn
             public int Version { get; set; } = -1;
         }
 
-        public static void Save(ItemCollection packetCollection, string path, bool usingSystemTime)
+        public static void Save(ItemCollection packetCollection, string path, bool usingSystemTime, int version)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
@@ -100,6 +100,7 @@ namespace FFXIVMonReborn
                 writer.WriteStartElement("Capture");
                 
                 writer.WriteElementString("UsingSystemTime", usingSystemTime.ToString());
+                writer.WriteElementString("Version", version.ToString());
 
                 writer.WriteStartElement("Packets");
                 writer.WriteEndElement();
