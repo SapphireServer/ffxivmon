@@ -14,6 +14,7 @@ namespace FFXIVMonReborn
         {
             List<PacketListItem> output = new List<PacketListItem>();
             bool usingSystemTime = false;
+            int version = -1;
             
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
@@ -26,6 +27,9 @@ namespace FFXIVMonReborn
                 {
                     case "UsingSystemTime":
                         usingSystemTime = bool.Parse(node.InnerText);
+                        break;
+                    case "Version":
+                        version = int.Parse(node.InnerText);
                         break;
                 }
             }
@@ -73,13 +77,14 @@ namespace FFXIVMonReborn
             }
 
             Debug.WriteLine($"Loaded Packets: {output.Count}");
-            return new CaptureContainer { Packets = output.ToArray(), UsingSystemTime = usingSystemTime };
+            return new CaptureContainer { Packets = output.ToArray(), UsingSystemTime = usingSystemTime, Version = version };
         }
 
         public class CaptureContainer
         {
             public PacketListItem[] Packets { get; set; }
             public bool UsingSystemTime { get; set; }
+            public int Version { get; set; } = -1;
         }
 
         public static void Save(ItemCollection packetCollection, string path, bool usingSystemTime)

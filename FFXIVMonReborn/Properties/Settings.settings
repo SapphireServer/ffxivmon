@@ -2,11 +2,8 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FFXIVMonReborn.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="RepoUrl" Type="System.String" Scope="User">
-      <Value Profile="(Default)">https://raw.githubusercontent.com/SapphireMordred/Sapphire</Value>
-    </Setting>
-    <Setting Name="NetworkMonitorType" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">2</Value>
+    <Setting Name="Repo" Type="System.String" Scope="User">
+      <Value Profile="(Default)">SapphireMordred/Sapphire</Value>
     </Setting>
     <Setting Name="ColorServerSet0" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">255, 198, 95</Value>
@@ -28,6 +25,9 @@
     </Setting>
     <Setting Name="ForceRealtimePriority" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="NetworkMonitorType" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
     </Setting>
   </Settings>
 </SettingsFile>

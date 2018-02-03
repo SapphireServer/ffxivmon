@@ -59,6 +59,9 @@
       <HintPath>..\packages\Microsoft.CodeAnalysis.Scripting.Common.2.4.0\lib\netstandard1.3\Microsoft.CodeAnalysis.Scripting.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
@@ -170,7 +173,14 @@
     </ApplicationDefinition>
     <Compile Include="CaptureDiff.cs" />
     <Compile Include="CaptureFileOp.cs" />
-    <Compile Include="Database.cs" />
+    <Compile Include="Database\MainDB.cs" />
+    <Compile Include="Database\GithubApiCommits.cs" />
+    <Compile Include="Database\GithubApiTags.cs" />
+    <Compile Include="Database\Versioning.cs" />
+    <Compile Include="FFXIVReplayOp.cs" />
+    <Compile Include="Views\VersionSelectView.xaml.cs">
+      <DependentUpon>VersionSelectView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ScriptSelectView.xaml.cs">
       <DependentUpon>ScriptSelectView.xaml</DependentUpon>
     </Compile>
@@ -189,6 +199,10 @@
     <Compile Include="Views\XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\VersionSelectView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\ScriptSelectView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

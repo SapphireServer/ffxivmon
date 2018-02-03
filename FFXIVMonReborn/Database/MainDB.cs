@@ -5,18 +5,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection.Emit;
-using System.Security.Authentication.ExtendedProtection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.Database
 {
-    public class Database
+    public class MainDB
     {
         private Dictionary<int, Tuple<string, string>> ServerLobbyIpcType;
         private Dictionary<int, Tuple<string, string>> ClientLobbyIpcType;
@@ -28,21 +23,15 @@ namespace FFXIVMonReborn
 
         private Dictionary<int, string> ServerZoneStruct = new Dictionary<int, string>();
 
-        private string repo;
+        private string _ipcsString, _commonString, _serverZoneDefString;
 
-        public Database(string repo)
+        public MainDB(string ipcsString, string commonString, string serverZoneDefString)
         {
-            this.repo = repo;
-
-            if (!Directory.Exists("hFiles"))
-                DownloadDefinitions();
+            _ipcsString = ipcsString;
+            _commonString = commonString;
+            _serverZoneDefString = serverZoneDefString;
 
             Reload();
-        }
-
-        public void SetRepo(string repo)
-        {
-            this.repo = repo;
         }
 
         public bool Reload()
@@ -54,9 +43,9 @@ namespace FFXIVMonReborn
 
             try
             {
-                ParseIpcs(File.ReadAllText(Path.Combine("hFiles", "Ipcs.h")));
-                ParseCommon(File.ReadAllText(Path.Combine("hFiles", "Common.h")));
-                ParseServerZoneStructs(File.ReadAllText(Path.Combine("hFiles", "ServerZoneDef.h")));
+                ParseIpcs(_ipcsString);
+                ParseCommon(_commonString);
+                ParseServerZoneStructs(_serverZoneDefString);
                 return true;
             }
             catch (Exception exc)
@@ -65,37 +54,6 @@ namespace FFXIVMonReborn
                     $"[Database] Could not parse files.\n\n{exc}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
-            }
-        }
-
-        public void DownloadDefinitions()
-        {
-            try
-            {
-                if (!Directory.Exists("hFiles"))
-                    Directory.CreateDirectory("hFiles");
-
-                //TODO: Integrate these paths into future version control
-                DownloadFile(repo, "/master/src/common/Network/PacketDef/Ipcs.h", "Ipcs.h");
-                DownloadFile(repo, "/master/src/common/Common.h", "Common.h");
-                DownloadFile(repo, "/master/src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-                    "ServerZoneDef.h");
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(
-                    $"[Database] Could not download files.\n\n{exc}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
-        }
-
-        private void DownloadFile(string repo, string path, string fileName)
-        {
-            using (WebClient client = new WebClient())
-            {
-                Debug.WriteLine($"Downloading {repo}{path}");
-                client.DownloadFile($"{repo}{path}", Path.Combine(Environment.CurrentDirectory, "hFiles", fileName));
             }
         }
 
@@ -269,17 +227,23 @@ namespace FFXIVMonReborn
                     ServerZoneStruct.Add(entry.Key, structText);
                 }
             }
+
+            Debug.WriteLine("Parsed ServerZoneStructs: " + ServerZoneStruct.Count);
         }
 
         private void ParseCommon(string data)
         {
             ActorControlType = ParseEnum(data, "ActorControlType");
+            Debug.WriteLine("Parsed ActorControlType: " + ActorControlType.Count);
         }
 
         private void ParseIpcs(string data)
         {
             ServerZoneIpcType = ParseEnum(data, "ServerZoneIpcType");
             ClientZoneIpcType = ParseEnum(data, "ClientZoneIpcType");
+
+            Debug.WriteLine("Parsed ServerZoneIpcType: " + ServerZoneIpcType.Count);
+            Debug.WriteLine("Parsed ClientZoneIpcType: " + ClientZoneIpcType.Count);
         }
     }
 }

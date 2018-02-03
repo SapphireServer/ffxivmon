@@ -20,6 +20,8 @@
                     <MenuItem Header="_Open" Click="LoadCaptureRelay"/>
                     <MenuItem Header="_Save" Click="SaveCaptureRelay"/>
                     <Separator></Separator>
+                    <MenuItem Header="_Open FFXIV Replay" Click="LoadFFXIVReplayRelay"/>
+                    <Separator></Separator>
                     <MenuItem Header="_Clear" Click="ClearCaptureRelay"/>
                     <Separator></Separator>
                     <MenuItem Header="_New Tab" Click="NewTab"/>
@@ -31,7 +33,8 @@
                 </MenuItem>
                 <MenuItem Header="_Database">
                     <MenuItem Header="_Reload DB" Click="ReloadDBRelay"/>
-                    <MenuItem Header="_Redownload Definitions" Click="RedownloadDefsRelay"/>
+                    <MenuItem Header="_Redownload Definitions" Click="RedownloadDefs"/>
+                    <MenuItem Header="_Select Version" Click="SelectVersion"/>
                 </MenuItem>
                 <MenuItem Header="_Filters">
                     <MenuItem Header="_Set Filter" Click="SetFilterRelay"/>
@@ -53,7 +56,7 @@
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <Separator></Separator>
-                    <MenuItem Header="_Set Repository" Click="SetRepositoryRelay"/>
+                    <MenuItem Header="_Set Repository" Click="SetRepository"/>
                     <Separator></Separator>
                     <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>
                     <MenuItem x:Name="SwitchModePcap" Header="_Capture mode: WinPCap" Click="SwitchModePcap_OnClick"/>

@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
+using FFXIVMonReborn.Database;
 using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
@@ -26,6 +27,7 @@ namespace FFXIVMonReborn
     {
         private KeyboardHook _kbHook = new KeyboardHook();
 
+        public Versioning VersioningProvider = new Versioning();
         public Scripting ScriptProvider = null;
         private string[] _selectedScripts = new string[0];
         
@@ -239,7 +241,7 @@ namespace FFXIVMonReborn
         private void AboutButton_OnClick(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
-                "FFXIVMon Reborn\n\nA FFXIV Packet analysis thing for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                "goatmon reborn\n\nA FFXIV Packet analysis tool for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         
         private void Scripting_SelectScripts(object sender, RoutedEventArgs e)
@@ -298,11 +300,6 @@ namespace FFXIVMonReborn
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
         }
         
-        private void RedownloadDefsRelay(object sender, RoutedEventArgs e)
-        {
-            ((XivMonTab)MainTabControl.SelectedContent).RedownloadDefs();
-        }
-        
         private void SetFilterRelay(object sender, RoutedEventArgs e)
         {
             ((XivMonTab)MainTabControl.SelectedContent).SetFilter();
@@ -316,11 +313,6 @@ namespace FFXIVMonReborn
         private void Scripting_RunOnCaptureRelay(object sender, RoutedEventArgs e)
         {
             ((XivMonTab)MainTabControl.SelectedContent).Scripting_RunOnCapture();
-        }
-        
-        private void SetRepositoryRelay(object sender, RoutedEventArgs e)
-        {
-            ((XivMonTab)MainTabControl.SelectedContent).SetRepository();
         }
         #endregion
 
@@ -401,6 +393,38 @@ namespace FFXIVMonReborn
                 new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
                     CaptureDiff.GenerateDataBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
             }
+        }
+
+        public void RedownloadDefs(object sender, RoutedEventArgs e)
+        {
+            var res = MessageBox.Show("Do you want to redownload definition files from the repo? This will override all local changes.", "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+            if (res == MessageBoxResult.OK)
+            {
+                VersioningProvider.ForceReset();
+                ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+                MessageBox.Show($"Definitions downloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
+        }
+
+        public void SetRepository(object sender, RoutedEventArgs e)
+        {
+            string repo = Interaction.InputBox("Enter the GitHub repository for the definition files to be downloaded from.\nThis will reset all downloaded definitions.", "FFXIVMon Reborn", Properties.Settings.Default.Repo);
+            Properties.Settings.Default.Repo = repo;
+            Properties.Settings.Default.Save();
+            VersioningProvider.ForceReset();
+            ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+        }
+
+        private void LoadFFXIVReplayRelay(object sender, RoutedEventArgs e)
+        {
+            ((XivMonTab)MainTabControl.SelectedContent).LoadFFXIVReplay();
+        }
+
+        private void SelectVersion(object sender, RoutedEventArgs e)
+        {
+            var view = new VersionSelectView(VersioningProvider.Versions);
+            view.ShowDialog();
+            ((XivMonTab)MainTabControl.SelectedContent).SetVersion(view.GetSelectedVersion());
         }
     }
 }

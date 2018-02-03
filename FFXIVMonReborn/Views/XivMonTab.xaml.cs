@@ -20,6 +20,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Machina;
+using FFXIVMonReborn.Database;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -40,9 +41,8 @@ namespace FFXIVMonReborn
 
         private MemoryStream _currentPacketStream;
 
-        private Database _db;
-
-        private string _repo;
+        private MainDB _db;
+        private int _version = -1;
 
         private string _filterString = "";
         private string _currentXmlFile = "";
@@ -52,8 +52,6 @@ namespace FFXIVMonReborn
         public XivMonTab()
         {
             InitializeComponent();
-            _repo = Properties.Settings.Default.RepoUrl;
-            _db = new Database(_repo);
 
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
@@ -95,6 +93,9 @@ namespace FFXIVMonReborn
                     CaptureInfoLabel.Content += " | Using system time";
                 else
                     CaptureInfoLabel.Content += " | Using packet time";
+
+            if(_mainWindow != null)
+                CaptureInfoLabel.Content += " | " + _mainWindow.VersioningProvider.GetVersionInfo(_version);
         }
 
         public void SetParents(TabItem me, MainWindow mainWindow)
@@ -207,6 +208,11 @@ namespace FFXIVMonReborn
         {
             if (_captureWorker != null)
                 return;
+
+            if (_version == -1)
+                _version = _mainWindow.VersioningProvider.Versions.Length;
+
+            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
 
             try
             {
@@ -391,33 +397,26 @@ namespace FFXIVMonReborn
         #endregion
 
         #region Database
+        public void SetVersion(int version)
+        {
+            _version = version;
+            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+            if (_db.Reload())
+            {
+                ReloadCurrentPackets();
+                MessageBox.Show("Version changed: " + _version, "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
+            UpdateInfoLabel();
+        }
+
         public void ReloadDB()
         {
+            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             if (_db.Reload())
             {
                 ReloadCurrentPackets();
                 MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);  
             }
-        }
-        
-        public void RedownloadDefs()
-        {
-            var res = MessageBox.Show($"Do you want to redownload definition files from the repo? This will override all local changes.", "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-            if (res == MessageBoxResult.OK)
-            {
-                _db.DownloadDefinitions();
-                _db.Reload();
-                ReloadCurrentPackets();
-                MessageBox.Show($"Definitions downloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-            }
-        }
-
-        public void SetRepository()
-        {
-            _repo = Interaction.InputBox("Enter the repository URL for the definition files to be downloaded from.\nThis has to point to the raw files.", "FFXIVMon Reborn", Properties.Settings.Default.RepoUrl);
-            Properties.Settings.Default.RepoUrl = _repo;
-            Properties.Settings.Default.Save();
-            _db.SetRepo(_repo);
         }
         #endregion
 
@@ -476,6 +475,37 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
+        public void LoadFFXIVReplay()
+        {
+            _currentPacketStream = new MemoryStream(new byte[] { });
+            _filterString = "";
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "DAT|*.dat";
+            openFileDialog.Title = "Select a Replay DAT file";
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
+                if (res == MessageBoxResult.Yes)
+                {
+                    _mainWindow.AddTab(openFileDialog.FileName);
+                    return;
+                }
+                else if (res == MessageBoxResult.No)
+                {
+                    FFXIVReplayOp.Import(File.ReadAllBytes(openFileDialog.FileName));
+                }
+                else
+                {
+                    return;
+                }
+
+            }
+
+            UpdateInfoLabel();
+        }
+
         public void LoadCapture(string path)
         {
             PacketListView.Items.Clear();
@@ -488,6 +518,8 @@ namespace FFXIVMonReborn
                 AddPacketToListView(packet);
             }
             _wasCapturedMs = capture.UsingSystemTime;
+            _version = capture.Version;
+            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             
             UpdateInfoLabel();
         }

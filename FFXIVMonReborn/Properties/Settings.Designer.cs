@@ -25,25 +25,13 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/SapphireMordred/Sapphire")]
-        public string RepoUrl {
+        [global::System.Configuration.DefaultSettingValueAttribute("SapphireMordred/Sapphire")]
+        public string Repo {
             get {
-                return ((string)(this["RepoUrl"]));
+                return ((string)(this["Repo"]));
             }
             set {
-                this["RepoUrl"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public int NetworkMonitorType {
-            get {
-                return ((int)(this["NetworkMonitorType"]));
-            }
-            set {
-                this["NetworkMonitorType"] = value;
+                this["Repo"] = value;
             }
         }
         
@@ -128,6 +116,18 @@ namespace FFXIVMonReborn.Properties {
             }
             set {
                 this["ForceRealtimePriority"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int NetworkMonitorType {
+            get {
+                return ((int)(this["NetworkMonitorType"]));
+            }
+            set {
+                this["NetworkMonitorType"] = value;
             }
         }
     }

@@ -82,6 +82,14 @@ namespace FFXIVMonReborn
             return dtDateTime;
         }
 
+        public static DateTime UnixMSTimeStampToDateTime(long unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddMilliseconds(unixTimeStamp).ToLocalTime();
+            return dtDateTime;
+        }
+
         public static string ByteArrayToString(byte[] ba)
         {
             StringBuilder hex = new StringBuilder(ba.Length * 2);
