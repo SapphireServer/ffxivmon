@@ -415,7 +415,6 @@ namespace FFXIVMonReborn
             if (_db.Reload())
             {
                 ReloadCurrentPackets();
-                MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);  
             }
         }
         #endregion

@@ -18,42 +18,58 @@ namespace FFXIVMonReborn.Database
 
         public Versioning()
         {
-            
-
-            if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded")))
+            try
             {
-                Directory.CreateDirectory("downloaded");
-                Versions = GetTags(Properties.Settings.Default.Repo);
-                _latestCommit = GetLatestCommit();
-            }
-            else
-            {
-                Versions = GetTags(Properties.Settings.Default.Repo);
-                _latestCommit = GetLatestCommit();
-                return;
-            }
+                if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded")))
+                {
+                    Directory.CreateDirectory("downloaded");
+                    Versions = GetTags(Properties.Settings.Default.Repo);
+                    _latestCommit = GetLatestCommit();
+                }
+                else
+                {
+                    Versions = GetTags(Properties.Settings.Default.Repo);
+                    _latestCommit = GetLatestCommit();
+                    return;
+                }
 
-            foreach (var version in Versions)
-            {
-                DownloadDefinitions(version.Commit.Sha);
-            }
+                foreach (var version in Versions)
+                {
+                    DownloadDefinitions(version.Commit.Sha);
+                }
 
-            DownloadDefinitions(_latestCommit.Sha);
+                DownloadDefinitions(_latestCommit.Sha);
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView("[Versioning] Failed to reset definitions.", exc.ToString(), "Error")
+                    .ShowDialog();
+            }
         }
 
         public void ForceReset()
         {
-            Directory.Delete("downloaded", true);
-
-            Versions = GetTags(Properties.Settings.Default.Repo);
-
-            foreach (var version in Versions)
+            try
             {
-                DownloadDefinitions(version.Commit.Sha);
-            }
+                Directory.Delete(Path.Combine(Environment.CurrentDirectory, "downloaded"), true);
 
-            _latestCommit = GetLatestCommit();
-            DownloadDefinitions(_latestCommit.Sha);
+                Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "downloaded"));
+
+                Versions = GetTags(Properties.Settings.Default.Repo);
+
+                foreach (var version in Versions)
+                {
+                    DownloadDefinitions(version.Commit.Sha);
+                }
+
+                _latestCommit = GetLatestCommit();
+                DownloadDefinitions(_latestCommit.Sha);
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView("[Versioning] Failed to reset definitions.", exc.ToString(), "Error")
+                    .ShowDialog();
+            }
         }
 
         public MainDB GetDatabaseForVersion(int version)
@@ -151,21 +167,12 @@ namespace FFXIVMonReborn.Database
             using (WebClient client = new WebClient())
             {
                 client.Headers.Add("User-Agent", "XIVMon");
-                
-                try
-                {
-                    string result = client.DownloadString($"https://api.github.com/repos/{repo}/tags");
 
-                    File.WriteAllText(Path.Combine("downloaded", "tags.json"), result);
+                string result = client.DownloadString($"https://api.github.com/repos/{repo}/tags");
 
-                    return GithubApiTags.FromJson(result);
-                }
-                catch (Exception exc)
-                {
-                    new ExtendedErrorView($"[Versioning] Failed to download tags at https://api.github.com/repos/{repo}/tags.", exc.ToString(), "Error")
-                        .ShowDialog();
-                    return null;
-                }
+                File.WriteAllText(Path.Combine("downloaded", "tags.json"), result);
+
+                return GithubApiTags.FromJson(result);
             }
         }
     }

@@ -298,6 +298,7 @@ namespace FFXIVMonReborn
         private void ReloadDBRelay(object sender, RoutedEventArgs e)
         {
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+            MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         
         private void SetFilterRelay(object sender, RoutedEventArgs e)
