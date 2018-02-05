@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,6 +10,8 @@ using System.Windows;
 
 namespace FFXIVMonReborn
 {
+
+    //TODO: Clean this up and make it a bit faster
     class Struct
     {
         internal enum TypePrintMode
@@ -213,7 +216,11 @@ namespace FFXIVMonReborn
         {
             List<StructListItem> output = new List<StructListItem>();
 
-            int count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
+            int count;
+            if(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")).Contains("0x"))
+                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 3, name.LastIndexOf("]")), NumberStyles.HexNumber);
+            else
+                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
 
             debugMsg += $"Nested Array Start - {name} - {count}\n";
 
@@ -242,8 +249,12 @@ namespace FFXIVMonReborn
         private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref ExpandoObject exobj, ref string debugMsg)
         {
             List<StructListItem> output = new List<StructListItem>();
-            
-            int count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
+
+            int count;
+            if (name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")).Contains("0x"))
+                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 3, name.LastIndexOf("]")), NumberStyles.HexNumber);
+            else
+                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
 
             debugMsg += $"Array Start - {name} - {count} - {dataType}\n";
 

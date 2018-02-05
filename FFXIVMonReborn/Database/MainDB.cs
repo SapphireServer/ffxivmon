@@ -16,7 +16,7 @@ namespace FFXIVMonReborn.Database
         private Dictionary<int, Tuple<string, string>> ServerLobbyIpcType;
         private Dictionary<int, Tuple<string, string>> ClientLobbyIpcType;
 
-        private Dictionary<int, Tuple<string, string>> ServerZoneIpcType = new Dictionary<int, Tuple<string, string>>();
+        public Dictionary<int, Tuple<string, string>> ServerZoneIpcType = new Dictionary<int, Tuple<string, string>>();
         private Dictionary<int, Tuple<string, string>> ClientZoneIpcType = new Dictionary<int, Tuple<string, string>>();
 
         private Dictionary<int, Tuple<string, string>> ActorControlType = new Dictionary<int, Tuple<string, string>>();

@@ -22,22 +22,24 @@ namespace FFXIVMonReborn
     /// </summary>
     public partial class StructSelectView : Window
     {
-        private string _folderPath;
+        private Dictionary<int, Tuple<string, string>> _opcodes;
 
-        public StructSelectView(string[] names)
+        public StructSelectView(Dictionary<int, Tuple<string, string>> opcodes)
         {
             InitializeComponent();
-            foreach (var name in names)
+            foreach (var entry in opcodes)
             {
-                StructListBox.Items.Add(name);
+                StructListBox.Items.Add($"{entry.Value.Item1} - {entry.Key.ToString("X4")}");
             }
 
             StructListBox.SelectedIndex = StructListBox.Items.Count - 1;
+
+            _opcodes = opcodes;
         }
 
-        public int GetSelectedStruct()
+        public int GetSelectedOpCode()
         {
-            return StructListBox.SelectedIndex;
+            return _opcodes.ElementAt(StructListBox.SelectedIndex).Key;
         }
 
         private void ButtonOK_OnClick(object sender, RoutedEventArgs e)

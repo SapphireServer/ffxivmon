@@ -284,7 +284,7 @@ namespace FFXIVMonReborn
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            var view = new StructSelectView(_db.ServerZoneStruct.Values.ToArray());
+            var view = new StructSelectView(_db.ServerZoneIpcType);
             view.ShowDialog();
 
             var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
@@ -295,7 +295,7 @@ namespace FFXIVMonReborn
             {
                 if (item.DirectionCol == "S")
                 {
-                    var structText = _db.ServerZoneStruct.Values.ElementAt(view.GetSelectedStruct());
+                    var structText = _db.GetServerZoneStruct(view.GetSelectedOpCode());
 
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
@@ -318,7 +318,7 @@ namespace FFXIVMonReborn
             }
             catch (Exception exc)
             {
-                new ExtendedErrorView($"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
+                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
             }
 
             UpdateInfoLabel();
@@ -379,7 +379,7 @@ namespace FFXIVMonReborn
             }
             catch (Exception exc)
             {
-                new ExtendedErrorView($"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
+                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
             }
 
             UpdateInfoLabel();
@@ -866,9 +866,7 @@ namespace FFXIVMonReborn
             }
             catch (Exception exc)
             {
-                MessageBox.Show(
-                    $"[Main] Filter Parse error!\n\n{exc}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                new ExtendedErrorView("[XivMonTab] Filter Parse error!", exc.ToString(), "Error").ShowDialog();
                 return;
             }
 
@@ -951,9 +949,7 @@ namespace FFXIVMonReborn
                 }
                 catch (Exception exc)
                 {
-                    MessageBox.Show(
-                        $"[Main] Script error!\n\n{exc}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    new ExtendedErrorView("[XivMonTab] Script error!", exc.ToString(), "Error").ShowDialog();
                     _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
                     return;
                 }

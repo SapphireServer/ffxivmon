@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FFXIVMonReborn"
         mc:Ignorable="d"
-        Title="Versions" Width="734.254" ResizeMode="NoResize" Height="434.724">
+        Title="Structs" Width="734.254" ResizeMode="NoResize" Height="434.724">
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto">Select the struct to be applied to this packet.</Label>

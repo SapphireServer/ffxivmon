@@ -22,8 +22,6 @@ namespace FFXIVMonReborn
     /// </summary>
     public partial class VersionSelectView : Window
     {
-        private string _folderPath;
-
         public VersionSelectView(GithubApiTags[] versions)
         {
             InitializeComponent();
