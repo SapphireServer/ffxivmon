@@ -66,6 +66,22 @@ namespace FFXIVMonReborn
 
             UpdateInfoLabel();
         }
+        
+        public XivMonTab(PacketListItem[] packets)
+        {
+            InitializeComponent();
+
+            if (!string.IsNullOrEmpty(_currentXmlFile))
+            {
+                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension("FFXIV Replay"));
+                foreach (PacketListItem packet in packets)
+                {
+                    AddPacketToListView(packet);
+                }
+            }
+
+            UpdateInfoLabel();
+        }
 
         #region General
         private void UpdateInfoLabel()
@@ -485,23 +501,29 @@ namespace FFXIVMonReborn
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
+                MessageBoxResult res = MessageBox.Show("This could take a long time.\nNo to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
                 if (res == MessageBoxResult.Yes)
                 {
-                    _mainWindow.AddTab(openFileDialog.FileName);
+                    byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
+
+                    int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FFXIVReplayOp.GetNumPackets(replay).ToString()));
+                    _mainWindow.AddTab(FFXIVReplayOp.Import(replay, start, end));
                     return;
                 }
                 else if (res == MessageBoxResult.No)
                 {
-                    FFXIVReplayOp.Import(File.ReadAllBytes(openFileDialog.FileName));
+                    byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
+
+                    int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FFXIVReplayOp.GetNumPackets(replay).ToString()));
+                    LoadCapture(FFXIVReplayOp.Import(replay, start, end));
                 }
                 else
                 {
                     return;
                 }
-
             }
-
             UpdateInfoLabel();
         }
 
@@ -520,6 +542,21 @@ namespace FFXIVMonReborn
                 AddPacketToListView(packet);
             }
             _wasCapturedMs = capture.UsingSystemTime;
+            
+            UpdateInfoLabel();
+        }
+        
+        public void LoadCapture(PacketListItem[] packets)
+        {
+            PacketListView.Items.Clear();
+            ChangeTitle("FFXIV Replay");
+
+            _version = -1;
+            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+            foreach (PacketListItem packet in packets)
+            {
+                AddPacketToListView(packet);
+            }
             
             UpdateInfoLabel();
         }

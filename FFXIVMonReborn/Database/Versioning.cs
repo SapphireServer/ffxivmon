@@ -99,7 +99,7 @@ namespace FFXIVMonReborn.Database
         private GithubApiCommits GetLatestCommit()
         {
             if (File.Exists(Path.Combine("downloaded", "commits.json")))
-                return Commits.GithubApiCommits.FromJson(File.ReadAllText(Path.Combine("downloaded", "tags.json")))[0];
+                return Commits.GithubApiCommits.FromJson(File.ReadAllText(Path.Combine("downloaded", "commits.json")))[0];
 
             using (WebClient client = new WebClient())
             {

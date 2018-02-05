@@ -117,6 +117,18 @@ namespace FFXIVMonReborn
             SystemSounds.Asterisk.Play();
             this.FlashWindow(3);
         }
+        
+        public void AddTab()
+        {
+            var item = new TabItem();
+
+            item.Content = new XivMonTab();
+            item.Header = "New Capture";
+            ((XivMonTab)item.Content).SetParents(item, this);
+            MainTabControl.Items.Add(item);
+
+            MainTabControl.SelectedIndex = MainTabControl.Items.Count - 1;
+        }
 
         public void AddTab(string toLoad)
         {
@@ -133,6 +145,21 @@ namespace FFXIVMonReborn
             MainTabControl.SelectedIndex = MainTabControl.Items.Count - 1;
         }
 
+        public void AddTab(PacketListItem[] toLoad)
+        {
+            var item = new TabItem();
+
+            item.Content = new XivMonTab();
+            item.Header = "New Capture";
+            ((XivMonTab)item.Content).SetParents(item, this);
+            MainTabControl.Items.Add(item);
+
+            if (toLoad != null)
+                ((XivMonTab) item.Content).LoadCapture(toLoad);
+
+            MainTabControl.SelectedIndex = MainTabControl.Items.Count - 1;
+        }
+        
         private void MainTabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ((XivMonTab) MainTabControl.SelectedContent)?.OnTabFocus();
@@ -213,7 +240,7 @@ namespace FFXIVMonReborn
 
         private void MainTabControl_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            AddTab(null);
+            AddTab();
         }
         
         private bool AreTabsCapturing()
@@ -230,7 +257,7 @@ namespace FFXIVMonReborn
         
         private void NewTab(object sender, RoutedEventArgs e)
         {
-            AddTab(null);
+            AddTab();
         }
 
         private void NewInstance(object sender, RoutedEventArgs e)

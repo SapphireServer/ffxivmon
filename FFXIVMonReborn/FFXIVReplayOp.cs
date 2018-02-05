@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -7,7 +8,36 @@ namespace FFXIVMonReborn
 {
     public class FFXIVReplayOp
     {
-        public static PacketListItem[] Import(byte[] replay)
+        public static int GetNumPackets(byte[] replay)
+        {
+            using (MemoryStream stream = new MemoryStream(replay))
+            {
+                using (BinaryReader reader = new BinaryReader(stream))
+                {
+                    string magic = Encoding.ASCII.GetString(reader.ReadBytes(0xB));
+                    if (magic != "FFXIVREPLAY")
+                        throw new ArgumentException("Not a FFXIV Replay file: " + magic);
+
+                    stream.Position = 0x354;
+
+                    int num = 0;
+                    while (stream.Position < replay.Length)
+                    {
+                        stream.Position += 2;
+                        int length = reader.ReadInt16();
+                        stream.Position += 4;
+                        stream.Position += 4;
+
+                        stream.Position += length;
+                        num++;
+                    }
+
+                    return num;
+                }
+            }
+        }
+
+        public static PacketListItem[] Import(byte[] replay, int start, int end)
         {
             List<PacketListItem> output = new List<PacketListItem>();
             string log = "";
@@ -21,16 +51,21 @@ namespace FFXIVMonReborn
                         throw new ArgumentException("Not a FFXIV Replay file: " + magic);
 
                     stream.Position = 0x14;
-                    long recordTime = reader.ReadInt64();
-                    log += $"Recording time: {Util.UnixTimeStampToDateTime(recordTime)} - {recordTime}\n";
+                    long recordTime = reader.ReadInt32();
+                    DateTime time = Util.UnixTimeStampToDateTime(recordTime);
+                    log += $"Recording time: {time} - {recordTime}\n";
 
+                    stream.Position = 0x18;
+                    int recLength = reader.ReadInt32();
+                    log += $"Recording length: {recLength}ms\n";
+                    
                     stream.Position = 0x1C;
-                    int length = reader.ReadInt32();
-                    log += $"Recording length: {length}\n";
+                    int movieLength = reader.ReadInt32();
+                    log += $"Movie length: {movieLength}ms\n";
 
                     stream.Position = 0x20;
                     int contentFinderCondition = reader.ReadInt16();
-                    log += $"ContentFinderCondition: {length}\n";
+                    log += $"ContentFinderCondition: {contentFinderCondition}\n";
 
                     stream.Position = 0x38;
                     log += "Party ClassJob: ";
@@ -38,13 +73,37 @@ namespace FFXIVMonReborn
                     for (int i = 0; i < 8; i++)
                     {
                         classJobAry[i] = reader.ReadByte();
-                        log += classJobAry[i] + ",";
+                        log += classJobAry[i] + " ";
                     }
-                    log += "\n";
+                    log += "\n\n";
+
+                    stream.Position = 0x354;
+
+                    int lastTime = 0;
+                    for(int i = 0; i < end; i++)
+                    {
+                        int opcode = reader.ReadInt16();
+                        int length = reader.ReadInt16();
+                        int timeOffset = reader.ReadInt32();
+                        int actorId = reader.ReadInt32();
+
+                        List<byte> data = new List<byte>();
+                        data.AddRange(new byte[0x20]);
+                        data.AddRange(reader.ReadBytes(length));
+                            
+                        time = time.AddMilliseconds(timeOffset - lastTime);
+                        lastTime = timeOffset;
+                        
+                        if(i > start)
+                            output.Add(new PacketListItem {MessageCol = opcode.ToString("X4"), Data = data.ToArray(), DirectionCol = "S", RouteIdCol = "?", Set = 0,
+                                CategoryCol = "?", IsVisible = true, SizeCol = data.Count.ToString(), TimeStampCol = time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")});
+                        
+                        log += $"->Packet: {opcode.ToString("X")} - {length} bytes - {timeOffset}ms - for {actorId.ToString("X")} - {time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")}\n";
+                    }
                 }
             }
 
-            new ExtendedErrorView("", log, "FFXIVMon Reborn").ShowDialog();
+            new ExtendedErrorView($"Ran import on {replay.Length} bytes.", log, "FFXIVMon Reborn").ShowDialog();
 
             return output.ToArray();
         }
