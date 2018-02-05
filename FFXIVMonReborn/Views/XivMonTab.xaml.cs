@@ -278,6 +278,52 @@ namespace FFXIVMonReborn
         #endregion
 
         #region PacketListHandling
+
+        private void ApplySpecificStructToPacket(object sender, RoutedEventArgs e)
+        {
+            if (PacketListView.SelectedIndex == -1)
+                return;
+
+            var view = new StructSelectView(_db.ServerZoneStruct.Values.ToArray());
+            view.ShowDialog();
+
+            var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
+
+            StructListView.Items.Clear();
+
+            try
+            {
+                if (item.DirectionCol == "S")
+                {
+                    var structText = _db.ServerZoneStruct.Values.ElementAt(view.GetSelectedStruct());
+
+                    var structProvider = new Struct();
+                    var structEntries = structProvider.Parse(structText, item.Data);
+
+                    foreach (var entry in structEntries.Item1)
+                    {
+                        StructListView.Items.Add(entry);
+                    }
+
+                    if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                        new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
+                }
+                else
+                {
+                    StructListItem infoItem = new StructListItem();
+                    infoItem.NameCol = "Client Packet";
+                    StructListView.Items.Add(infoItem);
+                    return;
+                }
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView($"[Main] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
+            }
+
+            UpdateInfoLabel();
+        }
+
         private void PacketListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (PacketListView.SelectedIndex == -1)

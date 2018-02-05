@@ -21,7 +21,7 @@ namespace FFXIVMonReborn.Database
 
         private Dictionary<int, Tuple<string, string>> ActorControlType = new Dictionary<int, Tuple<string, string>>();
 
-        private Dictionary<int, string> ServerZoneStruct = new Dictionary<int, string>();
+        public Dictionary<int, string> ServerZoneStruct = new Dictionary<int, string>();
 
         private string _ipcsString, _commonString, _serverZoneDefString;
 

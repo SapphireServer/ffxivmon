@@ -178,6 +178,9 @@
     <Compile Include="Database\GithubApiTags.cs" />
     <Compile Include="Database\Versioning.cs" />
     <Compile Include="FFXIVReplayOp.cs" />
+    <Compile Include="Views\StructSelectView.xaml.cs">
+      <DependentUpon>StructSelectView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\VersionSelectView.xaml.cs">
       <DependentUpon>VersionSelectView.xaml</DependentUpon>
     </Compile>
@@ -199,6 +202,10 @@
     <Compile Include="Views\XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\StructSelectView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\VersionSelectView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
