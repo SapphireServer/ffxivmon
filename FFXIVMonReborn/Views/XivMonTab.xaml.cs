@@ -425,15 +425,13 @@ namespace FFXIVMonReborn
 
                     if (structText != null)
                     {
-                        var structProvider = new Struct();
-                        var structEntries = structProvider.Parse(structText, item.Data);
-
-                        foreach (var entry in structEntries.Item1)
+                        if (structText.Length != 0)
                         {
-                            StructListView.Items.Add(entry);
+                            var structProvider = new Struct();
+                            var structEntries = structProvider.Parse(structText, item.Data);
+
+                            args = new PacketEventArgs(item, structEntries.Item2);
                         }
-                            
-                        args = new PacketEventArgs(item, structEntries.Item2);
                     }
                     else
                     {
@@ -445,9 +443,42 @@ namespace FFXIVMonReborn
                 catch (Exception exc)
                 {
                     MessageBox.Show(
-                        $"[Main] Script error!\n\n{exc}",
+                        $"[XivMonTab] Script error!\n\n{exc}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
+                    return;
+                }
+            }
+
+            if (_mainWindow.ExEnabledCheckbox.IsChecked && item.DirectionCol == "S")
+            {
+                try
+                {
+                    var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+
+                    if (structText != null)
+                    {
+                        if (structText.Length != 0)
+                        {
+                            var structProvider = new Struct();
+                            dynamic obj = structProvider.Parse(structText, item.Data).Item2;
+
+                            switch (item.NameCol)
+                            {
+                                case "NpcSpawn":
+                                    item.CommentCol =
+                                        $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName})";
+                                    break;
+                            }
+                        }
+                    }
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show(
+                        $"[XivMonTab] EXD error for {item.MessageCol} - {item.NameCol}!\n\n{exc}",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _mainWindow.ExEnabledCheckbox.IsChecked = false;
                     return;
                 }
             }
@@ -547,7 +578,7 @@ namespace FFXIVMonReborn
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                MessageBoxResult res = MessageBox.Show("This could take a long time.\nNo to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
+                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
                 if (res == MessageBoxResult.Yes)
                 {
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);

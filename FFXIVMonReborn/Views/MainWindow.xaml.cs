@@ -28,6 +28,7 @@ namespace FFXIVMonReborn
         private KeyboardHook _kbHook = new KeyboardHook();
 
         public Versioning VersioningProvider = new Versioning();
+        public ExdCsvReader ExdProvider = null;
         public Scripting ScriptProvider = null;
         private string[] _selectedScripts = new string[0];
         
@@ -102,6 +103,12 @@ namespace FFXIVMonReborn
             {
                 Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
                 ForceRealtimePriority.IsChecked = true;
+            }
+
+            if (Properties.Settings.Default.LoadEXD)
+            {
+                EnableExClick(null, null);
+                ExEnabledCheckbox.IsChecked = true;
             }
         }
 
@@ -453,6 +460,33 @@ namespace FFXIVMonReborn
             var view = new VersionSelectView(VersioningProvider.Versions);
             view.ShowDialog();
             ((XivMonTab)MainTabControl.SelectedContent).SetVersion(view.GetSelectedVersion());
+        }
+
+        private void EnableExClick(object sender, RoutedEventArgs e)
+        {
+            if (!ExEnabledCheckbox.IsChecked)
+            {
+                if (ExdProvider == null)
+                    ExdProvider = new ExdCsvReader();
+
+                ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDB();
+
+                ExEnabledCheckbox.IsChecked = true;
+                Properties.Settings.Default.LoadEXD = true;
+            }
+            else
+            {
+                ExEnabledCheckbox.IsChecked = false;
+                Properties.Settings.Default.LoadEXD = false;
+            }
+
+            Properties.Settings.Default.Save();
+        }
+
+        private void ReloadExClick(object sender, RoutedEventArgs e)
+        {
+            ExdProvider = new ExdCsvReader();
+            ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
         }
     }
 }

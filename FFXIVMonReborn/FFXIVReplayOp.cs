@@ -93,7 +93,7 @@ namespace FFXIVMonReborn
                         time = time.AddMilliseconds(timeOffset - lastTime);
                         lastTime = timeOffset;
                         
-                        if(i > start)
+                        if(i >= start)
                             output.Add(new PacketListItem {MessageCol = opcode.ToString("X4"), Data = data, DirectionCol = "S", RouteIdCol = "?", Set = 0,
                                 CategoryCol = "?", IsVisible = true, SizeCol = data.Length.ToString(), TimeStampCol = time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")});
                         

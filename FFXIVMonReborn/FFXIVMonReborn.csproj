@@ -177,6 +177,7 @@
     <Compile Include="Database\GithubApiCommits.cs" />
     <Compile Include="Database\GithubApiTags.cs" />
     <Compile Include="Database\Versioning.cs" />
+    <Compile Include="ExdCsvReader.cs" />
     <Compile Include="FFXIVReplayOp.cs" />
     <Compile Include="Views\StructSelectView.xaml.cs">
       <DependentUpon>StructSelectView.xaml</DependentUpon>

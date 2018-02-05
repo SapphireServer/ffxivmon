@@ -130,5 +130,17 @@ namespace FFXIVMonReborn.Properties {
                 this["NetworkMonitorType"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LoadEXD {
+            get {
+                return ((bool)(this["LoadEXD"]));
+            }
+            set {
+                this["LoadEXD"] = value;
+            }
+        }
     }
 }

@@ -52,6 +52,11 @@
                     <MenuItem Header="_Diff based on packet length" Click="Diff_BasedOnPacketLength"/>
                     <MenuItem Header="_Diff based on packet data" Click="Diff_BasedOnPacketData"/>
                 </MenuItem>
+                <MenuItem Header="_EXD">
+                    <MenuItem Name="ExEnabledCheckbox" Header="_Enable" Click="EnableExClick"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Reload" Click="ReloadExClick"/>
+                </MenuItem>
                 <MenuItem Header="_Options">
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
