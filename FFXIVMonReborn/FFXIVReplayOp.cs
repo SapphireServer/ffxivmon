@@ -86,19 +86,18 @@ namespace FFXIVMonReborn
                         int length = reader.ReadInt16();
                         int timeOffset = reader.ReadInt32();
                         int actorId = reader.ReadInt32();
+                        
+                        var data = new byte[0x20 + length];
+                        reader.Read(data, 0x20, length);
 
-                        List<byte> data = new List<byte>();
-                        data.AddRange(new byte[0x20]);
-                        data.AddRange(reader.ReadBytes(length));
-                            
                         time = time.AddMilliseconds(timeOffset - lastTime);
                         lastTime = timeOffset;
                         
                         if(i > start)
-                            output.Add(new PacketListItem {MessageCol = opcode.ToString("X4"), Data = data.ToArray(), DirectionCol = "S", RouteIdCol = "?", Set = 0,
-                                CategoryCol = "?", IsVisible = true, SizeCol = data.Count.ToString(), TimeStampCol = time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")});
+                            output.Add(new PacketListItem {MessageCol = opcode.ToString("X4"), Data = data, DirectionCol = "S", RouteIdCol = "?", Set = 0,
+                                CategoryCol = "?", IsVisible = true, SizeCol = data.Length.ToString(), TimeStampCol = time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")});
                         
-                        log += $"->Packet: {opcode.ToString("X")} - {length} bytes - {timeOffset}ms - for {actorId.ToString("X")} - {time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")}\n";
+                        // log += $"->Packet: {opcode.ToString("X")} - {length} bytes - {timeOffset}ms - for {actorId.ToString("X")} - {time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")}\n";
                     }
                 }
             }
