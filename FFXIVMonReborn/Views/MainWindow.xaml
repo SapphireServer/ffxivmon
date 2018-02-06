@@ -43,6 +43,7 @@
                 <MenuItem Header="_Scripting">
                     <MenuItem Header="_Run on Capture" Click="Scripting_RunOnCaptureRelay"/>
                     <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="_Run on new Packets" IsCheckable="True"/>
+                    <MenuItem Header="Open Output Window" Click="Scripting_OpenOutputWindow"/>
                     <Separator></Separator>
                     <MenuItem Header="Select scripts" Click="Scripting_SelectScripts"/>
                     <MenuItem Header="Reload scripts" Click="Scripting_ReloadScripts"/>

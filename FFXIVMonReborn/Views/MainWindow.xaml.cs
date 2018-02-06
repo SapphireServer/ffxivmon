@@ -30,6 +30,8 @@ namespace FFXIVMonReborn
         public Versioning VersioningProvider = new Versioning();
         public ExdCsvReader ExdProvider = null;
         public Scripting ScriptProvider = null;
+
+        public ScriptDebugView ScriptDebugView = new ScriptDebugView();
         private string[] _selectedScripts = new string[0];
         
         public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
@@ -487,6 +489,11 @@ namespace FFXIVMonReborn
         {
             ExdProvider = new ExdCsvReader();
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+        }
+
+        private void Scripting_OpenOutputWindow(object sender, RoutedEventArgs e)
+        {
+            ScriptDebugView.Show();
         }
     }
 }

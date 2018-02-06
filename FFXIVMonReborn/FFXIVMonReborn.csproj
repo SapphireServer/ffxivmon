@@ -179,6 +179,9 @@
     <Compile Include="Database\Versioning.cs" />
     <Compile Include="ExdCsvReader.cs" />
     <Compile Include="FFXIVReplayOp.cs" />
+    <Compile Include="Views\ScriptDebugView.xaml.cs">
+      <DependentUpon>ScriptDebugView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\StructSelectView.xaml.cs">
       <DependentUpon>StructSelectView.xaml</DependentUpon>
     </Compile>
@@ -203,6 +206,10 @@
     <Compile Include="Views\XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\ScriptDebugView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\StructSelectView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

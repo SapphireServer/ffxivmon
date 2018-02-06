@@ -86,11 +86,13 @@ namespace FFXIVMonReborn
         // Used by event handlers
         public readonly PacketListItem Packet;
         public readonly ExpandoObject PacketObj;
+        public readonly ScriptDebugView Debug;
 
-        public PacketEventArgs(PacketListItem packet, ExpandoObject packetobj)
+        public PacketEventArgs(PacketListItem packet, ExpandoObject packetobj, ScriptDebugView debugView)
         {
             this.Packet = packet;
             this.PacketObj = packetobj;
+            this.Debug = debugView;
         }
     }
 }

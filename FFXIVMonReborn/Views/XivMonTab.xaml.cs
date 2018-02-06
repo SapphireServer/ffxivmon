@@ -430,12 +430,12 @@ namespace FFXIVMonReborn
                             var structProvider = new Struct();
                             var structEntries = structProvider.Parse(structText, item.Data);
 
-                            args = new PacketEventArgs(item, structEntries.Item2);
+                            args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
                         }
                     }
                     else
                     {
-                        args = new PacketEventArgs(item, null);
+                        args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
                     }
                     
                     Scripting_RunOnPacket(args);
@@ -460,12 +460,12 @@ namespace FFXIVMonReborn
                     {
                         if (structText.Length != 0)
                         {
-                            var structProvider = new Struct();
-                            dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
                             switch (item.NameCol)
                             {
                                 case "NpcSpawn":
+                                    var structProvider = new Struct();
+                                    dynamic obj = structProvider.Parse(structText, item.Data).Item2;
+
                                     item.CommentCol =
                                         $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName})";
                                     break;
@@ -935,11 +935,11 @@ namespace FFXIVMonReborn
                                     StructListView.Items.Add(entry);
                                 }
                             
-                                args = new PacketEventArgs((PacketListItem)item, structEntries.Item2);
+                                args = new PacketEventArgs((PacketListItem)item, structEntries.Item2, _mainWindow.ScriptDebugView);
                             }
                             else
                             {
-                                args = new PacketEventArgs((PacketListItem)item, null);
+                                args = new PacketEventArgs((PacketListItem)item, null, _mainWindow.ScriptDebugView);
                             }
                             Scripting_RunOnPacket(args);
                         }

@@ -52,8 +52,6 @@ namespace FFXIVMonReborn
                 r = new Regex("\\/\\/(.*)");
                 structText = r.Replace(structText, "");
 
-                Debug.WriteLine(structText);
-
                 List<StructListItem> output = new List<StructListItem>();
                 ExpandoObject exobj = new ExpandoObject();
 
