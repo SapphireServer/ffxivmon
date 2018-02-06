@@ -170,12 +170,12 @@ namespace FFXIVMonReborn
 
         public string GetFateName(int id)
         {
-            try
+            string name;
+            if (_fatenames.TryGetValue(id, out name))
             {
-                _fatenames.TryGetValue(id, out string name);
                 return name;
             }
-            catch
+            else
             {
                 return "Unknown Fate";
             }
