@@ -463,12 +463,36 @@ namespace FFXIVMonReborn
                             switch (item.NameCol)
                             {
                                 case "NpcSpawn":
-                                    var structProvider = new Struct();
+                                {
+                                    Struct structProvider = new Struct();
                                     dynamic obj = structProvider.Parse(structText, item.Data).Item2;
 
                                     item.CommentCol =
                                         $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName})";
+                                }
                                     break;
+
+                                case "ActorCast":
+                                {
+                                    Struct structProvider = new Struct();
+                                    dynamic obj = structProvider.Parse(structText, item.Data).Item2;
+                                    
+                                    item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
+                                }
+                                    break;
+                            }
+
+                            if (item.NameCol.Contains("ActorControl"))
+                            {
+                                Struct structProvider = new Struct();
+                                dynamic obj = structProvider.Parse(structText, item.Data).Item2;
+
+                                switch (item.ActorControl)
+                                {
+                                    case 17: //ActionStart
+                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)obj.param2)}({obj.param2}) - Type {obj.param1}";
+                                        break;
+                                }
                             }
                         }
                     }
@@ -479,7 +503,6 @@ namespace FFXIVMonReborn
                         $"[XivMonTab] EXD error for {item.MessageCol} - {item.NameCol}!\n\n{exc}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     _mainWindow.ExEnabledCheckbox.IsChecked = false;
-                    return;
                 }
             }
 
