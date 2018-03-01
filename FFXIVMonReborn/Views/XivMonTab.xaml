@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FFXIVMonReborn"
              xmlns:wpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -29,8 +30,8 @@
 
                         <DockPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
 
-                            <Button x:Name="Reset" Content="Reset" Height="20" DockPanel.Dock="Right" VerticalAlignment="Top" Width="42" Click="ResetFilter_Click"/>
-                            <TextBox x:Name="FilterEntry" Height="20" DockPanel.Dock="Right" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top" KeyDown="FilterEntry_OnKeyDown" AutomationProperties.Name="FilterBox"/>
+                            <Button x:Name="Reset" Content="Reset" Height="24" DockPanel.Dock="Right" VerticalAlignment="Top" Width="42" Click="ResetFilter_Click"/>
+                            <xctk:WatermarkTextBox x:Name="FilterEntry"  Watermark="Enter to accept..." Height="24" DockPanel.Dock="Right" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top" KeyDown="FilterEntry_OnKeyDown" AutomationProperties.Name="FilterBox"/>
 
                         </DockPanel>
 

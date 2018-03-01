@@ -875,13 +875,13 @@ namespace FFXIVMonReborn
         private void _ApplyFilter(string filter)
         {
             _filterString = filter;
-
+         
             if (_filterString == "")
             {
                 _ResetFilter();
                 return;
             }
-
+         
             FilterSet[] filters = null;
             try
             {
@@ -892,21 +892,21 @@ namespace FFXIVMonReborn
                 new ExtendedErrorView("[XivMonTab] Filter Parse error!", exc.ToString(), "Error").ShowDialog();
                 return;
             }
-
+         
             PacketListView.Items.Filter = new Predicate<object>((object item) =>
             {
                 bool predResult = false;
                 foreach (var filterEntry in filters)
                 {
                     predResult = filterEntry.IsApplicableForFilterSet((PacketListItem)item);
-
+         
                     if (predResult)
                         return predResult;
                 }
-
+         
                 return predResult;
             });
-
+         
             PacketListView.Refresh();
             PacketListView.Items.Refresh();
         }
@@ -918,11 +918,24 @@ namespace FFXIVMonReborn
 
         private void FilterEntry_OnKeyDown(object sender, KeyEventArgs e)
         {
+            if (FilterEntry.Text.Length == 0)
+            {
+                FilterEntry.Background = Brushes.White;
+                return;
+            }
+
+            if (!Filter.IsValidFilter(FilterEntry.Text))
+            {
+                FilterEntry.Background = Brushes.IndianRed;
+                return;
+            }
+            
+            FilterEntry.Background = Brushes.PaleGreen;
+            
             if (e.Key == Key.Enter)
             {
                 _ApplyFilter(FilterEntry.Text);
             }
-
         }
         #endregion
 
