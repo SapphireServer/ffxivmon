@@ -33,10 +33,13 @@ namespace FFXIVMonReborn
             { "char",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
             { "float",     new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
 
-            //Sapphire Types
+            //Sapphire Common Types
             { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
             { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") }, //TODO: Special handling for this?
             { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 12, TypePrintMode.ObjectToString, "") },
+            
+            // Types in IPC (TODO: Parse?)
+            { "effectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
         };
 
         private Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();

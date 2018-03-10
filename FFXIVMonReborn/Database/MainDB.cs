@@ -208,7 +208,8 @@ namespace FFXIVMonReborn.Database
 
             foreach (var entry in ServerZoneIpcType)
             {
-                Regex r = new Regex($"({entry.Value.Item1})");
+                Debug.WriteLine($"Looking for struct for {entry.Value.Item1}");
+                Regex r = new Regex($"(FFXIVIpc{entry.Value.Item1})");
                 Match m = r.Match(data);
                 if (m.Success)
                 {
