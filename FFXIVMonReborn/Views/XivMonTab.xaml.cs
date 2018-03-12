@@ -14,6 +14,7 @@ using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
+using Be.Windows.Forms;
 
 namespace FFXIVMonReborn.Views
 {
@@ -29,7 +30,6 @@ namespace FFXIVMonReborn.Views
         private Thread _captureThread;
 
         private MemoryStream _currentPacketStream;
-
         private MainDB _db;
         private int _version = -1;
 
@@ -327,7 +327,7 @@ namespace FFXIVMonReborn.Views
             _currentPacketStream = new MemoryStream(item.Data);
             try
             {
-                HexEditor.Stream = _currentPacketStream;
+                HexEditor.ByteProvider = new DynamicByteProvider(item.Data);
             }
             catch (Exception exception)
             {
@@ -1024,9 +1024,7 @@ namespace FFXIVMonReborn.Views
                 return;
 
             var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            HexEditor.SetPosition(item.offset);
-            HexEditor.SelectionStart = item.offset;
-            HexEditor.SelectionStop = item.offset + item.typeLength;
+            HexEditor.Select(item.offset, item.typeLength);
         }
         #endregion
     }

@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="Be.Windows.Forms.WpfHexBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Be.Windows.Forms"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <DockPanel LastChildFill="True">
+        <StackPanel DockPanel.Dock="Bottom" Height="25">
+            <WrapPanel>
+                <Label>Line:</Label>
+                <Label Content="{Binding ElementName=HexBox, Path=CurrentLine, FallbackValue=0}" Margin="0,0,10,0" />
+                <Label>Position:</Label>
+                <Label Content="{Binding ElementName=HexBox, Path=CurrentPositionInLine, FallbackValue=0}" Margin="0,0,10,0" />
+                <Label>Selected Address:</Label>
+                <Label Content="{Binding ElementName=HexBox, Path=SelectionStart, FallbackValue=0}" Margin="0,0,10,0" />
+                <Label>Selected Bytes:</Label>
+                <Label Content="{Binding ElementName=HexBox, Path=SelectionLength, FallbackValue=0}" Margin="0,0,10,0" />
+            </WrapPanel>
+        </StackPanel>
+        <WindowsFormsHost>
+            <local:HexBox x:Name="HexBox" 
+                          StringViewVisible="True" 
+                          UseFixedBytesPerLine="True" 
+                          VScrollBarVisible="True" 
+                          LineInfoVisible="True" 
+                          ReadOnly="True"
+                          ColumnInfoVisible="True" 
+                          GroupSeparatorVisible="True" />
+        </WindowsFormsHost>
+    </DockPanel>
+</UserControl>
