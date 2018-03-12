@@ -21,6 +21,8 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Machina;
 using FFXIVMonReborn.Database;
+using FFXIVMonReborn.FileOp;
+using FFXIVMonReborn.Views;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -56,7 +58,7 @@ namespace FFXIVMonReborn
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-                var capture = CaptureFileOp.Load(_currentXmlFile);
+                var capture = XmlCaptureOp.Load(_currentXmlFile);
                 foreach (PacketListItem packet in capture.Packets)
                 {
                     AddPacketToListView(packet);
@@ -402,16 +404,9 @@ namespace FFXIVMonReborn
 
             if (item.MessageCol == "0142" || item.MessageCol == "0143" || item.MessageCol == "0144")
             {
-                using (MemoryStream stream = new MemoryStream(item.Data))
-                {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                    {
-                        stream.Position = 0x20;
-                        int category = reader.ReadUInt16();
-                        item.ActorControl = category;
-                        item.NameCol = _db.GetActorControlTypeName(category);
-                    }
-                }
+                int cat = BitConverter.ToUInt16(item.Data, 0x20);
+                item.ActorControl = cat;
+                item.NameCol = _db.GetActorControlTypeName(cat);
             }
 
             if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
@@ -484,14 +479,16 @@ namespace FFXIVMonReborn
 
                             if (item.NameCol.Contains("ActorControl"))
                             {
-                                Struct structProvider = new Struct();
-                                dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
                                 switch (item.ActorControl)
                                 {
                                     case 17: //ActionStart
+                                    {
+                                        Struct structProvider = new Struct();
+                                        dynamic obj = structProvider.Parse(structText, item.Data).Item2;
+                                        
                                         item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)obj.param2)}({obj.param2}) - Type {obj.param1}";
-                                        break;
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -550,7 +547,7 @@ namespace FFXIVMonReborn
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs, _version);
+                XmlCaptureOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs, _version);
                 MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 _currentXmlFile = fileDialog.FileName;
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
@@ -607,8 +604,8 @@ namespace FFXIVMonReborn
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
 
                     int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
-                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FFXIVReplayOp.GetNumPackets(replay).ToString()));
-                    _mainWindow.AddTab(FFXIVReplayOp.Import(replay, start, end));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayOp.GetNumPackets(replay).ToString()));
+                    _mainWindow.AddTab(FfxivReplayOp.Import(replay, start, end));
                     return;
                 }
                 else if (res == MessageBoxResult.No)
@@ -616,8 +613,8 @@ namespace FFXIVMonReborn
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
 
                     int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
-                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FFXIVReplayOp.GetNumPackets(replay).ToString()));
-                    LoadCapture(FFXIVReplayOp.Import(replay, start, end));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayOp.GetNumPackets(replay).ToString()));
+                    LoadCapture(FfxivReplayOp.Import(replay, start, end));
                 }
                 else
                 {
@@ -633,7 +630,7 @@ namespace FFXIVMonReborn
             _currentXmlFile = path;
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
 
-            var capture = CaptureFileOp.Load(path);
+            var capture = XmlCaptureOp.Load(path);
 
             _version = capture.Version;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);

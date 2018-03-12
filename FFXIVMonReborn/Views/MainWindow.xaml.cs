@@ -1,24 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Media;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Threading;
 using FFXIVMonReborn.Database;
 using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using FFXIVMonReborn.FileOp;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.Views
 {
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
@@ -408,7 +403,7 @@ namespace FFXIVMonReborn
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                var toDiff = CaptureFileOp.Load(openFileDialog.FileName).Packets;
+                var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
                 var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
 
                 new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
@@ -424,7 +419,7 @@ namespace FFXIVMonReborn
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                var toDiff = CaptureFileOp.Load(openFileDialog.FileName).Packets;
+                var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
                 var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
 
                 new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",

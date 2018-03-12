@@ -172,13 +172,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CaptureDiff.cs" />
-    <Compile Include="CaptureFileOp.cs" />
     <Compile Include="Database\MainDB.cs" />
     <Compile Include="Database\GithubApiCommits.cs" />
     <Compile Include="Database\GithubApiTags.cs" />
     <Compile Include="Database\Versioning.cs" />
     <Compile Include="ExdCsvReader.cs" />
-    <Compile Include="FFXIVReplayOp.cs" />
+    <Compile Include="FileOp\XmlCaptureOp.cs" />
+    <Compile Include="FileOp\FFXIVReplayOp.cs" />
     <Compile Include="Views\ScriptDebugView.xaml.cs">
       <DependentUpon>ScriptDebugView.xaml</DependentUpon>
     </Compile>

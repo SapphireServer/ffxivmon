@@ -7,9 +7,9 @@ using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.FileOp
 {
-    public class CaptureFileOp
+    public static class XmlCaptureOp
     {
         public static CaptureContainer Load(string path)
         {
