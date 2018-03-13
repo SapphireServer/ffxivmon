@@ -481,12 +481,19 @@ namespace FFXIVMonReborn
                             {
                                 switch (item.ActorControl)
                                 {
+                                    case 3: //CastStart
+                                    {
+                                        var ctrl = Util.FastParseActorControl(item.Data);
+                                        
+                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                    }
+                                    break;
+                                    
                                     case 17: //ActionStart
                                     {
-                                        Struct structProvider = new Struct();
-                                        dynamic obj = structProvider.Parse(structText, item.Data).Item2;
+                                        var ctrl = Util.FastParseActorControl(item.Data);
                                         
-                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)obj.param2)}({obj.param2}) - Type {obj.param1}";
+                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                     }
                                     break;
                                 }
