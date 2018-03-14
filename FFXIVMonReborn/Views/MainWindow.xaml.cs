@@ -66,8 +66,7 @@ namespace FFXIVMonReborn.Views
 
 
             // register the event that is fired after the key press.
-            _kbHook.KeyPressed +=
-                new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+            _kbHook.KeyPressed += hook_KeyPressed;
 
             try
             {
@@ -105,10 +104,14 @@ namespace FFXIVMonReborn.Views
 
             if (Properties.Settings.Default.LoadEXD)
             {
-                EnableExClick(null, null);
                 ExEnabledCheckbox.IsChecked = true;
             }
-            
+
+            if (Properties.Settings.Default.EnableFsWatcher)
+            {
+                WatchDefFilesCheckBox.IsChecked = true;
+            }
+
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
         }
 
@@ -483,27 +486,6 @@ namespace FFXIVMonReborn.Views
             ((XivMonTab)MainTabControl.SelectedContent).SetVersion(view.GetSelectedVersion());
         }
 
-        private void EnableExClick(object sender, RoutedEventArgs e)
-        {
-            if (!ExEnabledCheckbox.IsChecked)
-            {
-                if (ExdProvider == null)
-                    ExdProvider = new ExdCsvReader();
-
-                ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
-
-                ExEnabledCheckbox.IsChecked = true;
-                Properties.Settings.Default.LoadEXD = true;
-            }
-            else
-            {
-                ExEnabledCheckbox.IsChecked = false;
-                Properties.Settings.Default.LoadEXD = false;
-            }
-
-            Properties.Settings.Default.Save();
-        }
-
         private void ReloadExClick(object sender, RoutedEventArgs e)
         {
             ExdProvider = new ExdCsvReader();
@@ -517,15 +499,52 @@ namespace FFXIVMonReborn.Views
 
         private void WatchDefFilesCheckBox_OnClick(object sender, RoutedEventArgs e)
         {
-            switch (WatchDefFilesCheckBox.IsChecked)
+            MessageBox.Show(WatchDefFilesCheckBox.IsChecked.ToString());
+            if (!WatchDefFilesCheckBox.IsChecked)
             {
-                case true:
-                    VersioningProvider.StartWatcher();
-                    break;
-                default:
-                    VersioningProvider.StopWatcher();
-                    break;
+                VersioningProvider.StartWatcher();
+
+                Properties.Settings.Default.EnableFsWatcher = true;
             }
+            else
+            {
+                VersioningProvider.StopWatcher();
+
+                Properties.Settings.Default.EnableFsWatcher = false;
+            }
+
+            Properties.Settings.Default.Save();
+        }
+
+        private void WatchDefFilesCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            VersioningProvider.StartWatcher();
+            Properties.Settings.Default.EnableFsWatcher = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void WatchDefFilesCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            VersioningProvider.StopWatcher();
+            Properties.Settings.Default.EnableFsWatcher = false;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ExEnabledCheckbox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            if (ExdProvider == null)
+                ExdProvider = new ExdCsvReader();
+
+            ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
+            
+            Properties.Settings.Default.LoadEXD = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ExEnabledCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.LoadEXD = false;
+            Properties.Settings.Default.Save();
         }
     }
 }

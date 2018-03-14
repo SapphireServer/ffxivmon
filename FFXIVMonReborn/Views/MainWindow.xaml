@@ -37,7 +37,7 @@
                     <MenuItem Header="_Redownload Definitions" Click="RedownloadDefs"/>
                     <MenuItem Header="_Select Version" Click="SelectVersion"/>
                     <Separator></Separator>
-                    <MenuItem x:Name="WatchDefFilesCheckBox" Header="_Enable File Watcher for Definition Files" IsCheckable="True" Click="WatchDefFilesCheckBox_OnClick"/>
+                    <MenuItem x:Name="WatchDefFilesCheckBox" Header="_Enable File Watcher for Definition Files" IsCheckable="True" Checked="WatchDefFilesCheckBox_OnChecked" Unchecked="WatchDefFilesCheckBox_OnUnchecked"/>
                 </MenuItem>
                 <MenuItem Header="_Filters">
                     <MenuItem Header="_Set Filter" Click="SetFilterRelay"/>
@@ -57,7 +57,7 @@
                     <MenuItem Header="_Diff based on packet data" Click="Diff_BasedOnPacketData"/>
                 </MenuItem>
                 <MenuItem Header="_EXD">
-                    <MenuItem Name="ExEnabledCheckbox" Header="_Enable" Click="EnableExClick"/>
+                    <MenuItem x:Name="ExEnabledCheckbox" Header="_Enable" Checked="ExEnabledCheckbox_OnChecked" Unchecked="ExEnabledCheckbox_OnUnchecked"/>
                     <Separator></Separator>
                     <MenuItem Header="_Reload" Click="ReloadExClick"/>
                 </MenuItem>
