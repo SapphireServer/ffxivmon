@@ -258,15 +258,16 @@ namespace FFXIVMonReborn.Views
         
         private void ReloadAllTabs()
         {
-            foreach (TabItem tab  in MainTabControl.Items)
-            {
-                var xmt = tab.Content as XivMonTab;
-                
-                xmt.Dispatcher.Invoke(DispatcherPriority.Normal,
-                    new Action(() =>
-                    {
-                       xmt.ReloadDb();
-                    }));
+            foreach (TabItem tab in MainTabControl.Items) {
+                tab.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => {
+                    var xmt = tab.Content as XivMonTab;
+
+                    this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                        new Action(() =>
+                        {
+                            xmt.ReloadDb();
+                        }));
+                }));
             }
         }
         

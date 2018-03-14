@@ -154,6 +154,8 @@ namespace FFXIVMonReborn.Views
 
         private void ReloadCurrentPackets()
         {
+            var lastIndex = PacketListView.SelectedIndex;
+            
             PacketListItem[] array = new PacketListItem[PacketListView.Items.Count];
             PacketListView.Items.CopyTo(array, 0);
             PacketListView.Items.Clear();
@@ -162,6 +164,8 @@ namespace FFXIVMonReborn.Views
             {
                 AddPacketToListView(item);
             }
+
+            PacketListView.SelectedIndex = lastIndex;
         }
 
         public bool RequestClose()
