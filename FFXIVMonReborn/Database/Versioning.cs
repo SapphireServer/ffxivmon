@@ -16,6 +16,10 @@ namespace FFXIVMonReborn.Database
         public GithubApiTags[] Versions;
         private GithubApiCommits _latestCommit;
 
+        private FileSystemWatcher _watcher;
+        
+        public event EventHandler LocalDbChanged;   
+
         public Versioning()
         {
             try
@@ -47,14 +51,40 @@ namespace FFXIVMonReborn.Database
             }
         }
 
+        public void StartWatcher()
+        {
+            _watcher = new FileSystemWatcher
+            {
+                Path = Path.Combine(Environment.CurrentDirectory, "downloaded"),
+                NotifyFilter = NotifyFilters.LastWrite,
+                Filter = "*.h",
+                IncludeSubdirectories = true
+            };
+
+            _watcher.Changed += WatcherOnChanged;
+            _watcher.EnableRaisingEvents = true;
+        }
+
+        public void StopWatcher()
+        {
+            _watcher.EnableRaisingEvents = false;
+        }
+
+        private void WatcherOnChanged(object sender, FileSystemEventArgs fileSystemEventArgs)
+        {
+            LocalDbChanged?.Invoke(sender, fileSystemEventArgs);
+        }
+
         public void ForceReset()
         {
+            _watcher.EnableRaisingEvents = false;
+            
             try
             {
                 Directory.Delete(Path.Combine(Environment.CurrentDirectory, "downloaded"), true);
 
                 Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "downloaded"));
-
+                
                 Versions = GetTags(Properties.Settings.Default.Repo);
 
                 foreach (var version in Versions)

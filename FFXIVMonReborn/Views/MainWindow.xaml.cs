@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Threading;
 using FFXIVMonReborn.Database;
 using Machina;
 using Microsoft.VisualBasic;
@@ -20,13 +21,13 @@ namespace FFXIVMonReborn.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private KeyboardHook _kbHook = new KeyboardHook();
+        private readonly KeyboardHook _kbHook = new KeyboardHook();
 
-        public Versioning VersioningProvider = new Versioning();
+        public readonly Versioning VersioningProvider = new Versioning();
         public ExdCsvReader ExdProvider = null;
         public Scripting ScriptProvider = null;
 
-        public ScriptDebugView ScriptDebugView = new ScriptDebugView();
+        public readonly ScriptDebugView ScriptDebugView = new ScriptDebugView();
         private string[] _selectedScripts = new string[0];
         
         public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
@@ -107,6 +108,13 @@ namespace FFXIVMonReborn.Views
                 EnableExClick(null, null);
                 ExEnabledCheckbox.IsChecked = true;
             }
+            
+            VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
+        }
+
+        private void VersioningProviderOnLocalDbChanged(object sender, EventArgs eventArgs)
+        {
+            ReloadAllTabs();
         }
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
@@ -242,9 +250,24 @@ namespace FFXIVMonReborn.Views
             Properties.Settings.Default.Save();
         }
 
+        //TODO: Find a better way to do this, custom tab headers?
         private void MainTabControl_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             AddTab();
+        }
+        
+        private void ReloadAllTabs()
+        {
+            foreach (TabItem tab  in MainTabControl.Items)
+            {
+                var xmt = tab.Content as XivMonTab;
+                
+                xmt.Dispatcher.Invoke(DispatcherPriority.Normal,
+                    new Action(() =>
+                    {
+                       xmt.ReloadDb();
+                    }));
+            }
         }
         
         private bool AreTabsCapturing()
@@ -328,7 +351,7 @@ namespace FFXIVMonReborn.Views
         
         private void ReloadDBRelay(object sender, RoutedEventArgs e)
         {
-            ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+            ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
             MessageBox.Show("Database reloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         
@@ -433,7 +456,7 @@ namespace FFXIVMonReborn.Views
             if (res == MessageBoxResult.OK)
             {
                 VersioningProvider.ForceReset();
-                ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+                ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
                 MessageBox.Show($"Definitions downloaded.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
         }
@@ -444,12 +467,12 @@ namespace FFXIVMonReborn.Views
             Properties.Settings.Default.Repo = repo;
             Properties.Settings.Default.Save();
             VersioningProvider.ForceReset();
-            ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+            ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
         }
 
         private void LoadFFXIVReplayRelay(object sender, RoutedEventArgs e)
         {
-            ((XivMonTab)MainTabControl.SelectedContent).LoadFFXIVReplay();
+            ((XivMonTab)MainTabControl.SelectedContent).LoadFfxivReplay();
         }
 
         private void SelectVersion(object sender, RoutedEventArgs e)
@@ -466,7 +489,7 @@ namespace FFXIVMonReborn.Views
                 if (ExdProvider == null)
                     ExdProvider = new ExdCsvReader();
 
-                ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDB();
+                ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
 
                 ExEnabledCheckbox.IsChecked = true;
                 Properties.Settings.Default.LoadEXD = true;
@@ -483,12 +506,25 @@ namespace FFXIVMonReborn.Views
         private void ReloadExClick(object sender, RoutedEventArgs e)
         {
             ExdProvider = new ExdCsvReader();
-            ((XivMonTab)MainTabControl.SelectedContent).ReloadDB();
+            ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
         }
 
         private void Scripting_OpenOutputWindow(object sender, RoutedEventArgs e)
         {
             ScriptDebugView.Show();
+        }
+
+        private void WatchDefFilesCheckBox_OnClick(object sender, RoutedEventArgs e)
+        {
+            switch (WatchDefFilesCheckBox.IsChecked)
+            {
+                case true:
+                    VersioningProvider.StartWatcher();
+                    break;
+                default:
+                    VersioningProvider.StopWatcher();
+                    break;
+            }
         }
     }
 }
