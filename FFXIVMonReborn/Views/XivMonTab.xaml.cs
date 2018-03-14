@@ -1,34 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using Machina;
 using FFXIVMonReborn.Database;
 using FFXIVMonReborn.FileOp;
-using FFXIVMonReborn.Views;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.Views
 {
     /// <summary>
     /// Interaktionslogik für XivMonTab.xaml
@@ -167,6 +154,8 @@ namespace FFXIVMonReborn
 
         private void ReloadCurrentPackets()
         {
+            var lastIndex = PacketListView.SelectedIndex;
+            
             PacketListItem[] array = new PacketListItem[PacketListView.Items.Count];
             PacketListView.Items.CopyTo(array, 0);
             PacketListView.Items.Clear();
@@ -175,6 +164,8 @@ namespace FFXIVMonReborn
             {
                 AddPacketToListView(item);
             }
+
+            PacketListView.SelectedIndex = lastIndex;
         }
 
         public bool RequestClose()
@@ -529,7 +520,7 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
-        public void ReloadDB()
+        public void ReloadDb()
         {
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             if (_db.Reload())
@@ -549,8 +540,8 @@ namespace FFXIVMonReborn
                 return;
             }
 
-            var fileDialog = new System.Windows.Forms.SaveFileDialog();
-            fileDialog.Filter = "XML|*.xml";
+            var fileDialog = new System.Windows.Forms.SaveFileDialog {Filter = @"XML|*.xml"};
+            
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
@@ -569,8 +560,8 @@ namespace FFXIVMonReborn
             _filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "XML|*.xml";
-            openFileDialog.Title = "Select a Capture XML file";
+            openFileDialog.Filter = @"XML|*.xml";
+            openFileDialog.Title = @"Select a Capture XML file";
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -594,14 +585,16 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
-        public void LoadFFXIVReplay()
+        public void LoadFfxivReplay()
         {
             _currentPacketStream = new MemoryStream(new byte[] { });
             _filterString = "";
 
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "DAT|*.dat";
-            openFileDialog.Title = "Select a Replay DAT file";
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = @"DAT|*.dat",
+                Title = @"Select a Replay DAT file"
+            };
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -681,10 +674,11 @@ namespace FFXIVMonReborn
             {
                 var packet = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
 
-                var fileDialog = new System.Windows.Forms.SaveFileDialog();
-                fileDialog.Filter = "DAT|*.dat";
+                var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
+                
                 var result = fileDialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                
+                if (result == DialogResult.OK)
                 {
                     File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSingle(packet.Data));
                     MessageBox.Show($"Packet saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
@@ -694,7 +688,7 @@ namespace FFXIVMonReborn
             {
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
 
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     int count = 0;
                     foreach (PacketListItem item in items)
@@ -816,8 +810,8 @@ namespace FFXIVMonReborn
 
                 Console.WriteLine(packets.Count);
 
-                var fileDialog = new System.Windows.Forms.SaveFileDialog();
-                fileDialog.Filter = "DAT|*.dat";
+                var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
+                
                 var result = fileDialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
@@ -842,8 +836,8 @@ namespace FFXIVMonReborn
                 packets.Add(((PacketListItem)item).Data);
             }
 
-            var fileDialog = new System.Windows.Forms.SaveFileDialog();
-            fileDialog.Filter = "DAT|*.dat";
+            var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
+            
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {

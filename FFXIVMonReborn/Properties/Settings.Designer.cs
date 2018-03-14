@@ -142,5 +142,17 @@ namespace FFXIVMonReborn.Properties {
                 this["LoadEXD"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableFsWatcher {
+            get {
+                return ((bool)(this["EnableFsWatcher"]));
+            }
+            set {
+                this["EnableFsWatcher"] = value;
+            }
+        }
     }
 }
