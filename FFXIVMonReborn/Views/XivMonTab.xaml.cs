@@ -354,9 +354,18 @@ namespace FFXIVMonReborn.Views
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
 
+                    var colours = new List<System.Drawing.Color>
+                    {
+                        System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4),
+                        System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c),
+                        System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7)
+                    };
+
+                    var i = 0;
                     foreach (var entry in structEntries.Item1)
                     {
                         StructListView.Items.Add(entry);
+                        HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colours[++i % colours.Count]);
                     }
 
                     if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
