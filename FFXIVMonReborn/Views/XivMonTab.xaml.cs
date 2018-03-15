@@ -354,21 +354,20 @@ namespace FFXIVMonReborn.Views
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
 
-                    var colours = new List<System.Drawing.Color>
-                    {
-                        System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4),
-                        System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c),
-                        System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7)
-                    };
+                    var colours = Struct.typeColours;
 
                     var i = 0;
                     foreach (var entry in structEntries.Item1)
                     {
+                        System.Drawing.Color colour;
+                        if (!colours.TryGetValue(string.IsNullOrEmpty(entry.DataTypeCol) ? "unknown" : entry.DataTypeCol, out colour))
+                            colour = System.Drawing.Color.White;
+
                         StructListView.Items.Add(entry);
-                        HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colours[++i % colours.Count]);
+                        HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
                     }
 
-                    if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                    if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
                         new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
                 }
                 else

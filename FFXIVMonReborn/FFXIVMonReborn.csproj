@@ -41,7 +41,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Be.Windows.Forms.HexBox">
-      <HintPath>E:\coding\repositories\ffxiv related\sapphire\github\ffxivmon\lib\Be.HexEditor\sources\Be.Windows.Forms.HexBox\bin\Be.Windows.Forms.HexBox.dll</HintPath>
+      <HintPath>..\lib\Be.HexEditor\sources\Be.Windows.Forms.HexBox\bin\Be.Windows.Forms.HexBox.dll</HintPath>
     </Reference>
     <Reference Include="Machina">
       <HintPath>..\lib\Machina\bin\Machina.dll</HintPath>
