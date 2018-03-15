@@ -21,7 +21,7 @@ namespace FFXIVMonReborn
             Char
         }
 
-        private static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
+        private static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> DataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
         {
             // Name -               (C# Type - Length - Print Mode - IDA Compatible Type)
 
@@ -42,7 +42,7 @@ namespace FFXIVMonReborn
             { "effectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
         };
 
-        public static readonly Dictionary<string, System.Drawing.Color> typeColours = new Dictionary<string, System.Drawing.Color>
+        public static readonly Dictionary<string, System.Drawing.Color> TypeColours = new Dictionary<string, System.Drawing.Color>
         {
             { "uint8_t", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
             { "uint16_t", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
@@ -52,7 +52,7 @@ namespace FFXIVMonReborn
             //{ "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
         };
 
-        private Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
+        private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
 
         public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
         {
@@ -292,7 +292,7 @@ namespace FFXIVMonReborn
         private void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
         {
             Tuple<Type, int, TypePrintMode, string> type;
-            if (_dataTypeDictionary.TryGetValue(dataType, out type))
+            if (DataTypeDictionary.TryGetValue(dataType, out type))
             {
                 byte[] data = reader.ReadBytes(type.Item2);
                 item.typeLength = type.Item2;

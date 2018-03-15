@@ -354,7 +354,7 @@ namespace FFXIVMonReborn.Views
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
 
-                    var colours = Struct.typeColours;
+                    var colours = Struct.TypeColours;
 
                     var i = 0;
                     foreach (var entry in structEntries.Item1)
@@ -1035,6 +1035,11 @@ namespace FFXIVMonReborn.Views
             HexEditor.Select(item.offset, item.typeLength);
         }
         #endregion
+
+        private void HexEditor_OnOnSelectionStartChanged(object sender, EventArgs e)
+        {
+            DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
+        }
     }
 }
 
