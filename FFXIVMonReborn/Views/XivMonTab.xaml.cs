@@ -14,6 +14,7 @@ using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
+using Be.Windows.Forms;
 
 namespace FFXIVMonReborn.Views
 {
@@ -29,7 +30,6 @@ namespace FFXIVMonReborn.Views
         private Thread _captureThread;
 
         private MemoryStream _currentPacketStream;
-
         private MainDB _db;
         private int _version = -1;
 
@@ -327,7 +327,7 @@ namespace FFXIVMonReborn.Views
             _currentPacketStream = new MemoryStream(item.Data);
             try
             {
-                HexEditor.Stream = _currentPacketStream;
+                HexEditor.ByteProvider = new DynamicByteProvider(item.Data);
             }
             catch (Exception exception)
             {
@@ -354,12 +354,20 @@ namespace FFXIVMonReborn.Views
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
 
+                    var colours = Struct.typeColours;
+
+                    var i = 0;
                     foreach (var entry in structEntries.Item1)
                     {
+                        System.Drawing.Color colour;
+                        if (!colours.TryGetValue(string.IsNullOrEmpty(entry.DataTypeCol) ? "unknown" : entry.DataTypeCol, out colour))
+                            colour = System.Drawing.Color.White;
+
                         StructListView.Items.Add(entry);
+                        HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
                     }
 
-                    if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                    if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
                         new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
                 }
                 else
@@ -1024,9 +1032,7 @@ namespace FFXIVMonReborn.Views
                 return;
 
             var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            HexEditor.SetPosition(item.offset);
-            HexEditor.SelectionStart = item.offset;
-            HexEditor.SelectionStop = item.offset + item.typeLength;
+            HexEditor.Select(item.offset, item.typeLength);
         }
         #endregion
     }

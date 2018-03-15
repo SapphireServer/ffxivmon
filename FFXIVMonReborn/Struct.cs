@@ -42,6 +42,16 @@ namespace FFXIVMonReborn
             { "effectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
         };
 
+        public static readonly Dictionary<string, System.Drawing.Color> typeColours = new Dictionary<string, System.Drawing.Color>
+        {
+            { "uint8_t", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
+            { "uint16_t", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
+            { "uint32_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },
+            { "uint64_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xd7) },
+            { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
+            //{ "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
+        };
+
         private Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
 
         public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
