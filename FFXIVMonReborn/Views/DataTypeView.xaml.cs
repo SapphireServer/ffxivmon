@@ -55,14 +55,14 @@ namespace FFXIVMonReborn.Views
                 thisItem.DataTypeCol = type.DataTypeCol;
                 thisItem.ValueCol = type.ValueCol;
 
-                if (data.Length >= type.typeLength)
+                if (offset <= data.Length && data.Length >= type.typeLength)
                 {
                     try
                     {
                         if (thisItem.DataTypeCol == "int8_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToChar(data, offset));
+                            thisItem.ValueCol = String.Format("{0}", Convert.ToSByte(data[offset]));
                         else if (thisItem.DataTypeCol == "uint8_t")
-                            thisItem.ValueCol = String.Format("{0}", data[offset]);
+                            thisItem.ValueCol = String.Format("{0}", data[offset].ToString());
                         else if (thisItem.DataTypeCol == "int16_t")
                             thisItem.ValueCol = String.Format("{0}", BitConverter.ToInt16(data, offset));
                         else if (thisItem.DataTypeCol == "uint16_t")
@@ -78,13 +78,24 @@ namespace FFXIVMonReborn.Views
                         else if (thisItem.DataTypeCol == "float")
                             thisItem.ValueCol = String.Format("{0}", BitConverter.ToDouble(data, offset));
                         else if (thisItem.DataTypeCol == "time_t")
-                            thisItem.ValueCol = String.Format("{0}", DateTime.FromFileTime(BitConverter.ToUInt32(data, offset)));
+                            thisItem.ValueCol = String.Format("{0}", DateTimeOffset.FromUnixTimeSeconds(BitConverter.ToUInt32(data, offset)).ToLocalTime());
                         else if (thisItem.DataTypeCol == "string")
-                            thisItem.ValueCol = BitConverter.ToString(data, offset);
+                        {
+                            var str = Encoding.ASCII.GetString(data);
+                            str = str.Substring(offset, str.IndexOf('\0'));
+                            thisItem.ValueCol = str;
+                        }
+                    }
+                    catch (OverflowException e)
+                    {
+                        thisItem.ValueCol = String.Format("{0}", Convert.ToSByte(127 - data[offset]));
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
                     }
                     catch (Exception exc)
                     {
-                        new ExtendedErrorView("Failed to update DataTypeView component.", exc.ToString(), "Error").ShowDialog();
+                        //new ExtendedErrorView("Failed to update DataTypeView component.", exc.ToString(), "Error").ShowDialog();
                     }
                 }
                 this.DataTypeListView.Items.Add(thisItem);
