@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:FFXIVMonReborn"
         mc:Ignorable="d"
         xmlns:self="clr-namespace:FFXIVMonReborn"
-        xmlns:wpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
         xmlns:views="clr-namespace:FFXIVMonReborn.Views"
         Title="FFXIVMonReborn" Height="757.458" Width="1363.958" Closing="MainWindow_OnClosing">
     <Window.Resources>
