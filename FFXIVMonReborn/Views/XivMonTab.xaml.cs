@@ -324,10 +324,20 @@ namespace FFXIVMonReborn.Views
 
             var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
 
-            _currentPacketStream = new MemoryStream(item.Data);
+            var data = item.Data;
+
+            if (Properties.Settings.Default.HideHexBoxActorId)
+            {
+                byte[] noIdData = new byte[data.Length];
+                Array.Copy(data, 0, noIdData, 0, 3);
+                Array.Copy(data, 12, noIdData, 12, data.Length - 12);
+                data = noIdData;
+            }
+
+            _currentPacketStream = new MemoryStream(data);
             try
             {
-                HexEditor.ByteProvider = new DynamicByteProvider(item.Data);
+                HexEditor.ByteProvider = new DynamicByteProvider(data);
             }
             catch (Exception exception)
             {

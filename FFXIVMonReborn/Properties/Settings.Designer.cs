@@ -154,5 +154,17 @@ namespace FFXIVMonReborn.Properties {
                 this["EnableFsWatcher"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideHexBoxActorId {
+            get {
+                return ((bool)(this["HideHexBoxActorId"]));
+            }
+            set {
+                this["HideHexBoxActorId"] = value;
+            }
+        }
     }
 }

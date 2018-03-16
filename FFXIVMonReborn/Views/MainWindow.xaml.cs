@@ -112,6 +112,11 @@ namespace FFXIVMonReborn.Views
                 WatchDefFilesCheckBox.IsChecked = true;
             }
 
+            if (Properties.Settings.Default.HideHexBoxActorId)
+            {
+                HideHexBoxActorIdCheckBox.IsChecked = true;
+            }
+
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
         }
 
@@ -547,6 +552,18 @@ namespace FFXIVMonReborn.Views
         private void ExEnabledCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.LoadEXD = false;
+            Properties.Settings.Default.Save();
+        }
+
+        private void HideHexBoxActorIdCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.HideHexBoxActorId = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void HideHexBoxActorIdCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.HideHexBoxActorId = false;
             Properties.Settings.Default.Save();
         }
     }
