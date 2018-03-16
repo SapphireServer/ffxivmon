@@ -198,10 +198,13 @@ namespace FFXIVMonReborn.Views
                         {
                             ((XivMonTab)((TabItem)closeTab).Content).StopCapture();
                         }
-                        return;
+                        ScriptDebugView.Close();
+                        Environment.Exit(0);
                     }
                 }
             }
+            ScriptDebugView.Close();
+            Environment.Exit(0);
         }
 
         private void TabCloseClick(object sender, RoutedEventArgs e)

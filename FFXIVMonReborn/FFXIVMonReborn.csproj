@@ -182,8 +182,8 @@
     <Compile Include="Views\StructSelectView.xaml.cs">
       <DependentUpon>StructSelectView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateView.xaml.cs">
-      <DependentUpon>TemplateView.xaml</DependentUpon>
+    <Compile Include="Views\DataTypeView.xaml.cs">
+      <DependentUpon>DataTypeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\VersionSelectView.xaml.cs">
       <DependentUpon>VersionSelectView.xaml</DependentUpon>
@@ -214,7 +214,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\TemplateView.xaml">
+    <Page Include="Views\DataTypeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:FFXIVMonReborn"
              xmlns:forms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:views="clr-namespace:FFXIVMonReborn.Views"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -130,14 +131,23 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="25" />
                             </Grid.RowDefinitions>
-                            <forms:WpfHexBox Grid.Row="0" x:Name="HexEditor" FontSize="14" Grid.ColumnSpan="2"></forms:WpfHexBox>
+
+                            <Grid Grid.Row="0" Grid.ColumnSpan="25">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="700" />
+                                    <ColumnDefinition Width="5" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <forms:WpfHexBox Grid.Row="0" x:Name="HexEditor" FontSize="12" Grid.ColumnSpan="2" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged"/>
+                                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+                                <views:DataTypeView x:Name="DataTypeViewer" Grid.Column="3"  />
+                            </Grid>
+
                             <Label x:Name="CaptureInfoLabel"  Grid.Row="1" Grid.Column="1"></Label>
                         </Grid>
                     </Grid>
-                    <!-- <TextBlock FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Left side</TextBlock> -->
                     <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-                    <!-- <TextBlock Grid.Column="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Right side</TextBlock> -->
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>
@@ -147,6 +157,12 @@
                                 </Style.Triggers>
                             </Style>
                         </ListView.Resources>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem x:Name="CopyValue" Header="Copy Value (Ctrl+C)" Click="StructListView_CopyValue_Click"></MenuItem>
+                                <MenuItem x:Name="CopyDataTypeValue" Header="Copy All Cols (Ctrl+Shift+C)" Click="StructListView_CopyAllCols_Click"></MenuItem>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Datatype" DisplayMemberBinding="{Binding DataTypeCol}"/>

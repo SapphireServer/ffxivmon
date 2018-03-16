@@ -354,7 +354,7 @@ namespace FFXIVMonReborn.Views
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
 
-                    var colours = Struct.typeColours;
+                    var colours = Struct.TypeColours;
 
                     var i = 0;
                     foreach (var entry in structEntries.Item1)
@@ -1034,7 +1034,48 @@ namespace FFXIVMonReborn.Views
             var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
             HexEditor.Select(item.offset, item.typeLength);
         }
+
+        private void StructListView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (StructListView.IsKeyboardFocusWithin)
+            {
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) && e.Key == Key.C)
+                {
+                    if (Keyboard.IsKeyDown(Key.LeftShift))
+                        StructListView_CopyAllCols_Click(null, null);
+                    else
+                        StructListView_CopyValue_Click(null, null);
+                }
+            }
+        }
+
+        private void StructListView_CopyValue_Click(object sender, RoutedEventArgs e)
+        {
+            String str = "";
+            String newline = (StructListView.SelectedItems.Count > 1 ? Environment.NewLine : "");
+
+            foreach (StructListItem item in StructListView.SelectedItems)
+                str += item.ValueCol + newline;
+
+            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.Flush();
+        }
+
+        private void StructListView_CopyAllCols_Click(object sender, RoutedEventArgs e)
+        {
+            String str = "DataType\t|\tName\t|\tValue\t|\tOffset (hex)" + Environment.NewLine;
+            foreach (StructListItem item in StructListView.SelectedItems)
+                str += item.DataTypeCol + "\t|\t" + item.NameCol + "\t|\t" + item.ValueCol + "\t|\t" + item.OffsetCol + "h" + Environment.NewLine;
+
+            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.Flush();
+        }
         #endregion
+
+        private void HexEditor_OnOnSelectionStartChanged(object sender, EventArgs e)
+        {
+            DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
+        }
     }
 }
 
