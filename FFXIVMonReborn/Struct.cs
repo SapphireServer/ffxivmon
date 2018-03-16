@@ -21,7 +21,7 @@ namespace FFXIVMonReborn
             Char
         }
 
-        private static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> DataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
+        public static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> DataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
         {
             // Name -               (C# Type - Length - Print Mode - IDA Compatible Type)
 
@@ -31,6 +31,11 @@ namespace FFXIVMonReborn
             { "uint32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt32), 4, TypePrintMode.ObjectToString, "") },
             { "uint64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt64), 8, TypePrintMode.ObjectToString, "") },
             { "char",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
+            { "int8_t",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
+            { "int16_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int16), 2, TypePrintMode.ObjectToString, "") },
+            { "int32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int32), 4, TypePrintMode.ObjectToString, "") },
+            { "int64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int64), 8, TypePrintMode.ObjectToString, "") },
+
             { "float",     new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
 
             //Sapphire Common Types
@@ -289,7 +294,7 @@ namespace FFXIVMonReborn
         /// <summary>
         /// Parse value as string and it's lenght to a StructListItem
         /// </summary>
-        private void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
+        public void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
         {
             Tuple<Type, int, TypePrintMode, string> type;
             if (DataTypeDictionary.TryGetValue(dataType, out type))

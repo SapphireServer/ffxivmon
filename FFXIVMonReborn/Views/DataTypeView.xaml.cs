@@ -35,7 +35,8 @@ namespace FFXIVMonReborn.Views
                 new StructListItem{ DataTypeCol = "int32_t", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "uint64_t", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "int64_t", typeLength = 8, ValueCol = "Cannot parse." },
-                new StructListItem{ DataTypeCol = "float", typeLength = 4, ValueCol = "Cannot parse." },            
+                new StructListItem{ DataTypeCol = "float", typeLength = 4, ValueCol = "Cannot parse." },     
+                new StructListItem{ DataTypeCol = "double", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "time_t", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "string", typeLength = 1, ValueCol = "Cannot parse." },
             };
@@ -43,7 +44,7 @@ namespace FFXIVMonReborn.Views
 
         public void Reset()
         {
-            this.DataTypeListView.Items.Clear();
+            DataTypeListView.Items.Clear();
         }
 
         public void Apply(byte[] data, int offset)
@@ -55,8 +56,9 @@ namespace FFXIVMonReborn.Views
                 thisItem.DataTypeCol = type.DataTypeCol;
                 thisItem.ValueCol = type.ValueCol;
 
-                if (offset <= data.Length && data.Length >= type.typeLength)
+                if (offset <= data.Length && data.Length - offset >= type.typeLength)
                 {
+                    thisItem.OffsetCol = offset.ToString("X");
                     try
                     {
                         if (thisItem.DataTypeCol == "int8_t")
@@ -76,13 +78,16 @@ namespace FFXIVMonReborn.Views
                         else if (thisItem.DataTypeCol == "uint64_t")
                             thisItem.ValueCol = String.Format("{0}", BitConverter.ToUInt64(data, offset));
                         else if (thisItem.DataTypeCol == "float")
+                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToSingle(data, offset));
+                        else if (thisItem.DataTypeCol == "double")
                             thisItem.ValueCol = String.Format("{0}", BitConverter.ToDouble(data, offset));
                         else if (thisItem.DataTypeCol == "time_t")
                             thisItem.ValueCol = String.Format("{0}", DateTimeOffset.FromUnixTimeSeconds(BitConverter.ToUInt32(data, offset)).ToLocalTime());
                         else if (thisItem.DataTypeCol == "string")
                         {
                             var str = Encoding.ASCII.GetString(data);
-                            str = str.Substring(offset, str.IndexOf('\0'));
+                            var nullByteOffset = str.IndexOf((char)0, offset);
+                            str = str.Substring(offset, nullByteOffset - offset);
                             thisItem.ValueCol = str;
                         }
                     }
@@ -98,8 +103,46 @@ namespace FFXIVMonReborn.Views
                         //new ExtendedErrorView("Failed to update DataTypeView component.", exc.ToString(), "Error").ShowDialog();
                     }
                 }
-                this.DataTypeListView.Items.Add(thisItem);
+                DataTypeListView.Items.Add(thisItem);
             }
+        }
+
+        private void DataTypeListView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (DataTypeListView.IsKeyboardFocusWithin)
+            {
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) && e.Key == Key.C)
+                {
+                    if (Keyboard.IsKeyDown(Key.LeftShift))
+                        DataTypeView_CopyAllCols_Click(null, null);
+                    else
+                        DataTypeView_CopyValue_Click(null, null);
+                }
+            }
+        }
+
+        private void DataTypeView_CopyValue_Click(object sender, RoutedEventArgs e)
+        {
+            String str = "";
+            String newline = (DataTypeListView.SelectedItems.Count > 1 ? Environment.NewLine : "");
+
+            foreach (StructListItem item in DataTypeListView.SelectedItems)
+            {
+                str += item.ValueCol + newline;
+            }
+            Clipboard.SetText(str);
+            Clipboard.Flush();
+        }
+
+        private void DataTypeView_CopyAllCols_Click(object sender, RoutedEventArgs e)
+        {
+            String str = "DataType\t|\tValue\t|\tOffset (hex)" + Environment.NewLine;
+            foreach (StructListItem item in DataTypeListView.SelectedItems)
+            {
+                str += item.DataTypeCol + "\t|\t" + item.ValueCol + "\t|\t" + item.OffsetCol + "h" + Environment.NewLine;
+            }
+            Clipboard.SetText(str);
+            Clipboard.Flush();
         }
     }
 }

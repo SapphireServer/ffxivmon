@@ -147,7 +147,7 @@
                         </Grid>
                     </Grid>
                     <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>
@@ -157,6 +157,12 @@
                                 </Style.Triggers>
                             </Style>
                         </ListView.Resources>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem x:Name="CopyValue" Header="Copy Value (Ctrl+C)" Click="StructListView_CopyValue_Click"></MenuItem>
+                                <MenuItem x:Name="CopyDataTypeValue" Header="Copy All Cols (Ctrl+Shift+C)" Click="StructListView_CopyAllCols_Click"></MenuItem>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Datatype" DisplayMemberBinding="{Binding DataTypeCol}"/>
