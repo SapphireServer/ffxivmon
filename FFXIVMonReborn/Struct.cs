@@ -21,7 +21,7 @@ namespace FFXIVMonReborn
             Char
         }
 
-        private static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> _dataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
+        public static readonly Dictionary<string, Tuple<Type, int, TypePrintMode, string>> DataTypeDictionary = new Dictionary<string, Tuple<Type, int, TypePrintMode, string>>
         {
             // Name -               (C# Type - Length - Print Mode - IDA Compatible Type)
 
@@ -31,15 +31,33 @@ namespace FFXIVMonReborn
             { "uint32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt32), 4, TypePrintMode.ObjectToString, "") },
             { "uint64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt64), 8, TypePrintMode.ObjectToString, "") },
             { "char",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
+            { "int8_t",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
+            { "int16_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int16), 2, TypePrintMode.ObjectToString, "") },
+            { "int32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int32), 4, TypePrintMode.ObjectToString, "") },
+            { "int64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int64), 8, TypePrintMode.ObjectToString, "") },
+
             { "float",     new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
 
-            //Sapphire Types
+            //Sapphire Common Types
             { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
             { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") }, //TODO: Special handling for this?
             { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 12, TypePrintMode.ObjectToString, "") },
+            
+            // Types in IPC (TODO: Parse?)
+            { "effectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
         };
 
-        private Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
+        public static readonly Dictionary<string, System.Drawing.Color> TypeColours = new Dictionary<string, System.Drawing.Color>
+        {
+            { "uint8_t", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
+            { "uint16_t", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
+            { "uint32_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },
+            { "uint64_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xd7) },
+            { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
+            //{ "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
+        };
+
+        private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
 
         public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
         {
@@ -276,10 +294,10 @@ namespace FFXIVMonReborn
         /// <summary>
         /// Parse value as string and it's lenght to a StructListItem
         /// </summary>
-        private void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
+        public void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
         {
             Tuple<Type, int, TypePrintMode, string> type;
-            if (_dataTypeDictionary.TryGetValue(dataType, out type))
+            if (DataTypeDictionary.TryGetValue(dataType, out type))
             {
                 byte[] data = reader.ReadBytes(type.Item2);
                 item.typeLength = type.Item2;

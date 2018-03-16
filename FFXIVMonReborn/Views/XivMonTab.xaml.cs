@@ -1,32 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using Machina;
 using FFXIVMonReborn.Database;
+using FFXIVMonReborn.FileOp;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
+using Be.Windows.Forms;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.Views
 {
     /// <summary>
     /// Interaktionslogik für XivMonTab.xaml
@@ -40,7 +30,6 @@ namespace FFXIVMonReborn
         private Thread _captureThread;
 
         private MemoryStream _currentPacketStream;
-
         private MainDB _db;
         private int _version = -1;
 
@@ -56,7 +45,7 @@ namespace FFXIVMonReborn
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-                var capture = CaptureFileOp.Load(_currentXmlFile);
+                var capture = XmlCaptureOp.Load(_currentXmlFile);
                 foreach (PacketListItem packet in capture.Packets)
                 {
                     AddPacketToListView(packet);
@@ -165,6 +154,8 @@ namespace FFXIVMonReborn
 
         private void ReloadCurrentPackets()
         {
+            var lastIndex = PacketListView.SelectedIndex;
+            
             PacketListItem[] array = new PacketListItem[PacketListView.Items.Count];
             PacketListView.Items.CopyTo(array, 0);
             PacketListView.Items.Clear();
@@ -173,6 +164,8 @@ namespace FFXIVMonReborn
             {
                 AddPacketToListView(item);
             }
+
+            PacketListView.SelectedIndex = lastIndex;
         }
 
         public bool RequestClose()
@@ -331,10 +324,20 @@ namespace FFXIVMonReborn
 
             var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
 
-            _currentPacketStream = new MemoryStream(item.Data);
+            var data = item.Data;
+
+            if (Properties.Settings.Default.HideHexBoxActorId)
+            {
+                byte[] noIdData = new byte[data.Length];
+                Array.Copy(data, 0, noIdData, 0, 3);
+                Array.Copy(data, 12, noIdData, 12, data.Length - 12);
+                data = noIdData;
+            }
+
+            _currentPacketStream = new MemoryStream(data);
             try
             {
-                HexEditor.Stream = _currentPacketStream;
+                HexEditor.ByteProvider = new DynamicByteProvider(data);
             }
             catch (Exception exception)
             {
@@ -361,12 +364,20 @@ namespace FFXIVMonReborn
                     var structProvider = new Struct();
                     var structEntries = structProvider.Parse(structText, item.Data);
 
+                    var colours = Struct.TypeColours;
+
+                    var i = 0;
                     foreach (var entry in structEntries.Item1)
                     {
+                        System.Drawing.Color colour;
+                        if (!colours.TryGetValue(string.IsNullOrEmpty(entry.DataTypeCol) ? "unknown" : entry.DataTypeCol, out colour))
+                            colour = System.Drawing.Color.White;
+
                         StructListView.Items.Add(entry);
+                        HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
                     }
 
-                    if(_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                    if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
                         new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
                 }
                 else
@@ -402,16 +413,9 @@ namespace FFXIVMonReborn
 
             if (item.MessageCol == "0142" || item.MessageCol == "0143" || item.MessageCol == "0144")
             {
-                using (MemoryStream stream = new MemoryStream(item.Data))
-                {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                    {
-                        stream.Position = 0x20;
-                        int category = reader.ReadUInt16();
-                        item.ActorControl = category;
-                        item.NameCol = _db.GetActorControlTypeName(category);
-                    }
-                }
+                int cat = BitConverter.ToUInt16(item.Data, 0x20);
+                item.ActorControl = cat;
+                item.NameCol = _db.GetActorControlTypeName(cat);
             }
 
             if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
@@ -484,14 +488,23 @@ namespace FFXIVMonReborn
 
                             if (item.NameCol.Contains("ActorControl"))
                             {
-                                Struct structProvider = new Struct();
-                                dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
                                 switch (item.ActorControl)
                                 {
+                                    case 3: //CastStart
+                                    {
+                                        var ctrl = Util.FastParseActorControl(item.Data);
+                                        
+                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                    }
+                                    break;
+                                    
                                     case 17: //ActionStart
-                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)obj.param2)}({obj.param2}) - Type {obj.param1}";
-                                        break;
+                                    {
+                                        var ctrl = Util.FastParseActorControl(item.Data);
+                                        
+                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -525,7 +538,7 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
-        public void ReloadDB()
+        public void ReloadDb()
         {
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             if (_db.Reload())
@@ -545,12 +558,12 @@ namespace FFXIVMonReborn
                 return;
             }
 
-            var fileDialog = new System.Windows.Forms.SaveFileDialog();
-            fileDialog.Filter = "XML|*.xml";
+            var fileDialog = new System.Windows.Forms.SaveFileDialog {Filter = @"XML|*.xml"};
+            
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                CaptureFileOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs, _version);
+                XmlCaptureOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs, _version);
                 MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 _currentXmlFile = fileDialog.FileName;
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
@@ -565,8 +578,8 @@ namespace FFXIVMonReborn
             _filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "XML|*.xml";
-            openFileDialog.Title = "Select a Capture XML file";
+            openFileDialog.Filter = @"XML|*.xml";
+            openFileDialog.Title = @"Select a Capture XML file";
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -590,14 +603,16 @@ namespace FFXIVMonReborn
             UpdateInfoLabel();
         }
 
-        public void LoadFFXIVReplay()
+        public void LoadFfxivReplay()
         {
             _currentPacketStream = new MemoryStream(new byte[] { });
             _filterString = "";
 
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "DAT|*.dat";
-            openFileDialog.Title = "Select a Replay DAT file";
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = @"DAT|*.dat",
+                Title = @"Select a Replay DAT file"
+            };
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -607,8 +622,8 @@ namespace FFXIVMonReborn
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
 
                     int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
-                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FFXIVReplayOp.GetNumPackets(replay).ToString()));
-                    _mainWindow.AddTab(FFXIVReplayOp.Import(replay, start, end));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayOp.GetNumPackets(replay).ToString()));
+                    _mainWindow.AddTab(FfxivReplayOp.Import(replay, start, end));
                     return;
                 }
                 else if (res == MessageBoxResult.No)
@@ -616,8 +631,8 @@ namespace FFXIVMonReborn
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
 
                     int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
-                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FFXIVReplayOp.GetNumPackets(replay).ToString()));
-                    LoadCapture(FFXIVReplayOp.Import(replay, start, end));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayOp.GetNumPackets(replay).ToString()));
+                    LoadCapture(FfxivReplayOp.Import(replay, start, end));
                 }
                 else
                 {
@@ -633,7 +648,7 @@ namespace FFXIVMonReborn
             _currentXmlFile = path;
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
 
-            var capture = CaptureFileOp.Load(path);
+            var capture = XmlCaptureOp.Load(path);
 
             _version = capture.Version;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
@@ -677,10 +692,11 @@ namespace FFXIVMonReborn
             {
                 var packet = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
 
-                var fileDialog = new System.Windows.Forms.SaveFileDialog();
-                fileDialog.Filter = "DAT|*.dat";
+                var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
+                
                 var result = fileDialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                
+                if (result == DialogResult.OK)
                 {
                     File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSingle(packet.Data));
                     MessageBox.Show($"Packet saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
@@ -690,7 +706,7 @@ namespace FFXIVMonReborn
             {
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
 
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     int count = 0;
                     foreach (PacketListItem item in items)
@@ -812,8 +828,8 @@ namespace FFXIVMonReborn
 
                 Console.WriteLine(packets.Count);
 
-                var fileDialog = new System.Windows.Forms.SaveFileDialog();
-                fileDialog.Filter = "DAT|*.dat";
+                var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
+                
                 var result = fileDialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
@@ -838,8 +854,8 @@ namespace FFXIVMonReborn
                 packets.Add(((PacketListItem)item).Data);
             }
 
-            var fileDialog = new System.Windows.Forms.SaveFileDialog();
-            fileDialog.Filter = "DAT|*.dat";
+            var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
+            
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
@@ -1026,11 +1042,50 @@ namespace FFXIVMonReborn
                 return;
 
             var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            HexEditor.SetPosition(item.offset);
-            HexEditor.SelectionStart = item.offset;
-            HexEditor.SelectionStop = item.offset + item.typeLength;
+            HexEditor.Select(item.offset, item.typeLength);
+        }
+
+        private void StructListView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (StructListView.IsKeyboardFocusWithin)
+            {
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) && e.Key == Key.C)
+                {
+                    if (Keyboard.IsKeyDown(Key.LeftShift))
+                        StructListView_CopyAllCols_Click(null, null);
+                    else
+                        StructListView_CopyValue_Click(null, null);
+                }
+            }
+        }
+
+        private void StructListView_CopyValue_Click(object sender, RoutedEventArgs e)
+        {
+            String str = "";
+            String newline = (StructListView.SelectedItems.Count > 1 ? Environment.NewLine : "");
+
+            foreach (StructListItem item in StructListView.SelectedItems)
+                str += item.ValueCol + newline;
+
+            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.Flush();
+        }
+
+        private void StructListView_CopyAllCols_Click(object sender, RoutedEventArgs e)
+        {
+            String str = "DataType\t|\tName\t|\tValue\t|\tOffset (hex)" + Environment.NewLine;
+            foreach (StructListItem item in StructListView.SelectedItems)
+                str += item.DataTypeCol + "\t|\t" + item.NameCol + "\t|\t" + item.ValueCol + "\t|\t" + item.OffsetCol + "h" + Environment.NewLine;
+
+            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.Flush();
         }
         #endregion
+
+        private void HexEditor_OnOnSelectionStartChanged(object sender, EventArgs e)
+        {
+            DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
+        }
     }
 }
 

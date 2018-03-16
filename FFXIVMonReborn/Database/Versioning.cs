@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using FFXIVMonReborn.Database.Commits;
 
@@ -15,6 +11,10 @@ namespace FFXIVMonReborn.Database
     {
         public GithubApiTags[] Versions;
         private GithubApiCommits _latestCommit;
+
+        private FileSystemWatcher _watcher;
+        
+        public event EventHandler LocalDbChanged;   
 
         public Versioning()
         {
@@ -47,14 +47,40 @@ namespace FFXIVMonReborn.Database
             }
         }
 
+        public void StartWatcher()
+        {
+            _watcher = new FileSystemWatcher
+            {
+                Path = Path.Combine(Environment.CurrentDirectory, "downloaded"),
+                NotifyFilter = NotifyFilters.LastWrite,
+                Filter = "*.h",
+                IncludeSubdirectories = true
+            };
+
+            _watcher.Changed += WatcherOnChanged;
+            _watcher.EnableRaisingEvents = true;
+        }
+
+        public void StopWatcher()
+        {
+            _watcher.EnableRaisingEvents = false;
+        }
+
+        private void WatcherOnChanged(object sender, FileSystemEventArgs fileSystemEventArgs)
+        {
+            LocalDbChanged?.Invoke(sender, fileSystemEventArgs);
+        }
+
         public void ForceReset()
         {
+            _watcher.EnableRaisingEvents = false;
+            
             try
             {
                 Directory.Delete(Path.Combine(Environment.CurrentDirectory, "downloaded"), true);
 
                 Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "downloaded"));
-
+                
                 Versions = GetTags(Properties.Settings.Default.Repo);
 
                 foreach (var version in Versions)
@@ -104,30 +130,30 @@ namespace FFXIVMonReborn.Database
             using (WebClient client = new WebClient())
             {
                 client.Headers.Add("User-Agent", "XIVMon");
-                string result =
+                var result =
                     client.DownloadString($"https://api.github.com/repos/{Properties.Settings.Default.Repo}/commits");
                 File.WriteAllText(Path.Combine("downloaded", "commits.json"), result);
 
-                return Commits.GithubApiCommits.FromJson(result)[0];
+                return GithubApiCommits.FromJson(result)[0];
             }
         }
 
-        public string GetCommon(string commit)
+        private string GetCommon(string commit)
         {
-            return File.ReadAllText(Path.Combine("downloaded", commit, "Common.h"));
+            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "Common.h"));
         }
 
-        public string GetIpcs(string commit)
+        private string GetIpcs(string commit)
         {
-            return File.ReadAllText(Path.Combine("downloaded", commit, "Ipcs.h"));
+            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "Ipcs.h"));
         }
 
-        public string GetServerZoneDef(string commit)
+        private string GetServerZoneDef(string commit)
         {
-            return File.ReadAllText(Path.Combine("downloaded", commit, "ServerZoneDef.h"));
+            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "ServerZoneDef.h"));
         }
 
-        public void DownloadDefinitions(string commit)
+        private void DownloadDefinitions(string commit)
         {
             try
             {
@@ -159,7 +185,7 @@ namespace FFXIVMonReborn.Database
         }
 
 
-        public static GithubApiTags[] GetTags(string repo)
+        private static GithubApiTags[] GetTags(string repo)
         {
             if (File.Exists(Path.Combine("downloaded", "tags.json")))
                 return GithubApiTags.FromJson(File.ReadAllText(Path.Combine("downloaded", "tags.json")));

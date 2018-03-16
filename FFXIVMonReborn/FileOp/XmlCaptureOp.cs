@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.FileOp
 {
-    public class CaptureFileOp
+    public static class XmlCaptureOp
     {
         public static CaptureContainer Load(string path)
         {
@@ -91,45 +92,48 @@ namespace FFXIVMonReborn
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
-            settings.IndentChars = "     ";
+            settings.IndentChars = "  ";
             settings.NewLineOnAttributes = false;
+            settings.Encoding = new UTF8Encoding(false); // Do not emit the byte order marker (BOM)
 
             using (XmlWriter writer = XmlWriter.Create(path, settings))
             {
-                writer.WriteStartDocument();
-                writer.WriteStartElement("Capture");
+                // Create a document
+                var doc = new XDocument();
                 
-                writer.WriteElementString("UsingSystemTime", usingSystemTime.ToString());
-                writer.WriteElementString("Version", version.ToString());
+                // Create a root element
+                var xRoot = new XElement("Capture");
+                
+                // Write some normal stuff
+                xRoot.Add(new XElement("UsingSystemTime", usingSystemTime.ToString()));
+                xRoot.Add(new XElement("Version", version.ToString()));
+                
+                // Write packets
+                var xPackets = new XElement("Packets");
+                foreach (var entry in packetCollection)
+                {
+                    var packet = (PacketListItem)entry;
 
-                writer.WriteStartElement("Packets");
-                writer.WriteEndElement();
+                    var xPacketEntry = new XElement("PacketEntry");
+                    xPacketEntry.Add(new XElement("Direction", packet.DirectionCol));
+                    xPacketEntry.Add(new XElement("Message", packet.MessageCol));
+                    xPacketEntry.Add(new XElement("Timestamp", packet.TimeStampCol));
+                    xPacketEntry.Add(new XElement("RouteID", packet.RouteIdCol));
+                    xPacketEntry.Add(new XElement("Data", Util.ByteArrayToString(packet.Data)));
+                    xPacketEntry.Add(new XElement("Set", packet.Set));
+                    xPacketEntry.Add(new XElement("PacketUnixTime", packet.PacketUnixTime));
+                    xPacketEntry.Add(new XElement("SystemMsTime", packet.SystemMsTime));
 
-                writer.WriteEndElement();
-                writer.WriteEndDocument();
+                    xPackets.Add(xPacketEntry);
+                }
+                xRoot.Add(xPackets);
+
+                // Add a root element
+                doc.Add(xRoot);
+
+                // Write a document to the file
+                doc.Save(writer);
             }
-
-            XDocument doc = XDocument.Parse(File.ReadAllText(path));
-
-            foreach (var entry in packetCollection)
-            {
-                var packet = (PacketListItem)entry;
-
-                XElement packetEntry = new XElement("PacketEntry");
-                packetEntry.Add(new XElement("Direction", packet.DirectionCol));
-                packetEntry.Add(new XElement("Message", packet.MessageCol));
-                packetEntry.Add(new XElement("Timestamp", packet.TimeStampCol));
-                packetEntry.Add(new XElement("RouteID", packet.RouteIdCol));
-                packetEntry.Add(new XElement("Data", Util.ByteArrayToString(packet.Data)));
-                packetEntry.Add(new XElement("Set", packet.Set));
-                packetEntry.Add(new XElement("PacketUnixTime", packet.PacketUnixTime));
-                packetEntry.Add(new XElement("SystemMsTime", packet.SystemMsTime));
-
-                doc.Element("Capture").Element("Packets").Add(packetEntry);
-            }
-
-            doc.Save(path);
-
         }
     }
 }

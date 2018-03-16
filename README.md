@@ -2,6 +2,10 @@
 
 --------
 
-A rewrite of FFXIVMon in C#.
+A FINAL FANTASY XIV Network analysis tool.
+
+![pic](https://i.imgur.com/mkGVE9s.png)
+
+Includes automated packet parsing from the main Sapphire repo, scripting features, linking packet information to EXD tables, etc.
 
 Depends on a fork of [Machina](https://github.com/goaaats/machina) by Ravahn. 

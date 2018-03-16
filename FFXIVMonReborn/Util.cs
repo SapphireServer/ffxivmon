@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -105,6 +106,59 @@ namespace FFXIVMonReborn
             for (int i = 0; i < NumberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
+        }
+
+        public static ActorControlContainer FastParseActorControl(byte[] data)
+        {
+            var msg = BitConverter.ToUInt32(data, 0x12);
+            
+            var container = new ActorControlContainer();
+            container.Cat = BitConverter.ToUInt16(data, 0x20);
+            
+            container.Param1 = BitConverter.ToUInt32(data, 0x24);
+            container.Param2 = BitConverter.ToUInt32(data, 0x28);
+            container.Param3 = BitConverter.ToUInt32(data, 0x2C);
+            container.Param4 = BitConverter.ToUInt32(data, 0x30);
+
+            if (msg == 0x143)
+            {
+                container.Param5 = BitConverter.ToUInt32(data, 0x34);
+                container.Param6 = BitConverter.ToUInt32(data, 0x38);
+            }
+
+            if (msg == 0x144)
+            {
+                container.TargetId = BitConverter.ToUInt64(data, 0x38);
+            }
+
+            return container;
+        }
+        
+        public class ActorControlContainer
+        {
+            public uint Cat { get; set; }
+            public uint Param1 { get; set; }
+            public uint Param2 { get; set; }
+            public uint Param3 { get; set; }
+            public uint Param4 { get; set; }
+            public uint Param5 { get; set; }
+            public uint Param6 { get; set; }
+            public ulong TargetId { get; set; }
+        }
+
+        public static string FileWaitReadAllText(string path)
+        {
+            while (true)
+            {
+                try
+                {
+                    return File.ReadAllText(path);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
         }
 
     }
