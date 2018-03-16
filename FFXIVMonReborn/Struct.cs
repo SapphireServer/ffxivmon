@@ -193,7 +193,7 @@ namespace FFXIVMonReborn
                                     List<Object> values = new List<object>();
                                     foreach (var aryItem in aryItems)
                                     {
-                                        values.Add(aryItem.RawValue);   
+                                        values.Add(aryItem.RawValue);
                                     }
                                     
                                     ((IDictionary<String, Object>) exobj).Add(Regex.Replace(aryItems[0].NameCol, "(\\[.*\\])|(\".*\")|('.*')|(\\(.*\\))", ""), values.ToArray());
