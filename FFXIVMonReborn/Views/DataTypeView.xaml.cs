@@ -38,7 +38,8 @@ namespace FFXIVMonReborn.Views
                 new StructListItem{ DataTypeCol = "float", typeLength = 4, ValueCol = "Cannot parse." },     
                 new StructListItem{ DataTypeCol = "double", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "time_t", typeLength = 4, ValueCol = "Cannot parse." },
-                new StructListItem{ DataTypeCol = "string", typeLength = 1, ValueCol = "Cannot parse." },
+                new StructListItem{ DataTypeCol = "string (ascii)", typeLength = 1, ValueCol = "Cannot parse." },
+                new StructListItem{ DataTypeCol = "string (utf8)", typeLength = 1, ValueCol = "Cannot parse."}
             };
         }
 
@@ -83,12 +84,17 @@ namespace FFXIVMonReborn.Views
                             thisItem.ValueCol = String.Format("{0}", BitConverter.ToDouble(data, offset));
                         else if (thisItem.DataTypeCol == "time_t")
                             thisItem.ValueCol = String.Format("{0}", DateTimeOffset.FromUnixTimeSeconds(BitConverter.ToUInt32(data, offset)).ToLocalTime());
-                        else if (thisItem.DataTypeCol == "string")
+                        else if (thisItem.DataTypeCol == "string (ascii)")
                         {
                             var str = Encoding.ASCII.GetString(data);
-                            var nullByteOffset = str.IndexOf((char)0, offset);
-                            str = str.Substring(offset, nullByteOffset - offset);
-                            thisItem.ValueCol = str;
+                            var terminatorOffset = str.IndexOf((char)0, offset);
+                            thisItem.ValueCol = str.Substring(offset, terminatorOffset - offset);
+                        }
+                        else if (thisItem.DataTypeCol == "string (utf8)")
+                        {
+                            var str = Encoding.UTF8.GetString(data);
+                            var terminatorOffset = str.IndexOf((char)0, offset);
+                            thisItem.ValueCol = str.Substring(offset, terminatorOffset - offset);
                         }
                     }
                     catch (OverflowException e)

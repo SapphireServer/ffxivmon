@@ -26,8 +26,8 @@
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Datatype" Width="80" DisplayMemberBinding="{Binding DataTypeCol}"/>
-                    <GridViewColumn Header="Value" Width="200" DisplayMemberBinding="{Binding ValueCol}"/>
+                    <GridViewColumn Header="Datatype" Width="Auto" DisplayMemberBinding="{Binding DataTypeCol}"/>
+                    <GridViewColumn Header="Value" Width="Auto" DisplayMemberBinding="{Binding ValueCol}"/>
                 </GridView>
             </ListView.View>
         </ListView>
