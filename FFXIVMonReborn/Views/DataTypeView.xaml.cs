@@ -149,16 +149,19 @@ namespace FFXIVMonReborn.Views
             foreach (StructListItem item in DataTypeListView.SelectedItems)
                 str += (item.DataTypeCol == "binary" ? item.ValueCol.Replace(Environment.NewLine, " ") : item.ValueCol) + newline;
 
-            Clipboard.SetText(str);
+            Clipboard.SetDataObject(str);
             Clipboard.Flush();
         }
 
         private void DataTypeView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
             // determine width to align tab character to
-            int typeWidth = 0, valWidth = 0, offsetWidth = 0;
+            int typeWidth = "DataType".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in DataTypeListView.SelectedItems)
             {
+                if (item.DataTypeCol == null)
+                    continue;
+
                 typeWidth = item.DataTypeCol.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
                 valWidth = item.ValueCol.Length > valWidth ? item.ValueCol.Length : valWidth;
                 offsetWidth = item.OffsetCol.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
@@ -190,7 +193,7 @@ namespace FFXIVMonReborn.Views
                 else
                     str += String.Format(fstr, item.DataTypeCol, valStr, item.OffsetCol + "h", Environment.NewLine);
             }
-            Clipboard.SetText(str);
+            Clipboard.SetDataObject(str);
             Clipboard.Flush();
         }
     }

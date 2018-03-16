@@ -1057,16 +1057,19 @@ namespace FFXIVMonReborn.Views
             foreach (StructListItem item in StructListView.SelectedItems)
                 str += item.ValueCol + newline;
 
-            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.SetDataObject(str);
             System.Windows.Clipboard.Flush();
         }
 
         private void StructListView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
             // determine width to align tab character to
-            int typeWidth = 0, valWidth = 0, offsetWidth = 0;
+            int typeWidth = "DataType".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in StructListView.SelectedItems)
             {
+                if (item.DataTypeCol == null)
+                    continue;
+
                 typeWidth = item.DataTypeCol.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
                 valWidth = item.ValueCol.Length > valWidth ? item.ValueCol.Length : valWidth;
                 offsetWidth = item.OffsetCol.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
@@ -1081,7 +1084,7 @@ namespace FFXIVMonReborn.Views
             foreach (StructListItem item in StructListView.SelectedItems)
                 str += String.Format(fstr, item.DataTypeCol, item.ValueCol, item.OffsetCol + "h", Environment.NewLine);
 
-            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.SetDataObject(str);
             System.Windows.Clipboard.Flush();
         }
         #endregion
