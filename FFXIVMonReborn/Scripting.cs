@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Reflection;
+using FFXIVMonReborn.DataModel;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
@@ -19,7 +20,7 @@ namespace FFXIVMonReborn
             // Create a custom ScriptOptions instance
             scriptOptions = ScriptOptions.Default
                 .WithReferences(
-                    typeof(PacketListItem).GetTypeInfo().Assembly)
+                    typeof(PacketEntry).GetTypeInfo().Assembly)
                 .WithImports(
                     "FFXIVMonReborn");
         }
@@ -84,11 +85,11 @@ namespace FFXIVMonReborn
     public class PacketEventArgs : EventArgs
     {
         // Used by event handlers
-        public readonly PacketListItem Packet;
+        public readonly PacketEntry Packet;
         public readonly ExpandoObject PacketObj;
         public readonly ScriptDebugView Debug;
 
-        public PacketEventArgs(PacketListItem packet, ExpandoObject packetobj, ScriptDebugView debugView)
+        public PacketEventArgs(PacketEntry packet, ExpandoObject packetobj, ScriptDebugView debugView)
         {
             this.Packet = packet;
             this.PacketObj = packetobj;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVMonReborn.DataModel;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -37,9 +38,9 @@ namespace FFXIVMonReborn.FileOp
             }
         }
 
-        public static PacketListItem[] Import(byte[] replay, int start, int end)
+        public static PacketEntry[] Import(byte[] replay, int start, int end)
         {
-            List<PacketListItem> output = new List<PacketListItem>();
+            var output = new List<PacketEntry>();
             string log = "";
 
             using (MemoryStream stream = new MemoryStream(replay))
@@ -94,8 +95,8 @@ namespace FFXIVMonReborn.FileOp
                         lastTime = timeOffset;
                         
                         if(i >= start)
-                            output.Add(new PacketListItem {MessageCol = opcode.ToString("X4"), Data = data, DirectionCol = "S", RouteIdCol = "?", Set = 0,
-                                CategoryCol = "?", IsVisible = true, SizeCol = data.Length.ToString(), TimeStampCol = time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")});
+                            output.Add(new PacketEntry {Message = opcode.ToString("X4"), Data = data, Direction = "S", RouteID = "?", Set = 0,
+                                Category = "?", IsVisible = true, Size = data.Length.ToString(), Timestamp = time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")});
                         
                         // log += $"->Packet: {opcode.ToString("X")} - {length} bytes - {timeOffset}ms - for {actorId.ToString("X")} - {time.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt")}\n";
                     }

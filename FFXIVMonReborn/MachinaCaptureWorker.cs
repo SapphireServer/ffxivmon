@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Views;
 using Machina;
 using Machina.FFXIV;
@@ -42,13 +43,13 @@ namespace FFXIVMonReborn
         {
             var res = Parse(message);
 
-            PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "S",
-                CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(), 
-                Set = set, RouteIdCol = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis() };
+            var item = new PacketEntry { IsVisible = true, ActorControl = -1, Data = message, Message = res.header.MessageType.ToString("X4"), Direction = "S",
+                Category = set.ToString(), Timestamp = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), Size = res.header.MessageLength.ToString(), 
+                Set = set, RouteID = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis() };
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
-                item.TimeStampCol = DateTime.Now.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
+                item.Timestamp = DateTime.Now.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
             }
 
             _myTab.Dispatcher.Invoke(new Action(() => { _myTab.AddPacketToListView(item); }));
@@ -58,13 +59,13 @@ namespace FFXIVMonReborn
         {
             var res = Parse(message);
 
-            PacketListItem item = new PacketListItem() { IsVisible = true, ActorControl = -1, Data = message, MessageCol = res.header.MessageType.ToString("X4"), DirectionCol = "C",
-                CategoryCol = set.ToString(), TimeStampCol = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), SizeCol = res.header.MessageLength.ToString(),
-                Set = set, RouteIdCol = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis() };
+            var item = new PacketEntry { IsVisible = true, ActorControl = -1, Data = message, Message = res.header.MessageType.ToString("X4"), Direction = "C",
+                Category = set.ToString(), Timestamp = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), Size = res.header.MessageLength.ToString(),
+                Set = set, RouteID = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis() };
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
-                item.TimeStampCol = DateTime.Now.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
+                item.Timestamp = DateTime.Now.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
             }
 
             _myTab.Dispatcher.Invoke(new Action(() => { _myTab.AddPacketToListView(item); }));
@@ -115,25 +116,5 @@ namespace FFXIVMonReborn
         private long Millis() {
             return (long.MaxValue + DateTime.Now.ToBinary()) / 10000;
         }
-    }
-
-    public class PacketListItem
-    {
-        public byte[] Data;
-        public bool IsVisible { get; set; } = true;
-        public int ActorControl { get; set; }
-        public int Set { get; set; }
-        public uint PacketUnixTime { get; set; }
-        public long SystemMsTime { get; set; }
-
-        public string DirectionCol { get; set; }
-        public string MessageCol { get; set; }
-        public string NameCol { get; set; }
-        public string RouteIdCol { get; set; }
-        public string CommentCol { get; set; }
-        public string SizeCol { get; set; }
-        public string CategoryCol { get; set; }
-        public string TimeStampCol { get; set; }
-
     }
 }

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using FFXIVMonReborn.DataModel;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 
 namespace FFXIVMonReborn
@@ -10,22 +10,22 @@ namespace FFXIVMonReborn
         private const int MaxLengthDiff = 0x1;
         private const int HeadSizeToSkip = 0x20;
 
-        public static string GenerateLenghtBasedReport(PacketListItem[] baseCap, PacketListItem[] toDiff)
+        public static string GenerateLenghtBasedReport(PacketEntry[] baseCap, PacketEntry[] toDiff)
         {
             Dictionary<string, string> newOpMap = new Dictionary<string, string>();
 
             foreach (var baseCapPacket in baseCap)
             {
-                Debug.WriteLine($"Diff for {baseCapPacket.MessageCol}");
+                Debug.WriteLine($"Diff for {baseCapPacket.Message}");
 
-                if (!newOpMap.ContainsKey(baseCapPacket.MessageCol))
+                if (!newOpMap.ContainsKey(baseCapPacket.Message))
                 {
                     foreach (var toDiffPacket in toDiff)
                     {
                         if ((toDiffPacket.Data.Length < baseCapPacket.Data.Length + MaxLengthDiff) &&
                             (toDiffPacket.Data.Length > baseCapPacket.Data.Length - MaxLengthDiff))
                         {
-                            newOpMap.Add(baseCapPacket.MessageCol, $"{toDiffPacket.MessageCol}(0x{toDiffPacket.Data.Length.ToString("X")})");
+                            newOpMap.Add(baseCapPacket.Message, $"{toDiffPacket.Message}(0x{toDiffPacket.Data.Length.ToString("X")})");
                             break;
                         }
                     }
@@ -42,7 +42,7 @@ namespace FFXIVMonReborn
             return output;
         }
         
-        public static string GenerateDataBasedReport(PacketListItem[] baseCap, PacketListItem[] toDiff)
+        public static string GenerateDataBasedReport(PacketEntry[] baseCap, PacketEntry[] toDiff)
         {
             Dictionary<string, List<KeyValuePair<float, string>>> newOpMap = new Dictionary<string, List<KeyValuePair<float, string>>>();
 
@@ -52,9 +52,9 @@ namespace FFXIVMonReborn
                 if(skippedBaseData.Length == 0)
                     continue;
                 
-                Debug.WriteLine($"Diff for {baseCap[i].MessageCol}");
+                Debug.WriteLine($"Diff for {baseCap[i].Message}");
 
-                if (!newOpMap.ContainsKey(baseCap[i].MessageCol))
+                if (!newOpMap.ContainsKey(baseCap[i].Message))
                 {
                     List<KeyValuePair<float, string>> thisKey = new List<KeyValuePair<float, string>>();
                     for (int j = 0; j < toDiff.Length; j++)
@@ -69,13 +69,13 @@ namespace FFXIVMonReborn
                         
                         if(pctBase > 50 || pctToDiff > 50)
                         {
-                            thisKey.Add(new KeyValuePair<float, string>(pctBase, $"Candidate: {baseCap[i].MessageCol} -> {toDiff[j].MessageCol}({pctBase}% - {pctToDiff}%)[{i} - {j}]\n"));
-                            Debug.WriteLine($"Candidate: {baseCap[i].MessageCol} -> {toDiff[j].MessageCol}({pctBase}% - {pctToDiff}%)[{i} - {j}]\n");
+                            thisKey.Add(new KeyValuePair<float, string>(pctBase, $"Candidate: {baseCap[i].Message} -> {toDiff[j].Message}({pctBase}% - {pctToDiff}%)[{i} - {j}]\n"));
+                            Debug.WriteLine($"Candidate: {baseCap[i].Message} -> {toDiff[j].Message}({pctBase}% - {pctToDiff}%)[{i} - {j}]\n");
                             break;
                         }
                     }
                     
-                    newOpMap.Add(baseCap[i].MessageCol, thisKey);
+                    newOpMap.Add(baseCap[i].Message, thisKey);
                 }
             }
             string output = "";

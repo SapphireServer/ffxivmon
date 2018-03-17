@@ -15,6 +15,8 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 using Be.Windows.Forms;
+using System.Linq;
+using FFXIVMonReborn.DataModel;
 
 namespace FFXIVMonReborn.Views
 {
@@ -42,28 +44,35 @@ namespace FFXIVMonReborn.Views
         {
             InitializeComponent();
 
-            if (!string.IsNullOrEmpty(_currentXmlFile))
+            try
             {
-                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-                var capture = XmlCaptureOp.Load(_currentXmlFile);
-                foreach (PacketListItem packet in capture.Packets)
+                if (!string.IsNullOrEmpty(_currentXmlFile))
                 {
-                    AddPacketToListView(packet);
+                    ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+                    var capture = XmlCaptureOp.Load(_currentXmlFile);
+                    foreach (var packet in capture.Packets)
+                    {
+                        AddPacketToListView(packet);
+                    }
+                    _wasCapturedMs = bool.Parse(capture.UsingSystemTime);
                 }
-                _wasCapturedMs = capture.UsingSystemTime;
-            }
 
-            UpdateInfoLabel();
+                UpdateInfoLabel();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Error loading XivMonTab - {ex.Message}");
+            }
         }
         
-        public XivMonTab(PacketListItem[] packets)
+        public XivMonTab(PacketEntry[] packets)
         {
             InitializeComponent();
 
             if (!string.IsNullOrEmpty(_currentXmlFile))
             {
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension("FFXIV Replay"));
-                foreach (PacketListItem packet in packets)
+                foreach (var packet in packets)
                 {
                     AddPacketToListView(packet);
                 }
@@ -156,7 +165,7 @@ namespace FFXIVMonReborn.Views
         {
             var lastIndex = PacketListView.SelectedIndex;
             
-            PacketListItem[] array = new PacketListItem[PacketListView.Items.Count];
+            var array = new PacketEntry[PacketListView.Items.Count];
             PacketListView.Items.CopyTo(array, 0);
             PacketListView.Items.Clear();
 
@@ -280,13 +289,13 @@ namespace FFXIVMonReborn.Views
             var view = new StructSelectView(_db.ServerZoneIpcType);
             view.ShowDialog();
 
-            var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
+            var item = (PacketEntry)PacketListView.Items[PacketListView.SelectedIndex];
 
             StructListView.Items.Clear();
 
             try
             {
-                if (item.DirectionCol == "S")
+                if (item.Direction == "S")
                 {
                     var structText = _db.GetServerZoneStruct(view.GetSelectedOpCode());
 
@@ -299,7 +308,7 @@ namespace FFXIVMonReborn.Views
                     }
 
                     if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
-                        new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
+                        new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
                 }
                 else
                 {
@@ -311,7 +320,7 @@ namespace FFXIVMonReborn.Views
             }
             catch (Exception exc)
             {
-                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
+                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
             }
 
             UpdateInfoLabel();
@@ -322,7 +331,7 @@ namespace FFXIVMonReborn.Views
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            var item = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
+            var item = (PacketEntry)PacketListView.Items[PacketListView.SelectedIndex];
 
             var data = item.Data;
 
@@ -349,9 +358,9 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                if (item.DirectionCol == "S")
+                if (item.Direction == "S")
                 {
-                    var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                    var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
 
                     if (structText == null)
                     {
@@ -378,7 +387,7 @@ namespace FFXIVMonReborn.Views
                     }
 
                     if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
-                        new ExtendedErrorView("Object map for " + item.NameCol, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
+                        new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
                 }
                 else
                 {
@@ -390,32 +399,32 @@ namespace FFXIVMonReborn.Views
             }
             catch (Exception exc)
             {
-                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.NameCol} - {item.MessageCol}", exc.ToString(), "Error").ShowDialog();
+                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
             }
 
             UpdateInfoLabel();
         }
 
-        public void AddPacketToListView(PacketListItem item)
+        public void AddPacketToListView(PacketEntry item)
         {
-            if (item.DirectionCol == "S")
+            if (item.Direction == "S")
             {
-                item.NameCol = _db.GetServerZoneOpName(int.Parse(item.MessageCol, NumberStyles.HexNumber));
-                item.CommentCol = _db.GetServerZoneOpComment(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
+                item.Comment = _db.GetServerZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
             }
             else
             {
-                item.NameCol = _db.GetClientZoneOpName(int.Parse(item.MessageCol, NumberStyles.HexNumber));
-                item.CommentCol = _db.GetClientZoneOpComment(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
+                item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
             }
 
-            item.CategoryCol = item.Set.ToString();
+            item.Category = item.Set.ToString();
 
-            if (item.MessageCol == "0142" || item.MessageCol == "0143" || item.MessageCol == "0144")
+            if (item.Message == "0142" || item.Message == "0143" || item.Message == "0144")
             {
                 int cat = BitConverter.ToUInt16(item.Data, 0x20);
                 item.ActorControl = cat;
-                item.NameCol = _db.GetActorControlTypeName(cat);
+                item.Name = _db.GetActorControlTypeName(cat);
             }
 
             if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
@@ -425,7 +434,7 @@ namespace FFXIVMonReborn.Views
                     
                     PacketEventArgs args = null;
                             
-                    var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                    var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
 
                     if (structText != null)
                     {
@@ -454,24 +463,24 @@ namespace FFXIVMonReborn.Views
                 }
             }
 
-            if (_mainWindow.ExEnabledCheckbox.IsChecked && item.DirectionCol == "S")
+            if (_mainWindow.ExEnabledCheckbox.IsChecked && item.Direction == "S")
             {
                 try
                 {
-                    var structText = _db.GetServerZoneStruct(int.Parse(item.MessageCol, NumberStyles.HexNumber));
+                    var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
 
                     if (structText != null)
                     {
                         if (structText.Length != 0)
                         {
-                            switch (item.NameCol)
+                            switch (item.Name)
                             {
                                 case "NpcSpawn":
                                 {
                                     Struct structProvider = new Struct();
                                     dynamic obj = structProvider.Parse(structText, item.Data).Item2;
 
-                                    item.CommentCol =
+                                    item.Comment =
                                         $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName})";
                                 }
                                     break;
@@ -481,12 +490,12 @@ namespace FFXIVMonReborn.Views
                                     Struct structProvider = new Struct();
                                     dynamic obj = structProvider.Parse(structText, item.Data).Item2;
                                     
-                                    item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
+                                    item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
                                 }
                                     break;
                             }
 
-                            if (item.NameCol.Contains("ActorControl"))
+                            if (item.Name.Contains("ActorControl"))
                             {
                                 switch (item.ActorControl)
                                 {
@@ -494,7 +503,7 @@ namespace FFXIVMonReborn.Views
                                     {
                                         var ctrl = Util.FastParseActorControl(item.Data);
                                         
-                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                        item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                     }
                                     break;
                                     
@@ -502,7 +511,7 @@ namespace FFXIVMonReborn.Views
                                     {
                                         var ctrl = Util.FastParseActorControl(item.Data);
                                         
-                                        item.CommentCol = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                        item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                     }
                                     break;
                                 }
@@ -513,7 +522,7 @@ namespace FFXIVMonReborn.Views
                 catch (Exception exc)
                 {
                     MessageBox.Show(
-                        $"[XivMonTab] EXD error for {item.MessageCol} - {item.NameCol}!\n\n{exc}",
+                        $"[XivMonTab] EXD error for {item.Message} - {item.Name}!\n\n{exc}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     _mainWindow.ExEnabledCheckbox.IsChecked = false;
                 }
@@ -563,10 +572,23 @@ namespace FFXIVMonReborn.Views
             var result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                XmlCaptureOp.Save(PacketListView.Items, fileDialog.FileName, _wasCapturedMs, _version);
-                MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                _currentXmlFile = fileDialog.FileName;
-                ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+                var capture = new Capture
+                {
+                    Packets = PacketListView.Items.Cast<PacketEntry>().ToArray(),
+                    UsingSystemTime = _wasCapturedMs.ToString().ToLower(),
+                    Version = _version
+                };
+                try
+                {
+                    XmlCaptureOp.Save(capture, fileDialog.FileName);
+                    MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    _currentXmlFile = fileDialog.FileName;
+                    ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving capture - {ex.Message}");
+                }
             }
 
             UpdateInfoLabel();
@@ -648,27 +670,34 @@ namespace FFXIVMonReborn.Views
             _currentXmlFile = path;
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
 
-            var capture = XmlCaptureOp.Load(path);
-
-            _version = capture.Version;
-            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
-            foreach (PacketListItem packet in capture.Packets)
+            try
             {
-                AddPacketToListView(packet);
+                var capture = XmlCaptureOp.Load(path);
+
+                _version = capture.Version;
+                _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                foreach (var packet in capture.Packets)
+                {
+                    AddPacketToListView(packet);
+                }
+                _wasCapturedMs = bool.Parse(capture.UsingSystemTime);
+
+                UpdateInfoLabel();
             }
-            _wasCapturedMs = capture.UsingSystemTime;
-            
-            UpdateInfoLabel();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading capture: {path} - {ex.Message}");
+            }
         }
         
-        public void LoadCapture(PacketListItem[] packets)
+        public void LoadCapture(PacketEntry[] packets)
         {
             PacketListView.Items.Clear();
             ChangeTitle("FFXIV Replay");
 
             _version = -1;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
-            foreach (PacketListItem packet in packets)
+            foreach (var packet in packets)
             {
                 AddPacketToListView(packet);
             }
@@ -680,7 +709,7 @@ namespace FFXIVMonReborn.Views
         #region PacketExporting
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
         {
-            var items = PacketListView.SelectedItems;
+            var items = (List<PacketEntry>)PacketListView.SelectedItems;
 
             if (items.Count == 0)
             {
@@ -690,7 +719,7 @@ namespace FFXIVMonReborn.Views
             }
             else if (items.Count == 1)
             {
-                var packet = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
+                var packet = (PacketEntry)PacketListView.Items[PacketListView.SelectedIndex];
 
                 var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
                 
@@ -709,9 +738,9 @@ namespace FFXIVMonReborn.Views
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     int count = 0;
-                    foreach (PacketListItem item in items)
+                    foreach (var item in items)
                     {
-                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.MessageCol}-{String.Join("_", item.TimeStampCol.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"),
+                        File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.Message}-{String.Join("_", item.Timestamp.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"),
                             InjectablePacketBuilder.BuildSingle(item.Data));
 
                         count++;
@@ -742,11 +771,11 @@ namespace FFXIVMonReborn.Views
                 
                 foreach (var item in items)
                 {
-                    var startPacket = (PacketListItem) item;
+                    var startPacket = (PacketEntry)item;
 
                     int index = PacketListView.Items.IndexOf(startPacket);
                     
-                    if(inSetIndexes.Contains(index) || startPacket.DirectionCol == "C")
+                    if(inSetIndexes.Contains(index) || startPacket.Direction == "C")
                         continue;
                 
                     List<byte[]> packets = new List<byte[]>();
@@ -755,9 +784,9 @@ namespace FFXIVMonReborn.Views
                     int at = index - 1;
                     while (true && at != 0 && at != -1)
                     {
-                        if (((PacketListItem) PacketListView.Items[at]).Set == startPacket.Set)
+                        if (((PacketEntry)PacketListView.Items[at]).Set == startPacket.Set)
                         {
-                            packets.Insert(0, ((PacketListItem)PacketListView.Items[at]).Data);
+                            packets.Insert(0, ((PacketEntry)PacketListView.Items[at]).Data);
                             inSetIndexes.Add(at);
                         }
                         else
@@ -768,9 +797,9 @@ namespace FFXIVMonReborn.Views
                     at = index + 1;
                     while (true && at < PacketListView.Items.Count)
                     {
-                        if (((PacketListItem) PacketListView.Items[at]).Set == startPacket.Set)
+                        if (((PacketEntry)PacketListView.Items[at]).Set == startPacket.Set)
                         {
-                            packets.Add(((PacketListItem)PacketListView.Items[at]).Data);
+                            packets.Add(((PacketEntry)PacketListView.Items[at]).Data);
                             inSetIndexes.Add(at);
                         }
                         else
@@ -801,7 +830,7 @@ namespace FFXIVMonReborn.Views
             }
             else if (items.Count == 1)
             {
-                var startPacket = (PacketListItem)PacketListView.Items[PacketListView.SelectedIndex];
+                var startPacket = (PacketEntry)PacketListView.Items[PacketListView.SelectedIndex];
 
                 List<byte[]> packets = new List<byte[]>();
                 packets.Add(startPacket.Data);
@@ -809,8 +838,8 @@ namespace FFXIVMonReborn.Views
                 int at = PacketListView.SelectedIndex - 1;
                 while (true)
                 {
-                    if (((PacketListItem)PacketListView.Items[at]).Set == startPacket.Set)
-                        packets.Insert(0, ((PacketListItem)PacketListView.Items[at]).Data);
+                    if (((PacketEntry)PacketListView.Items[at]).Set == startPacket.Set)
+                        packets.Insert(0, ((PacketEntry)PacketListView.Items[at]).Data);
                     else
                         break;
                     at--;
@@ -819,8 +848,8 @@ namespace FFXIVMonReborn.Views
                 at = PacketListView.SelectedIndex + 1;
                 while (true)
                 {
-                    if (((PacketListItem)PacketListView.Items[at]).Set == startPacket.Set)
-                        packets.Add(((PacketListItem)PacketListView.Items[at]).Data);
+                    if (((PacketEntry)PacketListView.Items[at]).Set == startPacket.Set)
+                        packets.Add(((PacketEntry)PacketListView.Items[at]).Data);
                     else
                         break;
                     at++;
@@ -851,7 +880,7 @@ namespace FFXIVMonReborn.Views
 
             foreach (var item in PacketListView.SelectedItems)
             {
-                packets.Add(((PacketListItem)item).Data);
+                packets.Add(((PacketEntry)item).Data);
             }
 
             var fileDialog = new SaveFileDialog {Filter = @"DAT|*.dat"};
@@ -914,7 +943,7 @@ namespace FFXIVMonReborn.Views
                 bool predResult = false;
                 foreach (var filterEntry in filters)
                 {
-                    predResult = filterEntry.IsApplicableForFilterSet((PacketListItem)item);
+                    predResult = filterEntry.IsApplicableForFilterSet((PacketEntry)item);
          
                     if (predResult)
                         return predResult;
@@ -971,27 +1000,27 @@ namespace FFXIVMonReborn.Views
                 {
                     foreach (var item in PacketListView.Items)
                     {
-                        if (((PacketListItem)item).IsVisible)
+                        if (((PacketEntry)item).IsVisible)
                         {
                             PacketEventArgs args = null;
                             
-                            var structText = _db.GetServerZoneStruct(int.Parse(((PacketListItem)item).MessageCol, NumberStyles.HexNumber));
+                            var structText = _db.GetServerZoneStruct(int.Parse(((PacketEntry)item).Message, NumberStyles.HexNumber));
 
                             if (structText != null)
                             {
                                 var structProvider = new Struct();
-                                var structEntries = structProvider.Parse(structText, ((PacketListItem)item).Data);
+                                var structEntries = structProvider.Parse(structText, ((PacketEntry)item).Data);
 
                                 foreach (var entry in structEntries.Item1)
                                 {
                                     StructListView.Items.Add(entry);
                                 }
                             
-                                args = new PacketEventArgs((PacketListItem)item, structEntries.Item2, _mainWindow.ScriptDebugView);
+                                args = new PacketEventArgs((PacketEntry)item, structEntries.Item2, _mainWindow.ScriptDebugView);
                             }
                             else
                             {
-                                args = new PacketEventArgs((PacketListItem)item, null, _mainWindow.ScriptDebugView);
+                                args = new PacketEventArgs((PacketEntry)item, null, _mainWindow.ScriptDebugView);
                             }
                             Scripting_RunOnPacket(args);
                         }

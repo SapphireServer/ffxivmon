@@ -1,10 +1,9 @@
-﻿using System;
+﻿using FFXIVMonReborn.DataModel;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.Policy;
 using System.Text;
-using System.Windows;
 
 namespace FFXIVMonReborn
 {
@@ -102,14 +101,14 @@ namespace FFXIVMonReborn
         public FilterType type;
         public object value;
 
-        public bool IsApplicableForFilterSet(PacketListItem item)
+        public bool IsApplicableForFilterSet(PacketEntry item)
         {
             bool isApplicable = false;
 
             switch (this.type)
             {
                 case FilterType.Message:
-                    if (item.MessageCol == ((int)this.value).ToString("X4"))
+                    if (item.Message == ((int)this.value).ToString("X4"))
                     {
                         isApplicable = true;
                     }
@@ -123,14 +122,14 @@ namespace FFXIVMonReborn
                     break;
 
                 case FilterType.ActorControlName:
-                    if (item.ActorControl != -1 && item.NameCol.ToLower().Contains(((string)this.value).ToLower()))
+                    if (item.ActorControl != -1 && item.Name.ToLower().Contains(((string)this.value).ToLower()))
                     {
                         isApplicable = true;
                     }
                     break;
 
                 case FilterType.PacketName:
-                    if (item.NameCol.ToLower().Contains(((string)this.value).ToLower()))
+                    if (item.Name.ToLower().Contains(((string)this.value).ToLower()))
                     {
                         isApplicable = true;
                     }
