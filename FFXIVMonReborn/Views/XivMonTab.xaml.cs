@@ -1096,17 +1096,32 @@ namespace FFXIVMonReborn.Views
             foreach (StructListItem item in StructListView.SelectedItems)
                 str += item.ValueCol + newline;
 
-            System.Windows.Clipboard.SetText(str);
+            System.Windows.Clipboard.SetDataObject(str);
             System.Windows.Clipboard.Flush();
         }
 
         private void StructListView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
-            String str = "DataType\t|\tName\t|\tValue\t|\tOffset (hex)" + Environment.NewLine;
+            // determine width to align tab character to
+            int typeWidth = "DataType".Length, nameWidth = "Cannot parse.".Length, valWidth = "Cannot parse.".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in StructListView.SelectedItems)
-                str += item.DataTypeCol + "\t|\t" + item.NameCol + "\t|\t" + item.ValueCol + "\t|\t" + item.OffsetCol + "h" + Environment.NewLine;
+            {
+                typeWidth = item.DataTypeCol?.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
+                valWidth = item.ValueCol?.Length > valWidth ? item.ValueCol.Length : valWidth;
+                offsetWidth = item.OffsetCol?.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
+                nameWidth = item.NameCol?.Length > nameWidth ? item.NameCol.Length : nameWidth;
+            }
 
-            System.Windows.Clipboard.SetText(str);
+            // format string
+            String fstr = $"{{0,-{typeWidth}}}\t|\t{{1,-{nameWidth}}}\t|\t{{2,-{valWidth}}}\t|\t{{3,-{offsetWidth}}}{{4}}";
+
+            // start the string with header
+            String str = String.Format(fstr, "DataType", "Name", "Value", "Offset (hex)", Environment.NewLine);
+            // add each entry
+            foreach (StructListItem item in StructListView.SelectedItems)
+                str += String.Format(fstr, item.DataTypeCol, item.NameCol, item.ValueCol, item.OffsetCol + "h", Environment.NewLine);
+
+            System.Windows.Clipboard.SetDataObject(str);
             System.Windows.Clipboard.Flush();
         }
         #endregion

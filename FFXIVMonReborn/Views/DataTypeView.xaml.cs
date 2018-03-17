@@ -35,11 +35,12 @@ namespace FFXIVMonReborn.Views
                 new StructListItem{ DataTypeCol = "int32_t", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "uint64_t", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "int64_t", typeLength = 8, ValueCol = "Cannot parse." },
-                new StructListItem{ DataTypeCol = "float", typeLength = 4, ValueCol = "Cannot parse." },     
+                new StructListItem{ DataTypeCol = "float", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "double", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "time_t", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "string (ascii)", typeLength = 1, ValueCol = "Cannot parse." },
-                new StructListItem{ DataTypeCol = "string (utf8)", typeLength = 1, ValueCol = "Cannot parse."}
+                new StructListItem{ DataTypeCol = "string (utf8)", typeLength = 1, ValueCol = "Cannot parse."},
+                new StructListItem{ DataTypeCol = "binary", typeLength = 1, ValueCol = "Cannot parse." }
             };
         }
 
@@ -96,6 +97,19 @@ namespace FFXIVMonReborn.Views
                             var terminatorOffset = str.IndexOf((char)0, offset);
                             thisItem.ValueCol = str.Substring(offset, terminatorOffset - offset);
                         }
+                        else if (thisItem.DataTypeCol == "binary")
+                        {
+                            var str = "";
+                            var j = 0;
+                            for (var i = offset; i < data.Length; ++i, ++j)
+                            {
+                                str += Convert.ToString(data[i], 2).PadLeft(8, '0') + ((j + 1) % 2 == 0 ? Environment.NewLine : " ");
+                                // stop at 8 bytes
+                                if (j == 7 || (i + 1 < data.Length && data[i + 1] == 0))
+                                    break;
+                            }
+                            thisItem.ValueCol = str;
+                        }
                     }
                     catch (OverflowException e)
                     {
@@ -133,21 +147,50 @@ namespace FFXIVMonReborn.Views
             String newline = (DataTypeListView.SelectedItems.Count > 1 ? Environment.NewLine : "");
 
             foreach (StructListItem item in DataTypeListView.SelectedItems)
-            {
-                str += item.ValueCol + newline;
-            }
-            Clipboard.SetText(str);
+                str += (item.DataTypeCol == "binary" ? item.ValueCol.Replace(Environment.NewLine, " ") : item.ValueCol) + newline;
+
+            Clipboard.SetDataObject(str);
             Clipboard.Flush();
         }
 
         private void DataTypeView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
-            String str = "DataType\t|\tValue\t|\tOffset (hex)" + Environment.NewLine;
+            // determine width to align tab character to
+            int typeWidth = "DataType".Length, valWidth = "Cannot parse.".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in DataTypeListView.SelectedItems)
             {
-                str += item.DataTypeCol + "\t|\t" + item.ValueCol + "\t|\t" + item.OffsetCol + "h" + Environment.NewLine;
+                typeWidth = item.DataTypeCol?.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
+                valWidth = item.ValueCol?.Length > valWidth ? item.ValueCol.Length : valWidth;
+                offsetWidth = item.OffsetCol?.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
             }
-            Clipboard.SetText(str);
+
+            // format string
+            String fstr = $"{{0,-{typeWidth}}}\t|\t{{1,-{valWidth}}}\t|\t{{2,-{offsetWidth}}}{{3}}";
+
+            // start the string with header
+            String str = String.Format(fstr, "DataType", "Value", "Offset (hex)", Environment.NewLine);
+            // add each entry
+            foreach (StructListItem item in DataTypeListView.SelectedItems)
+            {
+                var valStr = item.ValueCol;
+
+                // align binary
+                // 11111111 00000000
+                // 00000000 11111111
+                if (item.DataTypeCol == "binary")
+                {
+                    str += String.Format(fstr, item.DataTypeCol, "", item.OffsetCol + "h", Environment.NewLine);
+
+                    var re = new System.Text.RegularExpressions.Regex(Environment.NewLine);
+                    var rows = re.Split(valStr);
+
+                    foreach (var row in rows)
+                        str += String.Format(fstr, "", row, "", Environment.NewLine);
+                }
+                else
+                    str += String.Format(fstr, item.DataTypeCol, valStr, item.OffsetCol + "h", Environment.NewLine);
+            }
+            Clipboard.SetDataObject(str);
             Clipboard.Flush();
         }
     }
