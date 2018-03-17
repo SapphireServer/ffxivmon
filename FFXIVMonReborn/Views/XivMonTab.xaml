@@ -134,7 +134,6 @@
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
                                 <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
-                                <GridSplitter Width="5" HorizontalAlignment="Stretch" DockPanel.Dock="Right" />
                                 <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
                             </DockPanel>
                         </Grid>
