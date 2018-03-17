@@ -137,12 +137,10 @@
                                 <GridSplitter Width="5" HorizontalAlignment="Stretch" DockPanel.Dock="Right" />
                                 <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
                             </DockPanel>
-
-                            <Label x:Name="CaptureInfoLabel"  Grid.Row="1" Grid.Column="1"></Label>
                         </Grid>
                     </Grid>
                     <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>
@@ -170,5 +168,6 @@
                 </Grid>
             </DockPanel>
         </DockPanel>
+        <Label x:Name="CaptureInfoLabel" HorizontalAlignment="Left" VerticalAlignment="Bottom">Something</Label>
     </Grid>
 </UserControl>
