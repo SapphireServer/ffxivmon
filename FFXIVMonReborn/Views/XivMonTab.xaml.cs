@@ -1064,25 +1064,26 @@ namespace FFXIVMonReborn.Views
         private void StructListView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
             // determine width to align tab character to
-            int typeWidth = "DataType".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
+            int typeWidth = "DataType".Length, nameWidth = "Name".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in StructListView.SelectedItems)
             {
-                if (item.DataTypeCol == null)
+                if (item.DataTypeCol == null || item.ValueCol == null || item.OffsetCol == null)
                     continue;
 
                 typeWidth = item.DataTypeCol.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
                 valWidth = item.ValueCol.Length > valWidth ? item.ValueCol.Length : valWidth;
                 offsetWidth = item.OffsetCol.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
+                nameWidth = item.NameCol.Length > nameWidth ? item.NameCol.Length : nameWidth;
             }
 
             // format string
-            String fstr = $"{{0,-{typeWidth}}}\t|\t{{1,-{valWidth}}}\t|\t{{2,-{offsetWidth}}}{{3}}";
+            String fstr = $"{{0,-{typeWidth}}}\t|\t{{1,-{nameWidth}}}\t|\t{{2,-{valWidth}}}\t|\t{{3,-{offsetWidth}}}{{4}}";
 
             // start the string with header
-            String str = String.Format(fstr, "DataType", "Value", "Offset (hex)", Environment.NewLine);
+            String str = String.Format(fstr, "DataType", "Name", "Value", "Offset (hex)", Environment.NewLine);
             // add each entry
             foreach (StructListItem item in StructListView.SelectedItems)
-                str += String.Format(fstr, item.DataTypeCol, item.ValueCol, item.OffsetCol + "h", Environment.NewLine);
+                str += String.Format(fstr, item.DataTypeCol, item.NameCol, item.ValueCol, item.OffsetCol + "h", Environment.NewLine);
 
             System.Windows.Clipboard.SetDataObject(str);
             System.Windows.Clipboard.Flush();

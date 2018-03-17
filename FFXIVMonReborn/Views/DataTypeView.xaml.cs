@@ -159,7 +159,7 @@ namespace FFXIVMonReborn.Views
             int typeWidth = "DataType".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in DataTypeListView.SelectedItems)
             {
-                if (item.DataTypeCol == null)
+                if (item.DataTypeCol == null || item.ValueCol == null || item.OffsetCol == null)
                     continue;
 
                 typeWidth = item.DataTypeCol.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
