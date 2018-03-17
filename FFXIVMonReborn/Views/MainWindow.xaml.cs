@@ -13,6 +13,7 @@ using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
 using FFXIVMonReborn.FileOp;
+using FFXIVMonReborn.DataModel;
 
 namespace FFXIVMonReborn.Views
 {
@@ -165,7 +166,7 @@ namespace FFXIVMonReborn.Views
             MainTabControl.SelectedIndex = MainTabControl.Items.Count - 1;
         }
 
-        public void AddTab(PacketListItem[] toLoad)
+        public void AddTab(PacketEntry[] toLoad)
         {
             var item = new TabItem();
 
@@ -436,13 +437,20 @@ namespace FFXIVMonReborn.Views
             openFileDialog.Filter = "XML|*.xml";
             openFileDialog.Title = "Select a Capture to diff against";
 
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            try
             {
-                var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
-                var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
+                if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
+                    var baseCap = ((XivMonTab)MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketEntry>().ToArray();
 
-                new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
-                    CaptureDiff.GenerateLenghtBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
+                    new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
+                        CaptureDiff.GenerateLenghtBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Error loading diff of packet length capture: {ex.Message}");
             }
         }
         
@@ -452,13 +460,20 @@ namespace FFXIVMonReborn.Views
             openFileDialog.Filter = "XML|*.xml";
             openFileDialog.Title = "Select a Capture to diff against";
 
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            try
             {
-                var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
-                var baseCap = ((XivMonTab) MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketListItem>().ToArray();
+                if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
+                    var baseCap = ((XivMonTab)MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketEntry>().ToArray();
 
-                new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
-                    CaptureDiff.GenerateDataBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
+                    new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
+                        CaptureDiff.GenerateDataBasedReport(baseCap, toDiff), "FFXIVMon Reborn").Show();
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Error loading diff based on packet data - {ex.Message}");
             }
         }
 

@@ -56,7 +56,7 @@
                                     <Style.Triggers>
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding DirectionCol}"
+                                                <Condition Binding="{Binding Direction}"
                                                            Value="S"/>
                                                 <Condition Binding="{Binding Set}"
                                                            Value="0"/>
@@ -67,7 +67,7 @@
 
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding DirectionCol}"
+                                                <Condition Binding="{Binding Direction}"
                                                            Value="S"/>
                                                 <Condition Binding="{Binding Set}"
                                                            Value="1"/>
@@ -78,7 +78,7 @@
 
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding DirectionCol}"
+                                                <Condition Binding="{Binding Direction}"
                                                            Value="C"/>
                                                 <Condition Binding="{Binding Set}"
                                                            Value="0"/>
@@ -89,7 +89,7 @@
 
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding DirectionCol}"
+                                                <Condition Binding="{Binding Direction}"
                                                            Value="C"/>
                                                 <Condition Binding="{Binding Set}"
                                                            Value="1"/>
@@ -106,14 +106,14 @@
                             </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="S/C" DisplayMemberBinding="{Binding DirectionCol}"/>
-                                    <GridViewColumn Header="Message" Width="52" DisplayMemberBinding="{Binding MessageCol}"/>
-                                    <GridViewColumn Header="Name" Width="230" DisplayMemberBinding="{Binding NameCol}"/>
-                                    <GridViewColumn Header="Route ID" DisplayMemberBinding="{Binding RouteIdCol}"/>
-                                    <GridViewColumn Header="Comment" Width="300" DisplayMemberBinding="{Binding CommentCol}"/>
-                                    <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding SizeCol}"/>
-                                    <GridViewColumn Header="Set" DisplayMemberBinding="{Binding CategoryCol}"/>
-                                    <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding TimeStampCol}"/>
+                                    <GridViewColumn Header="S/C" DisplayMemberBinding="{Binding Direction}"/>
+                                    <GridViewColumn Header="Message" Width="52" DisplayMemberBinding="{Binding Message}"/>
+                                    <GridViewColumn Header="Name" Width="230" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Route ID" DisplayMemberBinding="{Binding RouteID}"/>
+                                    <GridViewColumn Header="Comment" Width="300" DisplayMemberBinding="{Binding Comment}"/>
+                                    <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding Size}"/>
+                                    <GridViewColumn Header="Set" DisplayMemberBinding="{Binding Set}"/>
+                                    <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Timestamp}"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
