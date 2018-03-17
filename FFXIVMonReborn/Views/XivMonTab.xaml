@@ -124,7 +124,7 @@
 
                         <Grid Grid.Row="2" Grid.ColumnSpan="2">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="0*"/>
+                                <ColumnDefinition/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -132,16 +132,11 @@
                                 <RowDefinition Height="25" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" Grid.ColumnSpan="25">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="5" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <forms:WpfHexBox Grid.Row="0" x:Name="HexEditor" FontSize="12" Grid.ColumnSpan="2" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
-                                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-                                <views:DataTypeView x:Name="DataTypeViewer" Grid.Column="3"  />
-                            </Grid>
+                            <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
+                                <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
+                                <GridSplitter Width="5" HorizontalAlignment="Stretch" DockPanel.Dock="Right" />
+                                <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
+                            </DockPanel>
 
                             <Label x:Name="CaptureInfoLabel"  Grid.Row="1" Grid.Column="1"></Label>
                         </Grid>
