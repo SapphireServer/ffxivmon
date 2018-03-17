@@ -61,7 +61,7 @@ namespace FFXIVMonReborn.Views
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Error loading XivMonTab - {ex.Message}");
+                new ExtendedErrorView("Could not load XivMonTab.", ex.ToString(), "Error").ShowDialog();
             }
         }
         
@@ -455,9 +455,8 @@ namespace FFXIVMonReborn.Views
                 }
                 catch (Exception exc)
                 {
-                    MessageBox.Show(
-                        $"[XivMonTab] Script error!\n\n{exc}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    new ExtendedErrorView(
+                        $"Scripting exception thrown for {item.Message} - {item.Name}. Turning off auto script running.", exc.ToString(), "Error").ShowDialog();
                     _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
                     return;
                 }
@@ -521,9 +520,8 @@ namespace FFXIVMonReborn.Views
                 }
                 catch (Exception exc)
                 {
-                    MessageBox.Show(
-                        $"[XivMonTab] EXD error for {item.Message} - {item.Name}!\n\n{exc}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    new ExtendedErrorView(
+                        $"EXD Error for {item.Message} - {item.Name}. Turning off EXD features.", exc.ToString(), "Error").ShowDialog();
                     _mainWindow.ExEnabledCheckbox.IsChecked = false;
                 }
             }
@@ -587,7 +585,7 @@ namespace FFXIVMonReborn.Views
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error saving capture - {ex.Message}");
+                    new ExtendedErrorView("Could not save capture.", ex.ToString(), "Error").ShowDialog();
                 }
             }
 
@@ -686,7 +684,7 @@ namespace FFXIVMonReborn.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading capture: {path} - {ex.Message}");
+                new ExtendedErrorView($"Could not load capture at {path}.", ex.ToString(), "Error").ShowDialog();
             }
         }
         
@@ -1030,7 +1028,7 @@ namespace FFXIVMonReborn.Views
                 }
                 catch (Exception exc)
                 {
-                    new ExtendedErrorView("[XivMonTab] Script error!", exc.ToString(), "Error").ShowDialog();
+                    new ExtendedErrorView("Script error!", exc.ToString(), "Error").ShowDialog();
                     _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
                     return;
                 }

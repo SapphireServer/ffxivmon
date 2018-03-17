@@ -450,7 +450,7 @@ namespace FFXIVMonReborn.Views
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Error loading diff of packet length capture: {ex.Message}");
+                new ExtendedErrorView("Could not generate length based diff.", ex.ToString(), "Error").ShowDialog();
             }
         }
         
@@ -473,7 +473,7 @@ namespace FFXIVMonReborn.Views
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Error loading diff based on packet data - {ex.Message}");
+                new ExtendedErrorView("Could not generate data based diff.", ex.ToString(), "Error").ShowDialog();
             }
         }
 
