@@ -4,7 +4,7 @@
 
 A FINAL FANTASY XIV Network analysis tool.
 
-![pic](https://i.imgur.com/ET2Yh6K.png)
+![pic](https://i.imgur.com/HiEQnip.png)
 
 Includes automated packet parsing from the main Sapphire repo, scripting features, linking packet information to EXD tables, etc.
 
