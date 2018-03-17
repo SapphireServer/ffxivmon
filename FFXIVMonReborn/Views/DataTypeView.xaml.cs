@@ -156,15 +156,12 @@ namespace FFXIVMonReborn.Views
         private void DataTypeView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
             // determine width to align tab character to
-            int typeWidth = "DataType".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
+            int typeWidth = "DataType".Length, valWidth = "Cannot parse.".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in DataTypeListView.SelectedItems)
             {
-                if (item.DataTypeCol == null || item.ValueCol == null || item.OffsetCol == null)
-                    continue;
-
-                typeWidth = item.DataTypeCol.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
-                valWidth = item.ValueCol.Length > valWidth ? item.ValueCol.Length : valWidth;
-                offsetWidth = item.OffsetCol.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
+                typeWidth = item.DataTypeCol?.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
+                valWidth = item.ValueCol?.Length > valWidth ? item.ValueCol.Length : valWidth;
+                offsetWidth = item.OffsetCol?.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
             }
 
             // format string

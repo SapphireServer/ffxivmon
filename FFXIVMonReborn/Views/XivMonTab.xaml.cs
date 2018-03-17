@@ -1064,16 +1064,13 @@ namespace FFXIVMonReborn.Views
         private void StructListView_CopyAllCols_Click(object sender, RoutedEventArgs e)
         {
             // determine width to align tab character to
-            int typeWidth = "DataType".Length, nameWidth = "Name".Length, valWidth = "Value".Length, offsetWidth = "Offset (hex)".Length;
+            int typeWidth = "DataType".Length, nameWidth = "Cannot parse.".Length, valWidth = "Cannot parse.".Length, offsetWidth = "Offset (hex)".Length;
             foreach (StructListItem item in StructListView.SelectedItems)
             {
-                if (item.DataTypeCol == null || item.ValueCol == null || item.OffsetCol == null)
-                    continue;
-
-                typeWidth = item.DataTypeCol.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
-                valWidth = item.ValueCol.Length > valWidth ? item.ValueCol.Length : valWidth;
-                offsetWidth = item.OffsetCol.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
-                nameWidth = item.NameCol.Length > nameWidth ? item.NameCol.Length : nameWidth;
+                typeWidth = item.DataTypeCol?.Length > typeWidth ? item.DataTypeCol.Length : typeWidth;
+                valWidth = item.ValueCol?.Length > valWidth ? item.ValueCol.Length : valWidth;
+                offsetWidth = item.OffsetCol?.Length > offsetWidth ? item.OffsetCol.Length : offsetWidth;
+                nameWidth = item.NameCol?.Length > nameWidth ? item.NameCol.Length : nameWidth;
             }
 
             // format string
