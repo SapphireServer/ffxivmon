@@ -405,7 +405,7 @@ namespace FFXIVMonReborn.Views
             UpdateInfoLabel();
         }
 
-        public void AddPacketToListView(PacketEntry item)
+        public void AddPacketToListView(PacketEntry item, bool slient = false)
         {
             if (item.Direction == "S")
             {
@@ -528,7 +528,11 @@ namespace FFXIVMonReborn.Views
 
             PacketListView.Items.Add(item);
 
-            UpdateInfoLabel();
+            if (!slient)
+            {
+                UpdateInfoLabel();
+            }
+            
         }
         #endregion
 
@@ -676,7 +680,8 @@ namespace FFXIVMonReborn.Views
                 _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
                 foreach (var packet in capture.Packets)
                 {
-                    AddPacketToListView(packet);
+                    // Add a packet to the view, but no update to the label
+                    AddPacketToListView(packet, true);
                 }
                 _wasCapturedMs = bool.Parse(capture.UsingSystemTime);
 
