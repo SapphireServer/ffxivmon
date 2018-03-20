@@ -529,7 +529,7 @@ namespace FFXIVMonReborn.Views
 
             PacketListView.Items.Add(item);
 
-            if (!slient)
+            if (!silent)
             {
                 UpdateInfoLabel();
             }
