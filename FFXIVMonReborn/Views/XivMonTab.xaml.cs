@@ -1128,6 +1128,17 @@ namespace FFXIVMonReborn.Views
         {
             DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
         }
+
+        private void EditPacketNoteClick(object sender, RoutedEventArgs e)
+        {
+            var packet = PacketListView.SelectedItem as PacketEntry;
+            var index = PacketListView.SelectedIndex;
+
+            packet.Note = new TextInputView(packet.Note, "Change the note that is attached to the packet and click OK.", "FFXIVMon Reborn").ShowDialog();
+
+            PacketListView.Items.RemoveAt(index);
+            PacketListView.Items.Insert(index, packet);
+        }
     }
 }
 

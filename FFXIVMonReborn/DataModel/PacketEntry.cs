@@ -9,6 +9,7 @@ namespace FFXIVMonReborn.DataModel
         public string Timestamp { get; set; }
         public string RouteID { get; set; }
         public byte[] Data { get; set; }
+        public string Note { get; set; }
         public int Set { get; set; }
         public uint PacketUnixTime { get; set; }
         public long SystemMsTime { get; set; }

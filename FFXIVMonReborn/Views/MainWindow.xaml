@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:self="clr-namespace:FFXIVMonReborn"
         xmlns:views="clr-namespace:FFXIVMonReborn.Views"
-        Title="FFXIVMonReborn" Height="757.458" Width="1363.958" Closing="MainWindow_OnClosing">
+        Title="FFXIVMonReborn" Height="900" Width="1600" Closing="MainWindow_OnClosing">
     <Window.Resources>
         <DataTemplate DataType="{x:Type views:XivMonTab}">
             <views:XivMonTab/>

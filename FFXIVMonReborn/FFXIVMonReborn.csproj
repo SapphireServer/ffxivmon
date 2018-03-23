@@ -178,6 +178,9 @@
     <Compile Include="ExdCsvReader.cs" />
     <Compile Include="FileOp\XmlCaptureOp.cs" />
     <Compile Include="FileOp\FFXIVReplayOp.cs" />
+    <Compile Include="Views\TextInputView.xaml.cs">
+      <DependentUpon>TextInputView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ScriptDebugView.xaml.cs">
       <DependentUpon>ScriptDebugView.xaml</DependentUpon>
     </Compile>
@@ -208,6 +211,10 @@
     <Compile Include="Views\XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\TextInputView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\ScriptDebugView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
