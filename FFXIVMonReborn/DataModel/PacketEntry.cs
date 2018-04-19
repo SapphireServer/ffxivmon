@@ -8,6 +8,9 @@ namespace FFXIVMonReborn.DataModel
         public string Message { get; set; }
         public string Timestamp { get; set; }
         public string RouteID { get; set; }
+        [XmlElement(ElementName = "Data")]
+        public string DataString { get; set; }
+        [XmlIgnore]
         public byte[] Data { get; set; }
         public int Set { get; set; }
         public uint PacketUnixTime { get; set; }

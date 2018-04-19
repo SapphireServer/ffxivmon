@@ -17,6 +17,14 @@ namespace FFXIVMonReborn.FileOp
                 var fileStream = new FileStream(path, FileMode.Open);
                 var serializer = new XmlSerializer(typeof(Capture));
                 var capture = (Capture)serializer.Deserialize(fileStream);
+                // make sure to translate data-string to bytes
+                if (capture != null)
+                {
+                    foreach (var packet in capture.Packets)
+                    {
+                        packet.Data = Util.StringToByteArray(packet.DataString);
+                    }
+                }
 
                 Debug.WriteLine($"Loaded Packets: {capture.Packets.Length}");
 
@@ -34,6 +42,13 @@ namespace FFXIVMonReborn.FileOp
             //using (var fileStream = new FileStream(path, FileMode.Create))
             {
                 var fileStream = new FileStream(path, FileMode.Create);
+                if (capture != null)
+                {
+                    foreach (var packet in capture.Packets)
+                    {
+                        packet.DataString = Util.ByteArrayToString(packet.Data);
+                    }
+                }
                 var serializer = new XmlSerializer(typeof(Capture));
                 serializer.Serialize(fileStream, capture);
             }
