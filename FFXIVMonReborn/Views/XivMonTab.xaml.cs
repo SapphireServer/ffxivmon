@@ -684,7 +684,9 @@ namespace FFXIVMonReborn.Views
                     // Add a packet to the view, but no update to the label
                     AddPacketToListView(packet, true);
                 }
-                _wasCapturedMs = bool.Parse(capture.UsingSystemTime);
+
+                // Backwards compatibility
+                _wasCapturedMs = capture.UsingSystemTime != null && bool.Parse(capture.UsingSystemTime);
 
                 UpdateInfoLabel();
             }
