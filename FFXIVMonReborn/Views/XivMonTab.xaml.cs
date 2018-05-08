@@ -39,6 +39,7 @@ namespace FFXIVMonReborn.Views
         private string _currentXmlFile = "";
 
         private bool _wasCapturedMs = false;
+        private FilterSet[] _filters;
 
         private List<string> _erroredOpcodes = new List<string>();
 
@@ -538,6 +539,18 @@ namespace FFXIVMonReborn.Views
                 }
             }
 
+
+            if (_filters != null && _filters.Length > 0)
+            {
+                foreach (var filterEntry in _filters)
+                {
+                    if (!filterEntry.IsApplicableForFilterSet(item))
+                    {
+                        return;
+                    }
+                }
+            }
+
             PacketListView.Items.Add(item);
 
             if (!silent)
@@ -928,7 +941,6 @@ namespace FFXIVMonReborn.Views
         {
 
             string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", _filterString);
-
             _ApplyFilter(filter);
         }
 
@@ -940,6 +952,7 @@ namespace FFXIVMonReborn.Views
         private void _ResetFilter()
         {
             _filterString = "";
+            _filters = null;
             PacketListView.Items.Filter = null;
 
             ExtensionMethods.Refresh(PacketListView);
@@ -966,10 +979,12 @@ namespace FFXIVMonReborn.Views
                 return;
             }
 
+            _filters = filters;
+
             PacketListView.Items.Filter = new Predicate<object>((object item) =>
             {
                 bool predResult = false;
-                foreach (var filterEntry in filters)
+                foreach (var filterEntry in _filters)
                 {
                     predResult = filterEntry.IsApplicableForFilterSet((PacketEntry)item);
 
