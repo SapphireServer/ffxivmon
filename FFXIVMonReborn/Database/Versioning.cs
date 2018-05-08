@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Windows;
 using FFXIVMonReborn.Database.Commits;
+using FFXIVMonReborn.Properties;
 
 namespace FFXIVMonReborn.Database
 {
@@ -22,6 +23,12 @@ namespace FFXIVMonReborn.Database
             {
                 if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded")))
                 {
+                    Properties.Settings.Default.Repo = Resources.DefaultRepo;
+                    Properties.Settings.Default.Save();
+
+                    MessageBox.Show(
+                        $"Could not find downloaded database - repo reset to {Resources.DefaultRepo}, change via Options -> Set Repository.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Information);
+
                     Directory.CreateDirectory("downloaded");
                     Versions = GetTags(Properties.Settings.Default.Repo);
                     _latestCommit = GetLatestCommit();

@@ -40,6 +40,8 @@ namespace FFXIVMonReborn.Views
 
         private bool _wasCapturedMs = false;
 
+        private List<string> _erroredOpcodes = new List<string>();
+
         public XivMonTab()
         {
             InitializeComponent();
@@ -281,7 +283,6 @@ namespace FFXIVMonReborn.Views
         #endregion
 
         #region PacketListHandling
-
         private void ApplySpecificStructToPacket(object sender, RoutedEventArgs e)
         {
             if (PacketListView.SelectedIndex == -1)
@@ -365,8 +366,7 @@ namespace FFXIVMonReborn.Views
 
                     if (structText == null)
                     {
-                        StructListItem infoItem = new StructListItem();
-                        infoItem.NameCol = "No Struct found";
+                        StructListItem infoItem = new StructListItem { NameCol = "No Struct found" };
                         StructListView.Items.Add(infoItem);
                         return;
                     }
@@ -392,15 +392,26 @@ namespace FFXIVMonReborn.Views
                 }
                 else
                 {
-                    StructListItem infoItem = new StructListItem();
-                    infoItem.NameCol = "Client Packet";
+                    StructListItem infoItem = new StructListItem { NameCol = "Client Packet" };
                     StructListView.Items.Add(infoItem);
                     return;
                 }
             }
             catch (Exception exc)
             {
-                new ExtendedErrorView($"[XivMonTab] Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
+#if !DEBUG
+                if (_erroredOpcodes.Contains(item.Message))
+                {
+#endif
+                    new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
+#if !DEBUG
+                    _erroredOpcodes.Add(item.Message);
+                }
+#endif
+
+                StructListItem infoItem = new StructListItem { NameCol = "Parsing failed" };
+                StructListView.Items.Add(infoItem);
+                return;
             }
 
             UpdateInfoLabel();
@@ -534,6 +545,17 @@ namespace FFXIVMonReborn.Views
                 UpdateInfoLabel();
             }
 
+        }
+
+        private void EditPacketNoteClick(object sender, RoutedEventArgs e)
+        {
+            var packet = PacketListView.SelectedItem as PacketEntry;
+            var index = PacketListView.SelectedIndex;
+
+            packet.Note = new TextInputView(packet.Note, "Change the note that is attached to the packet and click OK.", "FFXIVMon Reborn").ShowDialog();
+
+            PacketListView.Items.RemoveAt(index);
+            PacketListView.Items.Insert(index, packet);
         }
         #endregion
 
@@ -1132,21 +1154,12 @@ namespace FFXIVMonReborn.Views
         }
         #endregion
 
+        #region HexBoxHandling
         private void HexEditor_OnOnSelectionStartChanged(object sender, EventArgs e)
         {
             DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
         }
-
-        private void EditPacketNoteClick(object sender, RoutedEventArgs e)
-        {
-            var packet = PacketListView.SelectedItem as PacketEntry;
-            var index = PacketListView.SelectedIndex;
-
-            packet.Note = new TextInputView(packet.Note, "Change the note that is attached to the packet and click OK.", "FFXIVMon Reborn").ShowDialog();
-
-            PacketListView.Items.RemoveAt(index);
-            PacketListView.Items.Insert(index, packet);
-        }
+        #endregion
     }
 }
 

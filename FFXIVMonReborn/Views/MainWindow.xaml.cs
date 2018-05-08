@@ -491,6 +491,11 @@ namespace FFXIVMonReborn.Views
         public void SetRepository(object sender, RoutedEventArgs e)
         {
             string repo = Interaction.InputBox("Enter the GitHub repository for the definition files to be downloaded from.\nThis will reset all downloaded definitions.", "FFXIVMon Reborn", Properties.Settings.Default.Repo);
+            
+            // Dialog dismissed or empty input box, we don't want that
+            if (repo == "")
+                return;
+            
             Properties.Settings.Default.Repo = repo;
             Properties.Settings.Default.Save();
             VersioningProvider.ForceReset();
