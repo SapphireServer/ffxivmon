@@ -492,7 +492,7 @@ namespace FFXIVMonReborn.Views
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
 
                                         item.Comment =
-                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName})";
+                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
                                     }
                                     break;
 
