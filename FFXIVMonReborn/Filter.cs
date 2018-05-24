@@ -25,7 +25,7 @@ namespace FFXIVMonReborn
                 Parse(input);
                 return true;
             }
-            catch (Exception)
+            catch (Exception exc)
             {
                 return false;
             }
@@ -48,8 +48,14 @@ namespace FFXIVMonReborn
                 input = input.Replace(thisFilter, "");
 
                 object value;
+                if (thisFilter[0] != '_')
+                {
+                    type = FilterType.Message;
+                    string vstring = thisFilter.Substring(0, thisFilter.Length - 1);
+                    value = int.Parse(vstring, NumberStyles.HexNumber);
+                }
                 // _A(ActorControlType)
-                if (thisFilter.Substring(0, "_A(".Length) == "_A(")
+                else if (thisFilter.Substring(0, "_A(".Length) == "_A(")
                 {
                     type = FilterType.ActorControl;
                     string vstring = thisFilter.Substring(3, thisFilter.IndexOf(')', 3) - 3);
