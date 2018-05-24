@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Windows;
 using FFXIVMonReborn.Database.Commits;
 using FFXIVMonReborn.Properties;
@@ -125,7 +126,7 @@ namespace FFXIVMonReborn.Database
             }
             else
             {
-                return $"Untagged Version: {_latestCommit.Sha} - {_latestCommit.Commit.Message} by {_latestCommit.Commit.Author.Name}";
+                return $"Untagged Version: {_latestCommit.Sha} - {Regex.Replace(_latestCommit.Commit.Message, @"\t|\n|\r", "")} by {_latestCommit.Commit.Author.Name}";
             }
         }
 
