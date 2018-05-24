@@ -113,6 +113,8 @@ namespace FFXIVMonReborn.Database
 
         private Dictionary<int, Tuple<string, string>> ParseEnum(string data, string enumName)
         {
+            string errLog = "";
+            
             Dictionary<int, Tuple<string, string>> output = new Dictionary<int, Tuple<string, string>>();
 
             var lines = Regex.Split(data, "\r\n|\r|\n");
@@ -190,14 +192,15 @@ namespace FFXIVMonReborn.Database
                     }
                     catch (ArgumentException)
                     {
-                        MessageBox.Show(
-                            $"[Database] Duplicate Entry! Could not add {name} - {opcode.ToString("X4")}",
-                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        errLog += $"Duplicate Entry! Could not add {name} - {opcode.ToString("X4")}\n";
                     }
 
                     at++;
                 }
             }
+
+            if (errLog.Length > 0)
+                new ExtendedErrorView("Finished parsing database, but there were problems:", errLog, "Database Problem").ShowDialog();
 
             return output;
         }
