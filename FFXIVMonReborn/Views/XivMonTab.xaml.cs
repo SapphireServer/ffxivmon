@@ -433,7 +433,7 @@ namespace FFXIVMonReborn.Views
 
             item.Category = item.Set.ToString();
 
-            if (item.Message == "0142" || item.Message == "0143" || item.Message == "0144")
+            if ((item.Message == "0142" || item.Message == "0143" || item.Message == "0144") && item.Direction == "S")
             {
                 int cat = BitConverter.ToUInt16(item.Data, 0x20);
                 item.ActorControl = cat;
