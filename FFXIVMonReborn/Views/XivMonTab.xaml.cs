@@ -122,28 +122,45 @@ namespace FFXIVMonReborn.Views
             _mainWindow = mainWindow;
         }
 
-        public void ClearCapture()
+        public void ClearCapture(bool silent = false)
         {
-            if (_captureWorker != null)
+            if (silent)
             {
-                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                PacketListView.SelectedIndex = -1;
+                PacketListView.Items.Clear();
+
+                _currentPacketStream = new MemoryStream(new byte[] { });
+                //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
+
+                _filterString = "";
+
+                _currentXmlFile = "";
+                ChangeTitle("");
+
+                UpdateInfoLabel();
+
+                _wasCapturedMs = false;
                 return;
             }
-            PacketListView.SelectedIndex = -1;
-            PacketListView.Items.Clear();
+            
+            MessageBoxResult res = MessageBox.Show("Do you want to clear this capture?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (res == MessageBoxResult.Yes)
+            {
+                PacketListView.SelectedIndex = -1;
+                PacketListView.Items.Clear();
 
-            _currentPacketStream = new MemoryStream(new byte[] { });
-            //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
+                _currentPacketStream = new MemoryStream(new byte[] { });
+                //HexEditor.Stream = currentPacketStream; //why does this crash sometimes
 
-            _filterString = "";
+                _filterString = "";
 
-            _currentXmlFile = "";
-            ChangeTitle("");
+                _currentXmlFile = "";
+                ChangeTitle("");
 
-            UpdateInfoLabel();
+                UpdateInfoLabel();
 
-            _wasCapturedMs = false;
+                _wasCapturedMs = false;
+            }
         }
 
         private void ChangeTitle(string newTitle)
@@ -238,7 +255,7 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                ClearCapture();
+                ClearCapture(true);
 
                 _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode, _mainWindow.CaptureFlags);
                 _captureThread = new Thread(_captureWorker.Run);
