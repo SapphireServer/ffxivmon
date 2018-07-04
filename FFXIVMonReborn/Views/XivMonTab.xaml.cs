@@ -767,7 +767,7 @@ namespace FFXIVMonReborn.Views
         #region PacketExporting
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
         {
-            var items = (List<PacketEntry>)PacketListView.SelectedItems;
+            var items = PacketListView.SelectedItems;
 
             if (items.Count == 0)
             {
@@ -796,7 +796,7 @@ namespace FFXIVMonReborn.Views
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     int count = 0;
-                    foreach (var item in items)
+                    foreach (PacketEntry item in items)
                     {
                         File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.Message}-{String.Join("_", item.Timestamp.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"),
                             InjectablePacketBuilder.BuildSingle(item.Data));
