@@ -30,6 +30,8 @@ namespace FFXIVMonReborn.DataModel
         public int ActorControl { get; set; }
         [XmlIgnore]
         public bool IsVisible { get; set; }
+        [XmlIgnore]
+        public bool IsForSelf { get; set; }
 
         public PacketEntry()
         {

@@ -113,6 +113,7 @@
                                     <GridViewColumn Header="Message" Width="52" DisplayMemberBinding="{Binding Message}"/>
                                     <GridViewColumn Header="Name" Width="230" DisplayMemberBinding="{Binding Name}"/>
                                     <GridViewColumn Header="Route ID" DisplayMemberBinding="{Binding RouteID}"/>
+                                    <GridViewColumn Header="IsForSelf" DisplayMemberBinding="{Binding IsForSelf}"/>
                                     <GridViewColumn Header="Comment" Width="390" DisplayMemberBinding="{Binding Comment}"/>
                                     <GridViewColumn Header="Note" Width="380" DisplayMemberBinding="{Binding Note}"/>
                                     <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding Size}"/>

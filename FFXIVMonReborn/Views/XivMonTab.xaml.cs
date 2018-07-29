@@ -448,6 +448,7 @@ namespace FFXIVMonReborn.Views
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
             }
 
+            item.IsForSelf = BitConverter.ToUInt32(item.Data, 0x04) == BitConverter.ToUInt32(item.Data, 0x08);
             item.Category = item.Set.ToString();
 
             if ((item.Message == "0142" || item.Message == "0143" || item.Message == "0144") && item.Direction == "S")
