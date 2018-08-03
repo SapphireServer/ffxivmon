@@ -7,8 +7,9 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
+using FFXIVMonReborn.Database.DataTypes;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.Database
 {
 
     //TODO: Clean this up and make it a bit faster
@@ -18,6 +19,7 @@ namespace FFXIVMonReborn
         {
             Raw,
             ObjectToString,
+            CustomDataType,
             Char
         }
 
@@ -26,21 +28,21 @@ namespace FFXIVMonReborn
             // Name -               (C# Type - Length - Print Mode - IDA Compatible Type)
 
             // Base Types
-            { "uint8_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.ObjectToString, "") },
+            { "uint8_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(byte),   1, TypePrintMode.ObjectToString, "") },
             { "uint16_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt16), 2, TypePrintMode.ObjectToString, "") },
             { "uint32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt32), 4, TypePrintMode.ObjectToString, "") },
             { "uint64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(UInt64), 8, TypePrintMode.ObjectToString, "") },
-            { "char",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
-            { "int8_t",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.Char, "") },
-            { "int16_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int16), 2, TypePrintMode.ObjectToString, "") },
-            { "int32_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int32), 4, TypePrintMode.ObjectToString, "") },
-            { "int64_t", new Tuple<Type, int, TypePrintMode, string>(typeof(Int64), 8, TypePrintMode.ObjectToString, "") },
+            { "char",     new Tuple<Type, int, TypePrintMode, string>(typeof(byte),   1, TypePrintMode.Char,           "") },
+            { "int8_t",   new Tuple<Type, int, TypePrintMode, string>(typeof(byte),   1, TypePrintMode.Char,           "") },
+            { "int16_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(Int16),  2, TypePrintMode.ObjectToString, "") },
+            { "int32_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(Int32),  4, TypePrintMode.ObjectToString, "") },
+            { "int64_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(Int64),  8, TypePrintMode.ObjectToString, "") },
 
-            { "float",     new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
+            { "float",    new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
 
             //Sapphire Common Types
             { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
-            { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") }, //TODO: Special handling for this?
+            { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(typeof(FfxivArrPosition3DataType), 12, TypePrintMode.CustomDataType, "") },
             { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 12, TypePrintMode.ObjectToString, "") },
             
             // Types in IPC (TODO: Parse?)
@@ -304,10 +306,20 @@ namespace FFXIVMonReborn
 
                 switch (type.Item3)
                 {
+                    case TypePrintMode.CustomDataType:
+                    {
+                        var value = (CustomDataType) Activator.CreateInstance(type.Item1);
+                        value.Parse(data);
+                        item.ValueCol = value.ToString();
+                        item.RawValue = value;
+                    }
+                        break;
                     case TypePrintMode.ObjectToString:
+                    {
                         var value = data.GetValueByType(type.Item1, 0);
                         item.ValueCol = value.ToString();
                         item.RawValue = value;
+                    }
                         break;
                     case TypePrintMode.Char:
                         item.ValueCol = Encoding.ASCII.GetString(data);
