@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FFXIVMonReborn"
         mc:Ignorable="d"
-        Title="Script Output" Width="719.823" Height="283.202">
+        Title="Script Output" Width="719.823" Height="283.202" Closing="ScriptDebugView_OnClosing">
     <Grid>
         <RichTextBox FontFamily="MS Gothic" VerticalScrollBarVisibility="Visible" IsReadOnly="True" x:Name="InfoBox">
             <RichTextBox.Resources>

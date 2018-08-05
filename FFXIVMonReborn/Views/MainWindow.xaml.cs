@@ -119,6 +119,9 @@ namespace FFXIVMonReborn.Views
             }
 
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
+                        
+            ScriptDebugView.Show();
+            ScriptDebugView.Visibility = Visibility.Hidden;
         }
 
         private void VersioningProviderOnLocalDbChanged(object sender, EventArgs eventArgs)
@@ -522,7 +525,7 @@ namespace FFXIVMonReborn.Views
 
         private void Scripting_OpenOutputWindow(object sender, RoutedEventArgs e)
         {
-            ScriptDebugView.Show();
+            ScriptDebugView.Visibility = Visibility.Visible;
         }
 
         private void WatchDefFilesCheckBox_OnClick(object sender, RoutedEventArgs e)

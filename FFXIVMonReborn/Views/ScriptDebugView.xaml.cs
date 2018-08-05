@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 
 namespace FFXIVMonReborn
@@ -20,6 +21,12 @@ namespace FFXIVMonReborn
             Debug.WriteLine(text);
 
             InfoBox.ScrollToEnd();
+        }
+
+        private void ScriptDebugView_OnClosing(object sender, CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Visibility = Visibility.Hidden;
         }
     }
 }
