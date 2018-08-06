@@ -15,7 +15,7 @@ namespace FFXIVMonReborn.Scripting
 
         private List<Script<object>> scripts = new List<Script<object>>();
 
-        private ScriptingDataStorage _dataStorage = new ScriptingDataStorage();
+        public ScriptingDataStorage DataStorage = new ScriptingDataStorage();
 
         public ScriptingProvider()
         {
@@ -29,6 +29,7 @@ namespace FFXIVMonReborn.Scripting
 
         public void LoadScripts(string[] files)
         {
+            DataStorage.Reset();
             scripts.Clear();
 
             // Get each path
@@ -50,6 +51,7 @@ namespace FFXIVMonReborn.Scripting
 
         public void LoadScripts(string path)
         {
+            DataStorage.Reset();
             scripts.Clear();
 
             // Get all files on the path
@@ -74,7 +76,7 @@ namespace FFXIVMonReborn.Scripting
 
         public void ExecuteScripts(object sender, PacketEventArgs eventArgs)
         {
-            eventArgs.DataStorage = _dataStorage;
+            eventArgs.DataStorage = DataStorage;
 
             // Get each script
             foreach (Script<object> script in scripts)

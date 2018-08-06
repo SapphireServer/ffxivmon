@@ -340,6 +340,13 @@ namespace FFXIVMonReborn.Views
             ScriptProvider.LoadScripts(_selectedScripts);
         }
 
+        private void Scripting_ResetDataStorage(object sender, RoutedEventArgs e)
+        {
+            ScriptProvider?.DataStorage.Reset();
+            MessageBox.Show(
+                "Script Data Storage was reset.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+        }
+
         #region TabRelays
         private void LoadCaptureRelay(object sender, RoutedEventArgs e)
         {

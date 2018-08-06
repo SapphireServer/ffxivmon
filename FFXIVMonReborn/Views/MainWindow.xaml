@@ -49,6 +49,7 @@
                     <Separator></Separator>
                     <MenuItem Header="Select scripts" Click="Scripting_SelectScripts"/>
                     <MenuItem Header="Reload scripts" Click="Scripting_ReloadScripts"/>
+                    <MenuItem Header="Reset Data Storage" Click="Scripting_ResetDataStorage"/>
                     <MenuItem x:Name="ShowObjectMapCheckBox" Header="Show map of parsed Struct objects" IsCheckable="True"/>
                 </MenuItem>
                 <MenuItem Header="_Diff">

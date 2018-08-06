@@ -25,5 +25,10 @@ namespace FFXIVMonReborn.Scripting
 
             return null;
         }
+
+        public void Reset()
+        {
+            _data.Clear();
+        }
     }
 }
