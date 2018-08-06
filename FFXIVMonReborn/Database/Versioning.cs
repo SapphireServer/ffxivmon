@@ -81,13 +81,14 @@ namespace FFXIVMonReborn.Database
 
         public void ForceReset()
         {
-            _watcher.EnableRaisingEvents = false;
+            if(_watcher != null)
+                _watcher.EnableRaisingEvents = false;
             
             try
             {
                 Directory.Delete(Path.Combine(Environment.CurrentDirectory, "downloaded"), true);
 
-                Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "downloaded"));
+                Directory.CreateDirectory("downloaded");
                 
                 Versions = GetTags(Properties.Settings.Default.Repo);
 
