@@ -112,7 +112,7 @@ namespace FFXIVMonReborn.Views
                             thisItem.ValueCol = str;
                         }
                     }
-                    catch (OverflowException e)
+                    catch (OverflowException)
                     {
                         thisItem.ValueCol = String.Format("{0}", Convert.ToSByte(127 - data[offset]));
                     }

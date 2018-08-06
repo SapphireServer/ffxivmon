@@ -385,7 +385,6 @@ namespace FFXIVMonReborn.Views
 
                 var colours = Struct.TypeColours;
 
-                var i = 0;
                 foreach (var entry in structEntries.Item1)
                 {
                     System.Drawing.Color colour;

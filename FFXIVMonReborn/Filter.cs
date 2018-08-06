@@ -25,7 +25,7 @@ namespace FFXIVMonReborn
                 Parse(input);
                 return true;
             }
-            catch (Exception exc)
+            catch (Exception)
             {
                 return false;
             }
