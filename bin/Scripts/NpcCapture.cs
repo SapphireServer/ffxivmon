@@ -31,5 +31,5 @@ if(Packet.Name == "NpcSpawn")
 
     Debug.WriteLine($"Spawn packet: {entId} Base: {parsed.bNPCBase}");
 
-    File.WriteAllBytes(Path.Combine(Environment.CurrentDirectory, "CapturedNpcs", DataStorage.Get("zoneId").ToString(), $"{entId}-{parsed.modelType}-{parsed.bNPCBase}.bin"), Packet.Data);
+    File.WriteAllBytes(Path.Combine(Environment.CurrentDirectory, "CapturedNpcs", DataStorage.Get("zoneId").ToString(), $"{entId}-{parsed.modelType}-{parsed.subtype}-{parsed.bNPCBase}.bin"), Packet.Data);
 }
