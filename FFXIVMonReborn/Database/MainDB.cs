@@ -45,9 +45,10 @@ namespace FFXIVMonReborn.Database
         public bool Reload()
         {
             ServerZoneIpcType.Clear();
-            ClientZoneIpcType.Clear();;
+            ClientZoneIpcType.Clear();
             ActorControlType.Clear();
             ServerZoneStruct.Clear();
+            ClientZoneStruct.Clear();
 
             try
             {
