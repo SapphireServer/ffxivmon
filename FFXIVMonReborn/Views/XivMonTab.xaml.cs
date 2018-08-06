@@ -456,10 +456,18 @@ namespace FFXIVMonReborn.Views
                     {
                         if (structText.Length != 0)
                         {
-                            var structProvider = new Struct();
-                            var structEntries = structProvider.Parse(structText, item.Data);
+                            try
+                            {
+                                var structProvider = new Struct();
+                                var structEntries = structProvider.Parse(structText, item.Data);
 
-                            args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
+                                args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
+                            }
+                            catch (Exception exc)
+                            {
+                                _mainWindow.ScriptDebugView.WriteLine($"[EXCEPTION] Thrown for {item.Message} - {item.Name}: {exc}");
+                                args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
+                            }
                         }
                     }
                     else
@@ -467,7 +475,8 @@ namespace FFXIVMonReborn.Views
                         args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
                     }
 
-                    Scripting_RunOnPacket(args);
+                    if(args != null)
+                        Scripting_RunOnPacket(args);
                 }
                 catch (Exception exc)
                 {
