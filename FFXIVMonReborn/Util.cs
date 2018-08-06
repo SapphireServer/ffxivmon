@@ -148,7 +148,7 @@ namespace FFXIVMonReborn
 
         public static string FileWaitReadAllText(string path)
         {
-            while (true)
+            for (int i = 0; i < 100; i++)
             {
                 try
                 {
@@ -158,8 +158,11 @@ namespace FFXIVMonReborn
                 {
                     // ignored
                 }
-            }
-        }
 
+                System.Threading.Thread.Sleep(20);
+            }
+
+            throw new Exception("Read timed out: " + path);
+        }
     }
 }
