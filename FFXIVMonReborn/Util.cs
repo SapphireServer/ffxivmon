@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVMonReborn
 {
-    class Util
+    public class Util
     {
         public static string ByteArrayToHex(byte[] bytes, int offset = 0, int bytesPerLine = 16)
         {
