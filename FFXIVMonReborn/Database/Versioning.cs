@@ -88,7 +88,11 @@ namespace FFXIVMonReborn.Database
             {
                 Directory.Delete(Path.Combine(Environment.CurrentDirectory, "downloaded"), true);
 
+                while (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded"))) ; // These are here because Windows is retarded and takes it's time with updating the FS
+
                 Directory.CreateDirectory("downloaded");
+
+                while (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded"))) ;
                 
                 Versions = GetTags(Properties.Settings.Default.Repo);
 
@@ -104,6 +108,9 @@ namespace FFXIVMonReborn.Database
             {
                 new ExtendedErrorView("[Versioning] Failed to reset definitions.", exc.ToString(), "Error")
                     .ShowDialog();
+                #if DEBUG
+                throw exc;
+                #endif
             }
         }
 
@@ -111,11 +118,11 @@ namespace FFXIVMonReborn.Database
         {
             if (Versions.Length > version && version >= 0)
             {
-                return new MainDB(GetIpcs(Versions[version].Commit.Sha), GetCommon(Versions[version].Commit.Sha), GetServerZoneDef(Versions[version].Commit.Sha));
+                return new MainDB(GetIpcs(Versions[version].Commit.Sha), GetCommon(Versions[version].Commit.Sha), GetServerZoneDef(Versions[version].Commit.Sha), GetClientZoneDef(Versions[version].Commit.Sha));
             }
             else
             {
-                return new MainDB(GetIpcs(_latestCommit.Sha), GetCommon(_latestCommit.Sha), GetServerZoneDef(_latestCommit.Sha));
+                return new MainDB(GetIpcs(_latestCommit.Sha), GetCommon(_latestCommit.Sha), GetServerZoneDef(_latestCommit.Sha), GetClientZoneDef(_latestCommit.Sha));
             }
         }
 
@@ -162,6 +169,14 @@ namespace FFXIVMonReborn.Database
             return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "ServerZoneDef.h"));
         }
 
+        private string GetClientZoneDef(string commit)
+        {
+            if(File.Exists(Path.Combine("downloaded", commit, "ClientZoneDef.h")))
+                return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "ClientZoneDef.h"));
+
+            return null;
+        }
+
         private void DownloadDefinitions(string commit)
         {
             try
@@ -170,6 +185,8 @@ namespace FFXIVMonReborn.Database
                 DownloadFile(commit, "/src/common/Common.h", "Common.h");
                 DownloadFile(commit, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h",
                     "ServerZoneDef.h");
+                DownloadFile(commit, "/src/common/Network/PacketDef/Zone/ClientZoneDef.h",
+                    "ClientZoneDef.h");
             }
             catch (Exception exc)
             {
@@ -189,7 +206,16 @@ namespace FFXIVMonReborn.Database
             using (WebClient client = new WebClient())
             {
                 Debug.WriteLine($"Downloading https://raw.githubusercontent.com/{Properties.Settings.Default.Repo}/{commit}{path}");
-                client.DownloadFile($"https://raw.githubusercontent.com/{Properties.Settings.Default.Repo}/{commit}{path}", Path.Combine(Environment.CurrentDirectory, "downloaded", commit, fileName));
+                try
+                {
+                    client.DownloadFile(
+                        $"https://raw.githubusercontent.com/{Properties.Settings.Default.Repo}/{commit}{path}",
+                        Path.Combine(Environment.CurrentDirectory, "downloaded", commit, fileName));
+                }
+                catch (Exception exc)
+                {
+                    Debug.WriteLine("Couldn't download: " + exc);
+                }
             }
         }
 

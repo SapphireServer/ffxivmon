@@ -22,14 +22,22 @@ namespace FFXIVMonReborn.Database
         private Dictionary<int, Tuple<string, string>> ActorControlType = new Dictionary<int, Tuple<string, string>>();
 
         public Dictionary<int, string> ServerZoneStruct = new Dictionary<int, string>();
+        public Dictionary<int, string> ClientZoneStruct = new Dictionary<int, string>();
 
-        private string _ipcsString, _commonString, _serverZoneDefString;
+        private string _ipcsString, _commonString, _serverZoneDefString, _clientZoneDefString;
 
-        public MainDB(string ipcsString, string commonString, string serverZoneDefString)
+        public bool HasClientDefs = true;
+
+        public MainDB(string ipcsString, string commonString, string serverZoneDefString, string clientZoneDef)
         {
             _ipcsString = ipcsString;
             _commonString = commonString;
             _serverZoneDefString = serverZoneDefString;
+
+            if (clientZoneDef != null)
+                _clientZoneDefString = clientZoneDef;
+            else
+                HasClientDefs = false;
 
             Reload();
         }
@@ -45,7 +53,11 @@ namespace FFXIVMonReborn.Database
             {
                 ParseIpcs(_ipcsString);
                 ParseCommon(_commonString);
-                ParseServerZoneStructs(_serverZoneDefString);
+                ParseStructs(_serverZoneDefString, ref ServerZoneStruct, ServerZoneIpcType);
+
+                if(HasClientDefs)
+                    ParseStructs(_clientZoneDefString, ref ClientZoneStruct, ClientZoneIpcType);
+
                 return true;
             }
             catch (Exception exc)
@@ -61,6 +73,15 @@ namespace FFXIVMonReborn.Database
         {
             string structText;
             if (ServerZoneStruct.TryGetValue(opcode, out structText))
+                return structText;
+            else
+                return null;
+        }
+
+        public string GetClientZoneStruct(int opcode)
+        {
+            string structText;
+            if (ClientZoneStruct.TryGetValue(opcode, out structText))
                 return structText;
             else
                 return null;
@@ -205,14 +226,15 @@ namespace FFXIVMonReborn.Database
             return output;
         }
 
-        private void ParseServerZoneStructs(string data)
+        private void ParseStructs(string data, ref Dictionary<int, string> dict, Dictionary<int, Tuple<string, string>> ipcTypes)
         {
             var lines = Regex.Split(data, "\r\n|\r|\n");
 
-            foreach (var entry in ServerZoneIpcType)
+            foreach (var entry in ipcTypes)
             {
                 Debug.WriteLine($"Looking for struct for {entry.Value.Item1}");
-                Regex r = new Regex($"(FFXIVIpc{entry.Value.Item1})");
+
+                Regex r = new Regex($"(FFXIVIpcBasePacket< ?{entry.Value.Item1} ?>)");
                 Match m = r.Match(data);
                 if (m.Success)
                 {
@@ -228,11 +250,11 @@ namespace FFXIVMonReborn.Database
                     }
                     structText += "\n" + lines[lineNumber];
                     Debug.WriteLine("\n\n" + structText);
-                    ServerZoneStruct.Add(entry.Key, structText);
+                    dict.Add(entry.Key, structText);
                 }
             }
 
-            Debug.WriteLine("Parsed ServerZoneStructs: " + ServerZoneStruct.Count);
+            Debug.WriteLine("Parsed structs: " + dict.Count);
         }
 
         private void ParseCommon(string data)

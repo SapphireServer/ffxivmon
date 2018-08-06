@@ -316,28 +316,19 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                if (item.Direction == "S")
+                string structText = null;
+                structText = item.Direction == "S" ? _db.GetServerZoneStruct(view.GetSelectedOpCode()) : _db.GetClientZoneStruct(view.GetSelectedOpCode());
+
+                var structProvider = new Struct();
+                var structEntries = structProvider.Parse(structText, item.Data);
+
+                foreach (var entry in structEntries.Item1)
                 {
-                    var structText = _db.GetServerZoneStruct(view.GetSelectedOpCode());
-
-                    var structProvider = new Struct();
-                    var structEntries = structProvider.Parse(structText, item.Data);
-
-                    foreach (var entry in structEntries.Item1)
-                    {
-                        StructListView.Items.Add(entry);
-                    }
-
-                    if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
-                        new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
+                    StructListView.Items.Add(entry);
                 }
-                else
-                {
-                    StructListItem infoItem = new StructListItem();
-                    infoItem.NameCol = "Client Packet";
-                    StructListView.Items.Add(infoItem);
-                    return;
-                }
+
+                if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                    new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
             }
             catch (Exception exc)
             {
@@ -379,42 +370,34 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                if (item.Direction == "S")
+                string structText = null;
+                structText = item.Direction == "S" ? _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber)) : _db.GetClientZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
+
+                if (structText == null)
                 {
-                    var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-
-                    if (structText == null)
-                    {
-                        StructListItem infoItem = new StructListItem { NameCol = "No Struct found" };
-                        StructListView.Items.Add(infoItem);
-                        return;
-                    }
-
-                    var structProvider = new Struct();
-                    var structEntries = structProvider.Parse(structText, item.Data);
-
-                    var colours = Struct.TypeColours;
-
-                    var i = 0;
-                    foreach (var entry in structEntries.Item1)
-                    {
-                        System.Drawing.Color colour;
-                        if (!colours.TryGetValue(string.IsNullOrEmpty(entry.DataTypeCol) ? "unknown" : entry.DataTypeCol, out colour))
-                            colour = System.Drawing.Color.White;
-
-                        StructListView.Items.Add(entry);
-                        HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
-                    }
-
-                    if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
-                        new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
-                }
-                else
-                {
-                    StructListItem infoItem = new StructListItem { NameCol = "Client Packet" };
+                    StructListItem infoItem = new StructListItem { NameCol = "No Struct found" };
                     StructListView.Items.Add(infoItem);
                     return;
                 }
+
+                var structProvider = new Struct();
+                var structEntries = structProvider.Parse(structText, item.Data);
+
+                var colours = Struct.TypeColours;
+
+                var i = 0;
+                foreach (var entry in structEntries.Item1)
+                {
+                    System.Drawing.Color colour;
+                    if (!colours.TryGetValue(string.IsNullOrEmpty(entry.DataTypeCol) ? "unknown" : entry.DataTypeCol, out colour))
+                        colour = System.Drawing.Color.White;
+
+                    StructListView.Items.Add(entry);
+                    HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
+                }
+
+                if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
+                    new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
             }
             catch (Exception exc)
             {
@@ -466,7 +449,9 @@ namespace FFXIVMonReborn.Views
 
                     PacketEventArgs args = null;
 
-                    var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
+                    string structText = null;
+                    structText = item.Direction == "S" ? _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber)) : _db.GetClientZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
+
 
                     if (structText != null)
                     {
@@ -744,9 +729,12 @@ namespace FFXIVMonReborn.Views
 
                 UpdateInfoLabel();
             }
-            catch (Exception ex)
+            catch (Exception exc)
             {
-                new ExtendedErrorView($"Could not load capture at {path}.", ex.ToString(), "Error").ShowDialog();
+                new ExtendedErrorView($"Could not load capture at {path}.", exc.ToString(), "Error").ShowDialog();
+                #if DEBUG
+                throw exc;
+                #endif
             }
         }
 
@@ -1062,27 +1050,28 @@ namespace FFXIVMonReborn.Views
                 {
                     foreach (var item in PacketListView.Items)
                     {
-                        if (((PacketEntry)item).IsVisible)
+                        var packet = item as PacketEntry;
+
+                        if (packet.IsVisible)
                         {
                             PacketEventArgs args = null;
 
-                            var structText = _db.GetServerZoneStruct(int.Parse(((PacketEntry)item).Message, NumberStyles.HexNumber));
+                            string structText = null;
+                            if(packet.Direction == "S")
+                                structText = _db.GetServerZoneStruct(int.Parse(packet.Message, NumberStyles.HexNumber));
+                            else
+                                structText = _db.GetClientZoneStruct(int.Parse(packet.Message, NumberStyles.HexNumber));
 
                             if (structText != null)
                             {
                                 var structProvider = new Struct();
                                 var structEntries = structProvider.Parse(structText, ((PacketEntry)item).Data);
 
-                                foreach (var entry in structEntries.Item1)
-                                {
-                                    StructListView.Items.Add(entry);
-                                }
-
-                                args = new PacketEventArgs((PacketEntry)item, structEntries.Item2, _mainWindow.ScriptDebugView);
+                                args = new PacketEventArgs(packet, structEntries.Item2, _mainWindow.ScriptDebugView);
                             }
                             else
                             {
-                                args = new PacketEventArgs((PacketEntry)item, null, _mainWindow.ScriptDebugView);
+                                args = new PacketEventArgs(packet, null, _mainWindow.ScriptDebugView);
                             }
                             Scripting_RunOnPacket(args);
                         }
