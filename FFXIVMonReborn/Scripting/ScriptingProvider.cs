@@ -7,15 +7,17 @@ using FFXIVMonReborn.DataModel;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
-namespace FFXIVMonReborn
+namespace FFXIVMonReborn.Scripting
 {
-    public class Scripting // Thanks to oatmeal
+    public class ScriptingProvider // Thanks to oatmeal
     {
         private readonly ScriptOptions scriptOptions;
 
         private List<Script<object>> scripts = new List<Script<object>>();
 
-        public Scripting()
+        private ScriptingDataStorage _dataStorage = new ScriptingDataStorage();
+
+        public ScriptingProvider()
         {
             // Create a custom ScriptOptions instance
             scriptOptions = ScriptOptions.Default
@@ -72,6 +74,8 @@ namespace FFXIVMonReborn
 
         public void ExecuteScripts(object sender, PacketEventArgs eventArgs)
         {
+            eventArgs.DataStorage = _dataStorage;
+
             // Get each script
             foreach (Script<object> script in scripts)
             {
@@ -88,6 +92,7 @@ namespace FFXIVMonReborn
         public readonly PacketEntry Packet;
         public readonly ExpandoObject PacketObj;
         public readonly ScriptDebugView Debug;
+        public ScriptingDataStorage DataStorage;
 
         public PacketEventArgs(PacketEntry packet, ExpandoObject packetobj, ScriptDebugView debugView)
         {

@@ -14,6 +14,7 @@ using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
 using FFXIVMonReborn.FileOp;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.Scripting;
 
 namespace FFXIVMonReborn.Views
 {
@@ -26,7 +27,7 @@ namespace FFXIVMonReborn.Views
 
         public readonly Versioning VersioningProvider = new Versioning();
         public ExdCsvReader ExdProvider = null;
-        public Scripting ScriptProvider = null;
+        public ScriptingProvider ScriptProvider = null;
 
         public readonly ScriptDebugView ScriptDebugView = new ScriptDebugView();
         private string[] _selectedScripts = new string[0];
@@ -320,7 +321,7 @@ namespace FFXIVMonReborn.Views
             scriptView.ShowDialog();
             var toLoad = scriptView.GetSelectedScripts();
 
-            ScriptProvider = new Scripting();
+            ScriptProvider = new ScriptingProvider();
             ScriptProvider.LoadScripts(toLoad);
 
             _selectedScripts = toLoad;
@@ -335,7 +336,7 @@ namespace FFXIVMonReborn.Views
                 return;
             }
 
-            ScriptProvider = new Scripting();
+            ScriptProvider = new ScriptingProvider();
             ScriptProvider.LoadScripts(_selectedScripts);
         }
 

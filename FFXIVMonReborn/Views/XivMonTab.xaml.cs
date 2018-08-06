@@ -17,6 +17,7 @@ using UserControl = System.Windows.Controls.UserControl;
 using Be.Windows.Forms;
 using System.Linq;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.Scripting;
 
 namespace FFXIVMonReborn.Views
 {
@@ -1053,7 +1054,7 @@ namespace FFXIVMonReborn.Views
             {
                 if (_mainWindow.ScriptProvider == null)
                 {
-                    _mainWindow.ScriptProvider = new Scripting();
+                    _mainWindow.ScriptProvider = new ScriptingProvider();
                     _mainWindow.ScriptProvider.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
                 }
 

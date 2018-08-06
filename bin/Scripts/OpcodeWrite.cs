@@ -1,5 +1,5 @@
 using System;
 using System.IO;
 
-Debug.WriteLine(Packet.MessageCol);
-Console.WriteLine(Packet.MessageCol);
+Debug.WriteLine(Packet.Message);
+Console.WriteLine(Packet.Message);

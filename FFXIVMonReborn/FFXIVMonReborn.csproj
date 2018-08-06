@@ -186,6 +186,7 @@
     <Compile Include="ExdCsvReader.cs" />
     <Compile Include="FileOp\XmlCaptureOp.cs" />
     <Compile Include="FileOp\FFXIVReplayOp.cs" />
+    <Compile Include="Scripting\ScriptingDataStorage.cs" />
     <Compile Include="Views\TextInputView.xaml.cs">
       <DependentUpon>TextInputView.xaml</DependentUpon>
     </Compile>
@@ -212,7 +213,7 @@
     <Compile Include="InjectablePacketBuilder.cs" />
     <Compile Include="KeyboardHook.cs" />
     <Compile Include="MachinaCaptureWorker.cs" />
-    <Compile Include="Scripting.cs" />
+    <Compile Include="Scripting\ScriptingProvider.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="WPF\WindowEx.cs" />
     <Compile Include="Views\XivMonTab.xaml.cs">
