@@ -1072,10 +1072,18 @@ namespace FFXIVMonReborn.Views
 
                             if (structText != null)
                             {
-                                var structProvider = new Struct();
-                                var structEntries = structProvider.Parse(structText, ((PacketEntry)item).Data);
+                                try
+                                {
+                                    var structProvider = new Struct();
+                                    var structEntries = structProvider.Parse(structText, ((PacketEntry)item).Data);
 
-                                args = new PacketEventArgs(packet, structEntries.Item2, _mainWindow.ScriptDebugView);
+                                    args = new PacketEventArgs(packet, structEntries.Item2, _mainWindow.ScriptDebugView);
+                                }
+                                catch (Exception exc)
+                                {
+                                    _mainWindow.ScriptDebugView.WriteLine($"[EXCEPTION] Thrown for {packet.Message} - {packet.Name}: {exc}");
+                                    args = new PacketEventArgs(packet, null, _mainWindow.ScriptDebugView);
+                                }
                             }
                             else
                             {
