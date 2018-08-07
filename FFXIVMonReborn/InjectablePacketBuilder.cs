@@ -24,36 +24,8 @@ namespace FFXIVMonReborn
                 return output.ToArray();
             }
         }
-
-        public static byte[] BuildSet(List<byte[]> packets)
-        {
-            byte[] head = new byte[0x18];
-            using (MemoryStream stream = new MemoryStream())
-            {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
-                    stream.Position = 0x18;
-
-                    foreach (var packet in packets)
-                    {
-                        writer.Write(packet);
-                    }
-
-                    stream.Position = 0x0;
-                    writer.Write(0x01);
-
-                    stream.Position = 0x04;
-                    writer.Write((short)stream.Length);
-                    
-                    stream.Position = 0x6;
-                    writer.Write(0x01);
-
-                    return stream.ToArray();
-                }
-            }
-        }
         
-        public static byte[] BuildSet(List<byte[]> packets, uint unixtime)
+        public static byte[] BuildSet(List<byte[]> packets, uint unixtime = 0)
         {
             byte[] head = new byte[0x18];
             using (MemoryStream stream = new MemoryStream())
