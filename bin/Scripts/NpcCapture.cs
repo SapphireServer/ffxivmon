@@ -30,7 +30,7 @@ if(Packet.Name == "NpcSpawn")
 	var entId = BitConverter.ToUInt32(Packet.Data, 4);
     //        public static string GetExdField(string sheetName, int row, int col)
 
-    var name = FFXIVMonReborn.ExdReader.GetExdFieldAsString("BNpcName", (int)parsed.bNPCName, 0);
+    var name = FFXIVMonReborn.ExdReader.GetExdFieldAsString("BNpcName", (int)parsed.bNPCName, "Singular");
     
     Debug.WriteLine($"Spawn packet: {entId} Base: {parsed.bNPCBase} Name: {name}");
 
