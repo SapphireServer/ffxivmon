@@ -329,7 +329,7 @@ namespace FFXIVMonReborn.Database
                     case TypePrintMode.Raw:
                         item.ValueCol = data.ToHexString();
                         item.RawValue = data;
-                        break;;
+                        break;
                 }
             }
             else

@@ -67,6 +67,7 @@
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
                     <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepository"/>
+                    <MenuItem Header="_Set Game Path" Click="SetGamePath"/>
                     <Separator></Separator>
                     <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>
                     <MenuItem x:Name="SwitchModePcap" Header="_Capture mode: WinPCap" Click="SwitchModePcap_OnClick"/>

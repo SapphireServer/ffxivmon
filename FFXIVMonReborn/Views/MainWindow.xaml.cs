@@ -120,7 +120,7 @@ namespace FFXIVMonReborn.Views
             }
 
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
-                        
+            ExdReader.Init(Properties.Settings.Default.GamePath);
             ScriptDebugView.Show();
             ScriptDebugView.Visibility = Visibility.Hidden;
         }
@@ -511,6 +511,21 @@ namespace FFXIVMonReborn.Views
             Properties.Settings.Default.Save();
             VersioningProvider.ForceReset();
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
+        }
+
+        public void SetGamePath(object sender, RoutedEventArgs e)
+        {
+            string gamepath = Interaction.InputBox("Enter path to /FINAL FANTASY XIV - A Realm Reborn/ folder. This will reinitialise EXDs and may take a few seconds.", "FFXIVMon Reborn", Properties.Settings.Default.GamePath);
+
+            if (gamepath == "")
+                return;
+
+            Properties.Settings.Default.GamePath = gamepath;
+            Properties.Settings.Default.Save();
+            if (ExdReader.Init(gamepath))
+            {
+                new ExtendedErrorView("Loaded EXD successfully.", "", "FFXIVMon Reborn").ShowDialog();
+            }
         }
 
         private void LoadFFXIVReplayRelay(object sender, RoutedEventArgs e)
