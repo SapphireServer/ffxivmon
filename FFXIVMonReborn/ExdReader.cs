@@ -106,32 +106,8 @@ namespace FFXIVMonReborn
 
             if (field == null)
                 return null;
-            
-            if (field is UInt32)
-                return ((UInt32)field).ToString();
-            else if (field is Boolean)
-                return ((Boolean)field).ToString();
-            else if (field is Byte)
-                return ((Byte)field).ToString();
-            else if (field is SByte)
-                return ((SByte)field).ToString();
-            else if (field is Int16)
-                return ((Int16)field).ToString();
-            else if (field is Int32)
-                return ((Int32)field).ToString();
-            else if (field is Int64)
-                return ((Int64)field).ToString();
-            else if (field is UInt16)
-                return ((UInt16)field).ToString();
-            else if (field is UInt32)
-                return ((UInt32)field).ToString();
-            else if (field is UInt64)
-                return ((UInt64)field).ToString();
-            else if (field is Single)
-                return ((Single)field).ToString();
-            else if (field is Double)
-                return ((Double)field).ToString();
-            else if (field is IDictionary<string, object>)
+
+            if (field is IDictionary<string, object>)
             {
                 // taken from SaintCoinach
                 string s;
