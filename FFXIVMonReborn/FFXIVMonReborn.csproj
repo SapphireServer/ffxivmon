@@ -184,6 +184,7 @@
     <Compile Include="DataModel\Capture.cs" />
     <Compile Include="DataModel\PacketEntry.cs" />
     <Compile Include="ExdCsvReader.cs" />
+    <Compile Include="ExdReader.cs" />
     <Compile Include="FileOp\XmlCaptureOp.cs" />
     <Compile Include="FileOp\FFXIVReplayOp.cs" />
     <Compile Include="Scripting\ScriptingDataStorage.cs" />
@@ -300,6 +301,12 @@
   <ItemGroup>
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\SaintCoinach\SaintCoinach\SaintCoinach.csproj">
+      <Project>{8a7d65eb-3de3-4631-b286-cc73a3126002}</Project>
+      <Name>SaintCoinach</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
