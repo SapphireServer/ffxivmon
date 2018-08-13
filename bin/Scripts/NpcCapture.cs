@@ -28,8 +28,11 @@ if(Packet.Name == "NpcSpawn")
 	}
 
 	var entId = BitConverter.ToUInt32(Packet.Data, 4);
+    //        public static string GetExdField(string sheetName, int row, int col)
 
-    Debug.WriteLine($"Spawn packet: {entId} Base: {parsed.bNPCBase}");
+    var name = FFXIVMonReborn.ExdReader.GetExdFieldAsString("BNpcName", (int)parsed.bNPCName, 0);
+    
+    Debug.WriteLine($"Spawn packet: {entId} Base: {parsed.bNPCBase} Name: {name}");
 
     File.WriteAllBytes(Path.Combine(Environment.CurrentDirectory, "CapturedNpcs", DataStorage.Get("zoneId").ToString(), $"{entId}-{parsed.modelType}-{parsed.subtype}-{parsed.bNPCBase}.bin"), Packet.Data);
 }

@@ -20,6 +20,7 @@ namespace FFXIVMonReborn
                 GamePath = path;
                 _ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
                 _Exds = new SaintCoinach.Ex.ExCollection(_ARealmReversed.Packs);
+                _Exds.ActiveLanguage = SaintCoinach.Ex.Language.English;
             }
             catch (Exception e)
             {
@@ -29,7 +30,47 @@ namespace FFXIVMonReborn
             return true;
         }
 
-        public static string GetExdField(string sheetName, int row, int col)
+        public static T GetExdField<T>(string sheetName, int row, int col)
+        {
+            if (_Exds == null)
+            {
+                if (!Init(GamePath))
+                    return default(T);
+            }
+            var sheet = _Exds.GetSheet(sheetName);
+
+            object field = null;
+            try
+            {
+                field = sheet[(int)row][(int)col];
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    foreach (SaintCoinach.Ex.IRow exRow in sheet)
+                    {
+                        if (exRow.Key == row)
+                        {
+                            field = exRow.GetRaw((int)col);
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ee)
+                {
+                    System.Diagnostics.Debug.WriteLine(ee.Message);
+                }
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
+
+            if (field is T)
+                return (T)field;
+
+            return default(T);
+        }
+
+        public static string GetExdFieldAsString(string sheetName, int row, int col)
         {
             if (_Exds == null)
             {
@@ -37,11 +78,35 @@ namespace FFXIVMonReborn
                     return null;
             }
             var sheet = _Exds.GetSheet(sheetName);
-            if (!sheet.ContainsRow(row))
+
+            object field = null;
+            try
+            {
+                field = sheet[row][col];
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    foreach (SaintCoinach.Ex.IRow exRow in sheet)
+                    {
+                        if (exRow.Key == row)
+                        {
+                            field = exRow.GetRaw(col);
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ee)
+                {
+                    System.Diagnostics.Debug.WriteLine(ee.Message);
+                }
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
+
+            if (field == null)
                 return null;
-
-            var field = sheet[row][col];
-
+            
             if (field is UInt32)
                 return ((UInt32)field).ToString();
             else if (field is Boolean)
@@ -49,8 +114,7 @@ namespace FFXIVMonReborn
             else if (field is Byte)
                 return ((Byte)field).ToString();
             else if (field is SByte)
-                return ((SByte
-               )field).ToString();
+                return ((SByte)field).ToString();
             else if (field is Int16)
                 return ((Int16)field).ToString();
             else if (field is Int32)
