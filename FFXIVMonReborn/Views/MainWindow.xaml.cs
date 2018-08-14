@@ -26,7 +26,7 @@ namespace FFXIVMonReborn.Views
         private readonly KeyboardHook _kbHook = new KeyboardHook();
 
         public readonly Versioning VersioningProvider = new Versioning();
-        public ExdCsvReader ExdProvider = null;
+        public ExdDataCache ExdProvider = null;
         public ScriptingProvider ScriptProvider = null;
 
         public readonly ScriptDebugView ScriptDebugView = new ScriptDebugView();
@@ -86,7 +86,9 @@ namespace FFXIVMonReborn.Views
             else
                 SwitchModePcap.IsChecked = true;
 
-            if(!Properties.Settings.Default.DontUsePacketTimestamp)
+            ExdReader.Init(Properties.Settings.Default.GamePath);
+
+            if (!Properties.Settings.Default.DontUsePacketTimestamp)
             {
                 DontUsePacketTimestamp.IsChecked = false;
                 Properties.Settings.Default.DontUsePacketTimestamp = false;
@@ -120,7 +122,6 @@ namespace FFXIVMonReborn.Views
             }
 
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
-            ExdReader.Init(Properties.Settings.Default.GamePath);
             ScriptDebugView.Show();
             ScriptDebugView.Visibility = Visibility.Hidden;
         }
@@ -542,7 +543,7 @@ namespace FFXIVMonReborn.Views
 
         private void ReloadExClick(object sender, RoutedEventArgs e)
         {
-            ExdProvider = new ExdCsvReader();
+            ExdProvider = new ExdDataCache();
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
         }
 
@@ -587,7 +588,7 @@ namespace FFXIVMonReborn.Views
         private void ExEnabledCheckbox_OnChecked(object sender, RoutedEventArgs e)
         {
             if (ExdProvider == null)
-                ExdProvider = new ExdCsvReader();
+                ExdProvider = new ExdDataCache();
 
             ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
             

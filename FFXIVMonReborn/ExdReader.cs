@@ -10,14 +10,15 @@ namespace FFXIVMonReborn
     public static class ExdReader
     {
         public static string GamePath { get; private set; }
-        private static ARealmReversed _ARealmReversed;
+        public static ARealmReversed ARealmReversed { get; private set; }
 
+        #region Init
         public static bool Init(string path)
         {
             try
             {
                 GamePath = path;
-                _ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
+                ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
             }
             catch (Exception e)
             {
@@ -26,16 +27,17 @@ namespace FFXIVMonReborn
             }
             return true;
         }
+        #endregion
 
         #region Helpers
-        private static SaintCoinach.Ex.ISheet _GetSheet(string sheetName)
+        public static SaintCoinach.Ex.ISheet GetSheet(string sheetName)
         {
-            if (_ARealmReversed == null)
+            if (ARealmReversed == null)
             {
                 if (!Init(GamePath))
                     return null;
             }
-            return _ARealmReversed.GameData.GetSheet(sheetName);
+            return ARealmReversed.GameData.GetSheet(sheetName);
         }
 
         private static int _GetColIndexByName(SaintCoinach.Ex.ISheet sheet, string colName)
@@ -56,41 +58,13 @@ namespace FFXIVMonReborn
             return -1;
         }
 
-        private static T _GetExdField<T>(SaintCoinach.Ex.ISheet sheet, int row, int col)
+        private static object _GetExdField(SaintCoinach.Ex.ISheet sheet, int row, string colName)
         {
-            var field = _GetExdField(sheet, row, col);
-            if (field is T)
-                return (T)field;
-            return default(T);
-        }
-
-        private static string _GetExdFieldAsString(SaintCoinach.Ex.ISheet sheet, int row, int col)
-        {
-            var field = _GetExdField(sheet, row, col);
-            if (field == null)
+            int col = _GetColIndexByName(sheet, colName);
+            if (col == -1)
                 return null;
 
-            if (field is IDictionary<string, object>)
-            {
-                // taken from SaintCoinach
-                string s;
-                s = ",\"";
-                var isFirst = true;
-                foreach (var kvp in (IDictionary<string, object>)field)
-                {
-                    if (isFirst)
-                        isFirst = false;
-                    else
-                        s += ",";
-                    s += string.Format("[{0},", kvp.Key);
-                    if (kvp.Value != null)
-                        s += (kvp.Value.ToString().Replace("\"", "\"\""));
-                    s += "]";
-                }
-                s += "\"";
-                return s;
-            }
-            return field.ToString();
+            return _GetExdField(sheet, row, col);
         }
 
         private static object _GetExdField(SaintCoinach.Ex.ISheet sheet, int row, int col)
@@ -122,10 +96,57 @@ namespace FFXIVMonReborn
             return field;
         }
         #endregion
-        #region Public
+        #region ISheet
+
+        public static T GetExdField<T>(SaintCoinach.Ex.ISheet sheet, int row, int col)
+        {
+            var field = _GetExdField(sheet, row, col);
+            if (field is T)
+                return (T)field;
+            return default(T);
+        }
+
+        public static T GetExdField<T>(SaintCoinach.Ex.ISheet sheet, int row, string colName)
+        {
+            var field = _GetExdField(sheet, row, colName);
+            if (field is T)
+                return (T)field;
+            return default(T);
+        }
+
+        public static string GetExdFieldAsString(SaintCoinach.Ex.ISheet sheet, int row, int col)
+        {
+            var field = _GetExdField(sheet, row, col);
+            if (field == null)
+                return null;
+
+            if (field is IDictionary<string, object>)
+            {
+                // taken from SaintCoinach
+                string s;
+                s = ",\"";
+                var isFirst = true;
+                foreach (var kvp in (IDictionary<string, object>)field)
+                {
+                    if (isFirst)
+                        isFirst = false;
+                    else
+                        s += ",";
+                    s += string.Format("[{0},", kvp.Key);
+                    if (kvp.Value != null)
+                        s += (kvp.Value.ToString().Replace("\"", "\"\""));
+                    s += "]";
+                }
+                s += "\"";
+                return s;
+            }
+            return field.ToString();
+        }
+        #endregion
+        #region Named sheet
         public static T GetExdField<T>(string sheetName, int row, int col)
         {
-            var sheet = _GetSheet(sheetName);
+            var sheet = GetSheet(sheetName);
             if (sheet == null)
                 return default(T);
 
@@ -139,29 +160,29 @@ namespace FFXIVMonReborn
 
         public static T GetExdField<T>(string sheetName, int row, string colName)
         {
-            var sheet = _GetSheet(sheetName);
+            var sheet = GetSheet(sheetName);
             if (sheet == null)
                 return default(T);
 
-            int col = _GetColIndexByName(sheet, colName);
-            if (col == -1)
-                return default(T);
+            var field = _GetExdField(sheet, row, colName);
+            if (field is T)
+                return (T)field;
 
-            return _GetExdField<T>(sheet, row, col);
+            return default(T);
         }
 
         public static string GetExdFieldAsString(string sheetName, int row, int col)
         {
-            var sheet = _GetSheet(sheetName);
+            var sheet = GetSheet(sheetName);
             if (sheet == null)
                 return null;
 
-            return _GetExdFieldAsString(sheet, row, col);
+            return GetExdFieldAsString(sheet, row, col);
         }
 
         public static string GetExdFieldAsString(string sheetName, int row, string colName)
         {
-            var sheet = _GetSheet(sheetName);
+            var sheet = GetSheet(sheetName);
             if (sheet == null)
                 return null;
 
@@ -169,7 +190,7 @@ namespace FFXIVMonReborn
             if (col == -1)
                 return null;
 
-            return _GetExdFieldAsString(sheet, row, col);
+            return GetExdFieldAsString(sheet, row, col);
         }
         #endregion
     }
