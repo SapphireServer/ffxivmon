@@ -113,8 +113,13 @@ namespace FFXIVMonReborn.Views
                 else
                     CaptureInfoLabel.Content += " | Using packet time";
 
+            var versionInfo = "";
             if (_mainWindow != null)
-                CaptureInfoLabel.Content += " | " + _mainWindow.VersioningProvider.GetVersionInfo(_version);
+            {
+                versionInfo = _mainWindow.VersioningProvider.GetVersionInfo(_version);
+                CaptureInfoLabel.Content += " | . . .";
+            }
+            CaptureInfoLabel.ToolTip = versionInfo;
         }
 
         public void SetParents(TabItem me, MainWindow mainWindow)

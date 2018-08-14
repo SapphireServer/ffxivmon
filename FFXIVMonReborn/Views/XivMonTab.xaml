@@ -18,6 +18,9 @@
                         <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="300" />
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="0*"/>
@@ -143,7 +146,7 @@
                             </DockPanel>
                         </Grid>
                     </Grid>
-                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+                    <GridSplitter Grid.Column="1" Grid.RowSpan="2"  Width="5" HorizontalAlignment="Stretch" />
                     <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
@@ -169,9 +172,9 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
+                    <Label x:Name="CaptureInfoLabel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" HorizontalAlignment="Left">Something</Label>
                 </Grid>
             </DockPanel>
         </DockPanel>
-        <Label x:Name="CaptureInfoLabel" HorizontalAlignment="Left" VerticalAlignment="Bottom">Something</Label>
     </Grid>
 </UserControl>
