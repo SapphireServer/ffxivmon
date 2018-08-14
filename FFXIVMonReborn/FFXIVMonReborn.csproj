@@ -183,7 +183,7 @@
     <Compile Include="Database\Versioning.cs" />
     <Compile Include="DataModel\Capture.cs" />
     <Compile Include="DataModel\PacketEntry.cs" />
-    <Compile Include="ExdCsvReader.cs" />
+    <Compile Include="ExdDataCache.cs" />
     <Compile Include="ExdReader.cs" />
     <Compile Include="FileOp\XmlCaptureOp.cs" />
     <Compile Include="FileOp\FFXIVReplayOp.cs" />

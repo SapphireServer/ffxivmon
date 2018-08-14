@@ -10,17 +10,15 @@ namespace FFXIVMonReborn
     public static class ExdReader
     {
         public static string GamePath { get; private set; }
-        private static ARealmReversed _ARealmReversed;
-        private static SaintCoinach.Ex.ExCollection _Exds;
+        public static ARealmReversed ARealmReversed { get; private set; }
 
+        #region Init
         public static bool Init(string path)
         {
             try
             {
                 GamePath = path;
-                _ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
-                _Exds = new SaintCoinach.Ex.ExCollection(_ARealmReversed.Packs);
-                _Exds.ActiveLanguage = SaintCoinach.Ex.Language.English;
+                ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
             }
             catch (Exception e)
             {
@@ -29,16 +27,48 @@ namespace FFXIVMonReborn
             }
             return true;
         }
+        #endregion
 
-        public static T GetExdField<T>(string sheetName, int row, int col)
+        #region Helpers
+        public static SaintCoinach.Ex.ISheet GetSheet(string sheetName)
         {
-            if (_Exds == null)
+            if (ARealmReversed == null)
             {
                 if (!Init(GamePath))
-                    return default(T);
+                    return null;
             }
-            var sheet = _Exds.GetSheet(sheetName);
+            return ARealmReversed.GameData.GetSheet(sheetName);
+        }
 
+        private static int _GetColIndexByName(SaintCoinach.Ex.ISheet sheet, string colName)
+        {
+            var rSheet = sheet as SaintCoinach.Ex.Relational.IRelationalSheet;
+            if (rSheet != null)
+            {
+                foreach (var exCol in rSheet.Header.Columns)
+                {
+                    if (exCol.Name == colName)
+                    {
+                        return exCol.Index;
+                    }
+                }
+            }
+            new ExtendedErrorView($"Unable to find column {colName} in EXD sheet {sheet.Name}", "", "FFXIVMon Reborn");
+            System.Diagnostics.Debug.WriteLine($"Unable to find column {colName} in EXD sheet {sheet.Name}");
+            return -1;
+        }
+
+        private static object _GetExdField(SaintCoinach.Ex.ISheet sheet, int row, string colName)
+        {
+            int col = _GetColIndexByName(sheet, colName);
+            if (col == -1)
+                return null;
+
+            return _GetExdField(sheet, row, col);
+        }
+
+        private static object _GetExdField(SaintCoinach.Ex.ISheet sheet, int row, int col)
+        {
             object field = null;
             try
             {
@@ -63,47 +93,30 @@ namespace FFXIVMonReborn
                 }
                 System.Diagnostics.Debug.WriteLine(e.Message);
             }
+            return field;
+        }
+        #endregion
+        #region ISheet
 
+        public static T GetExdField<T>(SaintCoinach.Ex.ISheet sheet, int row, int col)
+        {
+            var field = _GetExdField(sheet, row, col);
             if (field is T)
                 return (T)field;
-
             return default(T);
         }
 
-        public static string GetExdFieldAsString(string sheetName, int row, int col)
+        public static T GetExdField<T>(SaintCoinach.Ex.ISheet sheet, int row, string colName)
         {
-            if (_Exds == null)
-            {
-                if (!Init(GamePath))
-                    return null;
-            }
-            var sheet = _Exds.GetSheet(sheetName);
+            var field = _GetExdField(sheet, row, colName);
+            if (field is T)
+                return (T)field;
+            return default(T);
+        }
 
-            object field = null;
-            try
-            {
-                field = sheet[row][col];
-            }
-            catch (Exception e)
-            {
-                try
-                {
-                    foreach (SaintCoinach.Ex.IRow exRow in sheet)
-                    {
-                        if (exRow.Key == row)
-                        {
-                            field = exRow.GetRaw(col);
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ee)
-                {
-                    System.Diagnostics.Debug.WriteLine(ee.Message);
-                }
-                System.Diagnostics.Debug.WriteLine(e.Message);
-            }
-
+        public static string GetExdFieldAsString(SaintCoinach.Ex.ISheet sheet, int row, int col)
+        {
+            var field = _GetExdField(sheet, row, col);
             if (field == null)
                 return null;
 
@@ -129,5 +142,56 @@ namespace FFXIVMonReborn
             }
             return field.ToString();
         }
+        #endregion
+        #region Named sheet
+        public static T GetExdField<T>(string sheetName, int row, int col)
+        {
+            var sheet = GetSheet(sheetName);
+            if (sheet == null)
+                return default(T);
+
+            var field = _GetExdField(sheet, row, col);
+
+            if (field is T)
+                return (T)field;
+
+            return default(T);
+        }
+
+        public static T GetExdField<T>(string sheetName, int row, string colName)
+        {
+            var sheet = GetSheet(sheetName);
+            if (sheet == null)
+                return default(T);
+
+            var field = _GetExdField(sheet, row, colName);
+            if (field is T)
+                return (T)field;
+
+            return default(T);
+        }
+
+        public static string GetExdFieldAsString(string sheetName, int row, int col)
+        {
+            var sheet = GetSheet(sheetName);
+            if (sheet == null)
+                return null;
+
+            return GetExdFieldAsString(sheet, row, col);
+        }
+
+        public static string GetExdFieldAsString(string sheetName, int row, string colName)
+        {
+            var sheet = GetSheet(sheetName);
+            if (sheet == null)
+                return null;
+
+            int col = _GetColIndexByName(sheet, colName);
+            if (col == -1)
+                return null;
+
+            return GetExdFieldAsString(sheet, row, col);
+        }
+        #endregion
     }
 }
