@@ -57,7 +57,7 @@ namespace FFXIVMonReborn.Database
             { "uint32_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },
             { "uint64_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xd7) },
             { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
-            //{ "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
+            { "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
         };
 
         private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();

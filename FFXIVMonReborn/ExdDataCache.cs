@@ -47,7 +47,7 @@ namespace FFXIVMonReborn
         {
             try
             {
-                return _bnpcnames[id + 1];
+                return _bnpcnames[id];
             }
             catch
             {
@@ -60,7 +60,7 @@ namespace FFXIVMonReborn
         {
             try
             {
-                return _placenames[id + 1];
+                return _placenames[id];
             }
             catch
             {
@@ -72,7 +72,7 @@ namespace FFXIVMonReborn
         {
             try
             {
-                return _actionnames[id + 1];
+                return _actionnames[id];
             }
             catch
             {
