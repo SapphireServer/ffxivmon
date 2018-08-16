@@ -430,55 +430,25 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetServerZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-            }
-            else
-            {
-                item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
-                item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-            }
 
-            item.IsForSelf = BitConverter.ToUInt32(item.Data, 0x04) == BitConverter.ToUInt32(item.Data, 0x08);
-            item.Category = item.Set.ToString();
-
-            if ((item.Message == "0142" || item.Message == "0143" || item.Message == "0144") && item.Direction == "S")
-            {
-                int cat = BitConverter.ToUInt16(item.Data, 0x20);
-                item.ActorControl = cat;
-                item.Name = _db.GetActorControlTypeName(cat);
-            }
-
-            if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
-            {
-                if (_mainWindow.ScriptProvider == null)
+                switch (item.Message)
                 {
-                    MessageBox.Show("No scripts were loaded.", "Error", MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
+                    case "0142":
+                    case "0143":
+                    case "0144":
+                        int cat = BitConverter.ToUInt16(item.Data, 0x20);
+                        item.ActorControl = cat;
+                        item.Name = _db.GetActorControlTypeName(cat);
+                        break;
                 }
-                else
+
+                if (_mainWindow.ExEnabledCheckbox.IsChecked)
                 {
                     try
                     {
-                        Scripting_RunOnPacket(item, _mainWindow.ScriptProvider);
-                    }
-                    catch (Exception exc)
-                    {
-                        new ExtendedErrorView(
-                            $"Scripting exception thrown for {item.Message} - {item.Name}. Turning off auto script running.", exc.ToString(), "Error").ShowDialog();
-                        _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
-                    }
-                }
-            }
+                        var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
 
-            if (_mainWindow.ExEnabledCheckbox.IsChecked && item.Direction == "S")
-            {
-                try
-                {
-                    var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-
-                    if (structText != null)
-                    {
-                        if (structText.Length != 0)
+                        if (structText != null && structText.Length != 0)
                         {
                             switch (item.Name)
                             {
@@ -525,12 +495,43 @@ namespace FFXIVMonReborn.Views
                             }
                         }
                     }
+                    catch (Exception exc)
+                    {
+                        new ExtendedErrorView(
+                            $"EXD Error for {item.Message} - {item.Name}. Turning off EXD features.", exc.ToString(), "Error").ShowDialog();
+                        _mainWindow.ExEnabledCheckbox.IsChecked = false;
+                    }
                 }
-                catch (Exception exc)
+            }
+            else
+            {
+                item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
+                item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
+            }
+
+            item.IsForSelf = BitConverter.ToUInt32(item.Data, 0x04) == BitConverter.ToUInt32(item.Data, 0x08);
+            item.Category = item.Set.ToString();
+
+            if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
+            {
+                if (_mainWindow.ScriptProvider == null)
                 {
-                    new ExtendedErrorView(
-                        $"EXD Error for {item.Message} - {item.Name}. Turning off EXD features.", exc.ToString(), "Error").ShowDialog();
-                    _mainWindow.ExEnabledCheckbox.IsChecked = false;
+                    MessageBox.Show("No scripts were loaded.", "Error", MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
+                }
+                else
+                {
+                    try
+                    {
+                        Scripting_RunOnPacket(item, _mainWindow.ScriptProvider);
+                    }
+                    catch (Exception exc)
+                    {
+                        new ExtendedErrorView(
+                            $"Scripting exception thrown for {item.Message} - {item.Name}. Turning off auto script running.", exc.ToString(), "Error").ShowDialog();
+                        _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
+                    }
                 }
             }
 

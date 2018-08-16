@@ -218,7 +218,7 @@ namespace FFXIVMonReborn.Database
                     }
                 }
 
-                if(debugMsg.Contains("No info for native type"))
+                if (debugMsg.Contains("No info for native type"))
                     new ExtendedErrorView($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs.", debugMsg, "Error", WindowStartupLocation.CenterScreen).ShowDialog();
 
                 return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
