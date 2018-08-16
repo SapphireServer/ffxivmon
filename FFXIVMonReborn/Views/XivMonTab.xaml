@@ -53,8 +53,11 @@
                                               Click="ExportSelectedPacketsToSet" />
                                     <MenuItem Header="Export selected sets for Replay"
                                               Click="ExportSelectedSetsForReplay" />
+                                    <Separator></Separator>
                                     <MenuItem Header="Apply specific struct to packet"
                                               Click="ApplySpecificStructToPacket" />
+                                    <MenuItem Header="Run specific scripts on packets"
+                                              Click="RunSpecificScriptOnPacket" />
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.Resources>

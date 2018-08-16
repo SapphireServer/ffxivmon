@@ -449,47 +449,24 @@ namespace FFXIVMonReborn.Views
 
             if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
             {
-                try
+                if (_mainWindow.ScriptProvider == null)
                 {
-
-                    PacketEventArgs args = null;
-
-                    string structText = null;
-                    structText = item.Direction == "S" ? _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber)) : _db.GetClientZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-
-
-                    if (structText != null)
-                    {
-                        if (structText.Length != 0)
-                        {
-                            try
-                            {
-                                var structProvider = new Struct();
-                                var structEntries = structProvider.Parse(structText, item.Data);
-
-                                args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
-                            }
-                            catch (Exception exc)
-                            {
-                                _mainWindow.ScriptDebugView.WriteLine($"[EXCEPTION] Thrown for {item.Message} - {item.Name}: {exc}");
-                                args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
-                    }
-
-                    if(args != null)
-                        Scripting_RunOnPacket(args);
-                }
-                catch (Exception exc)
-                {
-                    new ExtendedErrorView(
-                        $"Scripting exception thrown for {item.Message} - {item.Name}. Turning off auto script running.", exc.ToString(), "Error").ShowDialog();
+                    MessageBox.Show("No scripts were loaded.", "Error", MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                     _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
-                    return;
+                }
+                else
+                {
+                    try
+                    {
+                        Scripting_RunOnPacket(item, _mainWindow.ScriptProvider);
+                    }
+                    catch (Exception exc)
+                    {
+                        new ExtendedErrorView(
+                            $"Scripting exception thrown for {item.Message} - {item.Name}. Turning off auto script running.", exc.ToString(), "Error").ShowDialog();
+                        _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
+                    }
                 }
             }
 
@@ -556,7 +533,6 @@ namespace FFXIVMonReborn.Views
                     _mainWindow.ExEnabledCheckbox.IsChecked = false;
                 }
             }
-
 
             if (_filters != null && _filters.Length > 0)
             {
@@ -1068,34 +1044,7 @@ namespace FFXIVMonReborn.Views
 
                         if (packet.IsVisible)
                         {
-                            PacketEventArgs args = null;
-
-                            string structText = null;
-                            if(packet.Direction == "S")
-                                structText = _db.GetServerZoneStruct(int.Parse(packet.Message, NumberStyles.HexNumber));
-                            else
-                                structText = _db.GetClientZoneStruct(int.Parse(packet.Message, NumberStyles.HexNumber));
-
-                            if (structText != null)
-                            {
-                                try
-                                {
-                                    var structProvider = new Struct();
-                                    var structEntries = structProvider.Parse(structText, ((PacketEntry)item).Data);
-
-                                    args = new PacketEventArgs(packet, structEntries.Item2, _mainWindow.ScriptDebugView);
-                                }
-                                catch (Exception exc)
-                                {
-                                    _mainWindow.ScriptDebugView.WriteLine($"[EXCEPTION] Thrown for {packet.Message} - {packet.Name}: {exc}");
-                                    args = new PacketEventArgs(packet, null, _mainWindow.ScriptDebugView);
-                                }
-                            }
-                            else
-                            {
-                                args = new PacketEventArgs(packet, null, _mainWindow.ScriptDebugView);
-                            }
-                            Scripting_RunOnPacket(args);
+                            Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider);
                         }
                     }
                     MessageBox.Show("Scripts ran successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
@@ -1111,17 +1060,68 @@ namespace FFXIVMonReborn.Views
             }
         }
 
-        private void Scripting_RunOnPacket(PacketEventArgs args)
+        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider)
         {
-            if (_mainWindow.ScriptProvider == null)
+            PacketEventArgs args = null;
+
+            string structText = null;
+            structText = item.Direction == "S" ? _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber)) : _db.GetClientZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
+
+
+            if (structText != null)
             {
-                MessageBox.Show("No scripts were loaded.", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
-                return;
+                if (structText.Length != 0)
+                {
+                    try
+                    {
+                        var structProvider = new Struct();
+                        var structEntries = structProvider.Parse(structText, item.Data);
+
+                        args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
+                    }
+                    catch (Exception exc)
+                    {
+                        _mainWindow.ScriptDebugView.WriteLine($"[EXCEPTION] Thrown for {item.Message} - {item.Name}: {exc}");
+                        args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
+                    }
+                }
+            }
+            else
+            {
+                args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
             }
 
-            _mainWindow.ScriptProvider.ExecuteScripts(null, args);
+            if(args != null)
+                provider.ExecuteScripts(null, args);
+        }
+
+        
+        private void RunSpecificScriptOnPacket(object sender, RoutedEventArgs e)
+        {
+            var scriptView = new ScriptSelectView("Scripts");
+            scriptView.ShowDialog();
+            var toLoad = scriptView.GetSelectedScripts();
+
+            var provider = new ScriptingProvider();
+            provider.LoadScripts(toLoad);
+
+            var items = PacketListView.SelectedItems;
+
+            foreach (var item in items)
+            {
+                var packet = item as PacketEntry;
+
+                try
+                {
+                    Scripting_RunOnPacket(packet, provider);
+                }
+                catch (Exception exc)
+                {
+                    new ExtendedErrorView(
+                        $"Scripting exception thrown for {packet.Message} - {packet.Name}.", exc.ToString(), "Error").ShowDialog();
+                    return;
+                }
+            }
         }
         #endregion
 
