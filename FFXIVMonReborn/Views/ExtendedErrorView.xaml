@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FFXIVMonReborn"
         mc:Ignorable="d"
-        Title="ExtendedErrorView" Width="734.254" ResizeMode="NoResize" Height="434.724">
+        Title="ExtendedErrorView" Width="734.254" ResizeMode="NoResize" Height="434.724" WindowStartupLocation="CenterScreen">
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto" x:Name="ErrorMessage">Error Message that is very important and should be respected by everyone, so please look at it and don't ignore</Label>

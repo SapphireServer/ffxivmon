@@ -13,19 +13,10 @@ namespace FFXIVMonReborn
         public static ARealmReversed ARealmReversed { get; private set; }
 
         #region Init
-        public static bool Init(string path)
+        public static void Init(string path)
         {
-            try
-            {
-                GamePath = path;
-                ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
-            }
-            catch (Exception e)
-            {
-                new ExtendedErrorView(e.Message, "Unable to init EXD data", "FFXIVMon Reborn").ShowDialog();
-                return false;
-            }
-            return true;
+            GamePath = path;
+            ARealmReversed = new SaintCoinach.ARealmReversed(path, SaintCoinach.Ex.Language.English);
         }
         #endregion
 
@@ -34,8 +25,7 @@ namespace FFXIVMonReborn
         {
             if (ARealmReversed == null)
             {
-                if (!Init(GamePath))
-                    return null;
+                Init(GamePath);
             }
             return ARealmReversed.GameData.GetSheet(sheetName);
         }

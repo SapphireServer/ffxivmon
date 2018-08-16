@@ -86,7 +86,15 @@ namespace FFXIVMonReborn.Views
             else
                 SwitchModePcap.IsChecked = true;
 
-            ExdReader.Init(Properties.Settings.Default.GamePath);
+            try
+            {
+                ExdReader.Init(Properties.Settings.Default.GamePath);
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView("Unable to init EXD data. Please check your game path in Options -> Set Game Path.", exc.ToString(), "FFXIVMon Reborn").ShowDialog();
+                Properties.Settings.Default.LoadEXD = false;
+            }
 
             if (!Properties.Settings.Default.DontUsePacketTimestamp)
             {
@@ -523,10 +531,19 @@ namespace FFXIVMonReborn.Views
 
             Properties.Settings.Default.GamePath = gamepath;
             Properties.Settings.Default.Save();
-            if (ExdReader.Init(gamepath))
+
+            try
             {
-                new ExtendedErrorView("Loaded EXD successfully.", "", "FFXIVMon Reborn").ShowDialog();
+                ExdReader.Init(Properties.Settings.Default.GamePath);
             }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView("Unable to init EXD data. Please check your game path in Options -> Set Game Path.", exc.ToString(), "FFXIVMon Reborn").ShowDialog();
+                Properties.Settings.Default.LoadEXD = false;
+            }
+
+            MessageBox.Show("EXD data set up successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
+                MessageBoxImage.Asterisk);
         }
 
         private void LoadFFXIVReplayRelay(object sender, RoutedEventArgs e)
@@ -587,8 +604,17 @@ namespace FFXIVMonReborn.Views
 
         private void ExEnabledCheckbox_OnChecked(object sender, RoutedEventArgs e)
         {
-            if (ExdProvider == null)
-                ExdProvider = new ExdDataCache();
+            try
+            {
+                if (ExdProvider == null)
+                    ExdProvider = new ExdDataCache();
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView("Unable to init EXD data. Please check your game path in Options -> Set Game Path.", exc.ToString(), "FFXIVMon Reborn").ShowDialog();
+                ExEnabledCheckbox.IsChecked = false;
+                return;
+            }
 
             ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
             
