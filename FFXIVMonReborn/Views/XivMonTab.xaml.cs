@@ -1049,7 +1049,7 @@ namespace FFXIVMonReborn.Views
 
                         if (packet.IsVisible)
                         {
-                            Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider);
+                            Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider, true);
                         }
                     }
                     MessageBox.Show("Scripts ran successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
@@ -1065,7 +1065,7 @@ namespace FFXIVMonReborn.Views
             }
         }
 
-        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider)
+        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider, bool silent = false)
         {
             PacketEventArgs args = null;
 
@@ -1080,7 +1080,7 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         var structProvider = new Struct();
-                        var structEntries = structProvider.Parse(structText, item.Data);
+                        var structEntries = structProvider.Parse(structText, item.Data, silent);
 
                         args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
                     }
