@@ -391,6 +391,10 @@ namespace FFXIVMonReborn.Views
                 var colours = Struct.TypeColours;
                 int i = 0;
 
+                
+                // Highlight the IPC header lightly grey
+                HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
+                
                 foreach (var entry in structEntries.Item1)
                 {
                     System.Drawing.Color colour = Struct.TypeColours.ElementAt(i).Value;
