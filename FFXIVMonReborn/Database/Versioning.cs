@@ -118,11 +118,11 @@ namespace FFXIVMonReborn.Database
         {
             if (Versions.Length > version && version >= 0)
             {
-                return new MainDB(GetIpcs(Versions[version].Commit.Sha), GetCommon(Versions[version].Commit.Sha), GetServerZoneDef(Versions[version].Commit.Sha), GetClientZoneDef(Versions[version].Commit.Sha));
+                return new MainDB(GetIpcs(Versions[version].Commit.Sha), GetCommon(Versions[version].Commit.Sha), GetServerZoneDef(Versions[version].Commit.Sha), GetClientZoneDef(Versions[version].Commit.Sha), GetCommonActorControl(Versions[version].Commit.Sha));
             }
             else
             {
-                return new MainDB(GetIpcs(_latestCommit.Sha), GetCommon(_latestCommit.Sha), GetServerZoneDef(_latestCommit.Sha), GetClientZoneDef(_latestCommit.Sha));
+                return new MainDB(GetIpcs(_latestCommit.Sha), GetCommon(_latestCommit.Sha), GetServerZoneDef(_latestCommit.Sha), GetClientZoneDef(_latestCommit.Sha), GetCommonActorControl(_latestCommit.Sha));
             }
         }
 
@@ -158,6 +158,11 @@ namespace FFXIVMonReborn.Database
         {
             return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "Common.h"));
         }
+        
+        private string GetCommonActorControl(string commit)
+        {
+            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "CommonActorControl.h"));
+        }
 
         private string GetIpcs(string commit)
         {
@@ -182,6 +187,7 @@ namespace FFXIVMonReborn.Database
             try
             {
                 DownloadFile(commit, "/src/common/Network/PacketDef/Ipcs.h", "Ipcs.h");
+                DownloadFile(commit, "/src/common/Network/CommonActorControl.h", "CommonActorControl.h");
                 DownloadFile(commit, "/src/common/Common.h", "Common.h");
                 DownloadFile(commit, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h",
                     "ServerZoneDef.h");

@@ -24,20 +24,26 @@ namespace FFXIVMonReborn.Database
         public Dictionary<int, string> ServerZoneStruct = new Dictionary<int, string>();
         public Dictionary<int, string> ClientZoneStruct = new Dictionary<int, string>();
 
-        private string _ipcsString, _commonString, _serverZoneDefString, _clientZoneDefString;
+        private string _ipcsString, _commonString, _serverZoneDefString, _clientZoneDefString, _commonActorControlString;
 
         public bool HasClientDefs = true;
+        public bool HasCommonActorControl = true;
 
-        public MainDB(string ipcsString, string commonString, string serverZoneDefString, string clientZoneDef)
+        public MainDB(string ipcsString, string commonString, string serverZoneDefString, string clientZoneDefString, string commonActorControlString)
         {
             _ipcsString = ipcsString;
             _commonString = commonString;
             _serverZoneDefString = serverZoneDefString;
 
-            if (clientZoneDef != null)
-                _clientZoneDefString = clientZoneDef;
+            if (clientZoneDefString != null)
+                _clientZoneDefString = clientZoneDefString;
             else
                 HasClientDefs = false;
+
+            if (commonActorControlString != null)
+                _commonActorControlString = commonActorControlString;
+            else
+                HasCommonActorControl = false;
 
             Reload();
         }
@@ -58,6 +64,9 @@ namespace FFXIVMonReborn.Database
 
                 if(HasClientDefs)
                     ParseStructs(_clientZoneDefString, ref ClientZoneStruct, ClientZoneIpcType);
+                
+                if(HasCommonActorControl)
+                    ParseCommon(_commonActorControlString);
 
                 return true;
             }
