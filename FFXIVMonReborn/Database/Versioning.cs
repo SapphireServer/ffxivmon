@@ -94,7 +94,7 @@ namespace FFXIVMonReborn.Database
 
                 while (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded"))) ;
                 
-                Versions = GetTags(Properties.Settings.Default.Repo);
+                Versions = GetTags(Properties.Settings.Default.Repo, true);
 
                 foreach (var version in Versions)
                 {
@@ -226,9 +226,9 @@ namespace FFXIVMonReborn.Database
         }
 
 
-        private static GithubApiTags[] GetTags(string repo)
+        private static GithubApiTags[] GetTags(string repo, bool forceNew = false)
         {
-            if (File.Exists(Path.Combine("downloaded", "tags.json")))
+            if (File.Exists(Path.Combine("downloaded", "tags.json")) && !forceNew)
                 return GithubApiTags.FromJson(File.ReadAllText(Path.Combine("downloaded", "tags.json")));
 
             using (WebClient client = new WebClient())

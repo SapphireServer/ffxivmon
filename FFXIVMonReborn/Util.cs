@@ -159,7 +159,7 @@ namespace FFXIVMonReborn
                     // ignored
                 }
 
-                System.Threading.Thread.Sleep(20);
+                //System.Threading.Thread.Sleep(20);
             }
 
             throw new Exception("Read timed out: " + path);

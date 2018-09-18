@@ -150,6 +150,8 @@ namespace FFXIVMonReborn.Database
 
             var lines = Regex.Split(data, "\r\n|\r|\n");
 
+            bool inComment = false;
+
             Regex r = new Regex($"({enumName})");
             Match m = r.Match(data);
             if (m.Success)
@@ -158,10 +160,41 @@ namespace FFXIVMonReborn.Database
                 int at = 1;
                 while (true)
                 {
+                    
                     var line = lines[lineNumber + at];
+
+                    if (inComment)
+                    {
+                        if (line.Contains("*/"))
+                            inComment = false;
+
+                        at++;
+                        continue;
+                    }
+
+                    if (line.Contains("/*") && line.Contains("*/"))
+                    {
+                        at++;
+                        continue;
+                    }
+                        
+
+                    if (line.Contains("/*"))
+                    {
+                        inComment = true;
+
+                        at++;
+                        continue;
+                    }
 
                     if (line.Contains("}"))
                         break;
+                    
+                    if (line.Contains("{"))
+                    {
+                        at++;
+                        continue;
+                    }
 
                     if (line == "")
                     {
