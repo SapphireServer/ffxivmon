@@ -16,6 +16,7 @@ namespace FFXIVMonReborn.DataModel
         public int Set { get; set; }
         public uint PacketUnixTime { get; set; }
         public long SystemMsTime { get; set; }
+        public bool IsDecrypted { get; set; }
 
         // ignored values
         [XmlIgnore]

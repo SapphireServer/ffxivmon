@@ -19,6 +19,7 @@ using System.Linq;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace FFXIVMonReborn.Views
 {
@@ -433,10 +434,17 @@ namespace FFXIVMonReborn.Views
 
         public void AddPacketToListView(PacketEntry item, bool silent = false)
         {
-            var data = item.Data;
-            _encryptionProvider?.DecryptPacket(ref data);
-            item.Data = data;
+            if (_encryptionProvider != null && !item.IsDecrypted && item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07)
+            {
+                var data = item.Data;
+                _encryptionProvider.DecryptPacket(ref data);
+                item.Data = data;
 
+                item.Message = BitConverter.ToUInt16(item.Data, 0x12).ToString("X4");
+
+                item.IsDecrypted = true;
+            }
+            
             if (item.Direction == "S")
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
@@ -647,6 +655,7 @@ namespace FFXIVMonReborn.Views
 
         public void LoadCapture()
         {
+            _encryptionProvider = null;
             _currentPacketStream = new MemoryStream(new byte[] { });
             _filterString = "";
 
@@ -678,6 +687,7 @@ namespace FFXIVMonReborn.Views
 
         public void LoadFfxivReplay()
         {
+            _encryptionProvider = null;
             _currentPacketStream = new MemoryStream(new byte[] { });
             _filterString = "";
 

@@ -29,8 +29,8 @@ namespace FFXIVMonReborn.LobbyEncryption
             encKey[2] = 0x34;
             encKey[3] = 0x12;
             Array.Copy(BitConverter.GetBytes(key), 0, encKey, 4, 4);
-            encKey[8] = 0xCC; // TODO: Don't hardcode this constant
-            encKey[9] = 0x10;
+            encKey[8] = 0x30; // TODO: Don't hardcode this constant
+            encKey[9] = 0x11;
             
             Array.Copy(keyPhrase, 0, encKey, 0x0c, keyPhrase.Length);
             
