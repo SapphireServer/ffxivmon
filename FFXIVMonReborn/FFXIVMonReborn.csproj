@@ -187,6 +187,8 @@
     <Compile Include="ExdReader.cs" />
     <Compile Include="FileOp\XmlCaptureOp.cs" />
     <Compile Include="FileOp\FFXIVReplayOp.cs" />
+    <Compile Include="LobbyEncryption\Blowfish.cs" />
+    <Compile Include="LobbyEncryption\LobbyEncryptionProvider.cs" />
     <Compile Include="Scripting\ScriptingDataStorage.cs" />
     <Compile Include="Views\TextInputView.xaml.cs">
       <DependentUpon>TextInputView.xaml</DependentUpon>

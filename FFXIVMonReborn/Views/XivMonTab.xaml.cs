@@ -17,6 +17,7 @@ using UserControl = System.Windows.Controls.UserControl;
 using Be.Windows.Forms;
 using System.Linq;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
 
 namespace FFXIVMonReborn.Views
@@ -35,6 +36,8 @@ namespace FFXIVMonReborn.Views
         private MemoryStream _currentPacketStream;
         private MainDB _db;
         private int _version = -1;
+
+        private LobbyEncryptionProvider _encryptionProvider;
 
         private string _filterString = "";
         private string _currentXmlFile = "";
@@ -430,11 +433,15 @@ namespace FFXIVMonReborn.Views
 
         public void AddPacketToListView(PacketEntry item, bool silent = false)
         {
+            var data = item.Data;
+            _encryptionProvider?.DecryptPacket(ref data);
+            item.Data = data;
+
             if (item.Direction == "S")
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetServerZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-
+                
                 switch (item.Message)
                 {
                     case "0142":
@@ -511,6 +518,13 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
+                
+                if (item.Data[0x0C] == 0x09 && _encryptionProvider == null && item.Message == "0000")
+                {
+                    _encryptionProvider = new LobbyEncryptionProvider(item.Data);
+
+                    item.Comment = "Lobby Encryption INIT: " + Util.ByteArrayToString(_encryptionProvider.EncKey);
+                }
             }
 
             item.IsForSelf = BitConverter.ToUInt32(item.Data, 0x04) == BitConverter.ToUInt32(item.Data, 0x08);
@@ -728,7 +742,7 @@ namespace FFXIVMonReborn.Views
             {
                 new ExtendedErrorView($"Could not load capture at {path}.", exc.ToString(), "Error").ShowDialog();
                 #if DEBUG
-                throw exc;
+                throw;
                 #endif
             }
         }
