@@ -11,7 +11,7 @@ namespace FFXIVMonReborn.LobbyEncryption
         
         public LobbyEncryptionProvider(byte[] initPacket)
         {
-            EncKey = MakeKey(BitConverter.ToUInt32(initPacket, 100), initPacket.Skip(36).TakeWhile(x => x != 0x00).ToArray());
+            EncKey = MakeKey(BitConverter.ToUInt32(initPacket, 116), initPacket.Skip(52).TakeWhile(x => x != 0x00).ToArray());
             _blowfish = new Blowfish(EncKey);
         }
 
@@ -36,7 +36,7 @@ namespace FFXIVMonReborn.LobbyEncryption
             
             using (MD5 md5Hash = MD5.Create())
             {
-                return md5Hash.ComputeHash(encKey).Take(0x10).ToArray();
+                return md5Hash.ComputeHash(encKey);
             }
         }
     }
