@@ -75,14 +75,14 @@ namespace FFXIVMonReborn
                 {
                     type = FilterType.Message;
                     string vstring = thisFilter.Substring(0, thisFilter.Length - 1);
-                    value = int.Parse(vstring, NumberStyles.HexNumber);
+                    value = vstring;
                 }
                 // _A(ActorControlType)
                 else if (thisFilter.Substring(0, "_A(".Length) == "_A(")
                 {
                     type = FilterType.ActorControl;
                     string vstring = thisFilter.Substring(3, thisFilter.IndexOf(')', 3) - 3);
-                    value = int.Parse(vstring, NumberStyles.HexNumber);
+                    value = vstring;
                 }
                 // _AN(ActorControlName)
                 else if (thisFilter.Substring(0, "_AN(".Length) == "_AN(")
@@ -187,18 +187,58 @@ namespace FFXIVMonReborn
                 switch (this.type)
                 {
                     case FilterType.Message:
-                        if (item.Message == ((int)this.value).ToString("X4"))
+                    {
+                        var valStr = (string)value;
+                        string[] split;
+                        NumberStyles styles = NumberStyles.Any;
+
+                        if ((split = valStr.Split('x')).Length > 1)
                         {
-                            return true;
+                            valStr = split[1];
+                            styles = NumberStyles.HexNumber;
                         }
-                        break;
+                        else if ((split = valStr.Split('X')).Length > 1)
+                        {
+                            valStr = split[1];
+                            styles = NumberStyles.HexNumber;
+                        }
+                        
+                        if (UInt16.TryParse(valStr, styles, CultureInfo.CurrentCulture, out var findUInt16))
+                        {
+                            for (var i = 0; i + sizeof(UInt16) - 1 < item.Data.Length; ++i)
+                            {
+                                return item.Message == findUInt16.ToString("X4");
+                            }
+                        }
+                    }
+                    break;
 
                     case FilterType.ActorControl:
-                        if (item.ActorControl == (int)this.value)
+                    {
+                        var valStr = (string)value;
+                        string[] split;
+                        NumberStyles styles = NumberStyles.Any;
+
+                        if ((split = valStr.Split('x')).Length > 1)
                         {
-                            return true;
+                            valStr = split[1];
+                            styles = NumberStyles.HexNumber;
                         }
-                        break;
+                        else if ((split = valStr.Split('X')).Length > 1)
+                        {
+                            valStr = split[1];
+                            styles = NumberStyles.HexNumber;
+                        }
+                        
+                        if (UInt16.TryParse(valStr, styles, CultureInfo.CurrentCulture, out var findUInt16))
+                        {
+                            for (var i = 0; i + sizeof(UInt16) - 1 < item.Data.Length; ++i)
+                            {
+                                return item.ActorControl == findUInt16;
+                            }
+                        }
+                    }
+                    break;
 
                     case FilterType.ActorControlName:
                         if (item.ActorControl != -1 && item.Name.ToLower().Contains(((string)this.value).ToLower()))
