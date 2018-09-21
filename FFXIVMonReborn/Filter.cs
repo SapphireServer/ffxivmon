@@ -27,8 +27,8 @@ namespace FFXIVMonReborn
     {
         public static Dictionary<string, string> Help = new Dictionary<string, string>
         {
-            {"[Number]", "Opcode to search for by id, [Number] being hexadecimal integer e.g. 1A1 etc." },
-            {"_A(ActorControlNumber);", "ActorControl id to search for."},
+            {"[Number]", "Opcode to search for by id(0x prefix for hex)." },
+            {"_A(ActorControlNumber);", "ActorControl id to search for(0x prefix for hex)."},
             {"_AN(ActorControlName);", "ActorControl name to search for."},
             {"_S(String);", "String to search packet contents for."},
             {"_N(Name)", "Opcode search by name."},

@@ -41,6 +41,8 @@
                 <MenuItem Header="_Filters">
                     <MenuItem Header="_Set Filter" Click="SetFilterRelay"/>
                     <MenuItem Header="_Reset" Click="ResetToOriginalRelay"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Show Help" Click="ShowFilterHelp"/>
                 </MenuItem>
                 <MenuItem Header="_Scripting">
                     <MenuItem Header="_Run on Capture" Click="Scripting_RunOnCaptureRelay"/>

@@ -966,7 +966,7 @@ namespace FFXIVMonReborn.Views
         public void SetFilter()
         {
 
-            string filter = Interaction.InputBox("Enter the packet filter.\nFormat(hex): {opcode};_S({string});_A({actorcontrol}); . . .", "FFXIVMon Reborn", _filterString);
+            string filter = Interaction.InputBox("Enter the packet filter.\nFor help, see Filters->Show Help.", "FFXIVMon Reborn", _filterString);
             _ApplyFilter(filter);
         }
 

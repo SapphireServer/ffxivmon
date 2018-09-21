@@ -38,6 +38,16 @@ namespace FFXIVMonReborn.Views
         public MainWindow()
         {
             InitializeComponent();
+            
+            AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs eventArgs)
+                {
+                    new ExtendedErrorView("FFXIVMon Reborn ran into an error and needs to close.",
+                        eventArgs.ExceptionObject.ToString(), "Unhandled Exception").ShowDialog();
+                    
+                    Process.GetCurrentProcess().Kill();
+                };
+
+            var a = 123 / int.Parse("0");
 
             bool loadedByArg = false;
             var args = Environment.GetCommandLineArgs();
@@ -638,6 +648,17 @@ namespace FFXIVMonReborn.Views
         {
             Properties.Settings.Default.HideHexBoxActorId = false;
             Properties.Settings.Default.Save();
+        }
+
+        private void ShowFilterHelp(object sender, RoutedEventArgs e)
+        {
+            var helpStr = "You can use the following commands in Filters, divided by a semicolon:\n\n";
+            foreach (var helpEntry in Filter.Help)
+            {
+                helpStr += helpEntry.Key + " - " + helpEntry.Value + "\n";
+            }
+
+            MessageBox.Show(helpStr, "FFXIVMon Reborn");
         }
     }
 }
