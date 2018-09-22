@@ -47,8 +47,6 @@ namespace FFXIVMonReborn.Views
                     Process.GetCurrentProcess().Kill();
                 };
 
-            var a = 123 / int.Parse("0");
-
             bool loadedByArg = false;
             var args = Environment.GetCommandLineArgs();
             for (var i = 1; i + 1 < args.Length; i += 2)
