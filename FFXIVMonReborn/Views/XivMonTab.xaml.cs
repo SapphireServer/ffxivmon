@@ -19,6 +19,7 @@ using System.Linq;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
+using Machina.FFXIV;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace FFXIVMonReborn.Views
@@ -434,7 +435,7 @@ namespace FFXIVMonReborn.Views
 
         public void AddPacketToListView(PacketEntry item, bool silent = false)
         {
-            if (_encryptionProvider != null && !item.IsDecrypted && item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07)
+            if (_encryptionProvider != null && !item.IsDecrypted && item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
             {
                 var data = item.Data;
                 _encryptionProvider.DecryptPacket(ref data);
@@ -527,7 +528,7 @@ namespace FFXIVMonReborn.Views
                 item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
                 
-                if (item.Data[0x0C] == 0x09 && _encryptionProvider == null && item.Message == "0000")
+                if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
                     _encryptionProvider = new LobbyEncryptionProvider(item.Data);
 

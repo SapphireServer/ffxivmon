@@ -1,4 +1,5 @@
 ﻿using System.Xml.Serialization;
+using Machina.FFXIV;
 
 namespace FFXIVMonReborn.DataModel
 {
@@ -17,6 +18,7 @@ namespace FFXIVMonReborn.DataModel
         public uint PacketUnixTime { get; set; }
         public long SystemMsTime { get; set; }
         public bool IsDecrypted { get; set; }
+        public FFXIVNetworkMonitor.ConnectionType Connection { get; set; }
 
         // ignored values
         [XmlIgnore]

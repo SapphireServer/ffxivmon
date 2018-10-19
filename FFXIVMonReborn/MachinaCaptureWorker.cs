@@ -39,13 +39,13 @@ namespace FFXIVMonReborn
             this._configFlags = flags;
         }
 
-        private void MessageReceived(long epoch, byte[] message, int set)
+        private void MessageReceived(long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
         {
             var res = Parse(message);
 
             var item = new PacketEntry { IsVisible = true, ActorControl = -1, Data = message, Message = res.header.MessageType.ToString("X4"), Direction = "S",
                 Category = set.ToString(), Timestamp = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), Size = res.header.MessageLength.ToString(), 
-                Set = set, RouteID = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis() };
+                Set = set, RouteID = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis(), Connection = connectionType };
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
@@ -55,13 +55,13 @@ namespace FFXIVMonReborn
             _myTab.Dispatcher.Invoke(new Action(() => { _myTab.AddPacketToListView(item); }));
         }
 
-        private void MessageSent(long epoch, byte[] message, int set)
+        private void MessageSent(long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
         {
             var res = Parse(message);
 
             var item = new PacketEntry { IsVisible = true, ActorControl = -1, Data = message, Message = res.header.MessageType.ToString("X4"), Direction = "C",
                 Category = set.ToString(), Timestamp = Util.UnixTimeStampToDateTime(res.header.Seconds).ToString(@"MM\/dd\/yyyy HH:mm:ss"), Size = res.header.MessageLength.ToString(),
-                Set = set, RouteID = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis() };
+                Set = set, RouteID = res.header.RouteID.ToString(), PacketUnixTime = res.header.Seconds, SystemMsTime = Millis(), Connection = connectionType};
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
@@ -88,8 +88,8 @@ namespace FFXIVMonReborn
         {
             FFXIVNetworkMonitor monitor = new FFXIVNetworkMonitor();
             monitor.MonitorType = _monitorType;
-            monitor.MessageReceived = (long epoch, byte[] message, int set) => MessageReceived(epoch, message, set);
-            monitor.MessageSent = (long epoch, byte[] message, int set) => MessageSent(epoch, message, set);
+            monitor.MessageReceived = MessageReceived;
+            monitor.MessageSent = MessageSent;
             monitor.Start();
 
             while (!_shouldStop)

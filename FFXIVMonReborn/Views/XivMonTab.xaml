@@ -124,6 +124,7 @@
                                     <GridViewColumn Header="Note" Width="380" DisplayMemberBinding="{Binding Note}"/>
                                     <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding Size}"/>
                                     <GridViewColumn Header="Set" DisplayMemberBinding="{Binding Set}"/>
+                                    <GridViewColumn Header="Connection" DisplayMemberBinding="{Binding Connection}"/>
                                     <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Timestamp}"/>
                                 </GridView>
                             </ListView.View>
