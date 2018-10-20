@@ -196,7 +196,7 @@ namespace FFXIVMonReborn.Database
                         continue;
                     }
 
-                    if (line == "")
+                    if (string.IsNullOrWhiteSpace(line))
                     {
                         at++;
                         continue;
