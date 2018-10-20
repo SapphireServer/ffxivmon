@@ -175,8 +175,8 @@ namespace FFXIVMonReborn.Views
 
         private void ChangeTitle(string newTitle)
         {
-            string windowTitle = string.IsNullOrEmpty(newTitle) ? "FFXIVMonReborn" : newTitle;
-            windowTitle = !windowTitle.Contains("FFXIVMonReborn") ? "FFXIVMonReborn - " + windowTitle : windowTitle;
+            string windowTitle = string.IsNullOrEmpty(newTitle) ? $"FFXIVMonReborn({Util.GetGitHash()})" : newTitle;
+            windowTitle = !windowTitle.Contains("FFXIVMonReborn") ? $"FFXIVMonReborn({Util.GetGitHash()}) - " + windowTitle : windowTitle;
             _mainWindow.Title = windowTitle;
 
             string header = string.IsNullOrEmpty(newTitle) ? "New Capture" : newTitle;

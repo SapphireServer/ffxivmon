@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace FFXIVMonReborn
 {
@@ -163,6 +165,15 @@ namespace FFXIVMonReborn
             }
 
             return null;
+        }
+        
+        /// <summary> Gets the git hash value from the assembly
+        /// or null if it cannot be found. </summary>
+        public static string GetGitHash()
+        {
+            var asm = typeof(Util).Assembly;
+            var attrs = asm.GetCustomAttributes<AssemblyMetadataAttribute>();
+            return attrs.FirstOrDefault(a => a.Key == "GitHash")?.Value;
         }
     }
 }

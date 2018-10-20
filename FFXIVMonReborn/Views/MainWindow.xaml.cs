@@ -329,7 +329,7 @@ namespace FFXIVMonReborn.Views
         private void AboutButton_OnClick(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
-                "goatmon reborn\n\nA FFXIV Packet analysis tool for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                $"goatmon reborn\n\nVersion: {Util.GetGitHash()}\n\nA FFXIV Packet analysis tool for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireMordred\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         
         private void Scripting_SelectScripts(object sender, RoutedEventArgs e)
