@@ -5,9 +5,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace FFXIVMonReborn.FileOp
+namespace FFXIVMonReborn.Importers
 {
-    public static class FfxivReplayOp
+    public static class FfxivReplayImporter
     {
         public static int GetNumPackets(byte[] replay)
         {

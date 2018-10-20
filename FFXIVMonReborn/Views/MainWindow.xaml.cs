@@ -12,7 +12,7 @@ using FFXIVMonReborn.Database;
 using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
-using FFXIVMonReborn.FileOp;
+using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Scripting;
 
@@ -469,7 +469,7 @@ namespace FFXIVMonReborn.Views
             {
                 if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
+                    var toDiff = XmlCaptureImporter.Load(openFileDialog.FileName).Packets;
                     var baseCap = ((XivMonTab)MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketEntry>().ToArray();
 
                     new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
@@ -492,7 +492,7 @@ namespace FFXIVMonReborn.Views
             {
                 if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    var toDiff = XmlCaptureOp.Load(openFileDialog.FileName).Packets;
+                    var toDiff = XmlCaptureImporter.Load(openFileDialog.FileName).Packets;
                     var baseCap = ((XivMonTab)MainTabControl.SelectedContent).PacketListView.Items.Cast<PacketEntry>().ToArray();
 
                     new ExtendedErrorView($"Compared {baseCap.Length} packets to {toDiff.Length} packets.",
@@ -657,6 +657,11 @@ namespace FFXIVMonReborn.Views
             }
 
             MessageBox.Show(helpStr, "FFXIVMon Reborn");
+        }
+
+        private void LoadActLog(object sender, RoutedEventArgs e)
+        {
+            ((XivMonTab)MainTabControl.SelectedContent).LoadActLog();
         }
     }
 }

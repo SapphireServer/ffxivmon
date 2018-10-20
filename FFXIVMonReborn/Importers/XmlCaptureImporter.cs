@@ -5,9 +5,9 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace FFXIVMonReborn.FileOp
+namespace FFXIVMonReborn.Importers
 {
-    public static class XmlCaptureOp
+    public static class XmlCaptureImporter
     {
         public static Capture Load(string path)
         {

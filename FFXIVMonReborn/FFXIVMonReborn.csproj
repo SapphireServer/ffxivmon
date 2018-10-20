@@ -185,8 +185,9 @@
     <Compile Include="DataModel\PacketEntry.cs" />
     <Compile Include="ExdDataCache.cs" />
     <Compile Include="ExdReader.cs" />
-    <Compile Include="FileOp\XmlCaptureOp.cs" />
-    <Compile Include="FileOp\FFXIVReplayOp.cs" />
+    <Compile Include="Importers\ActLogImporter.cs" />
+    <Compile Include="Importers\XmlCaptureImporter.cs" />
+    <Compile Include="Importers\FfxivReplayImporter.cs" />
     <Compile Include="LobbyEncryption\Blowfish.cs" />
     <Compile Include="LobbyEncryption\LobbyEncryptionProvider.cs" />
     <Compile Include="Scripting\ScriptingDataStorage.cs" />

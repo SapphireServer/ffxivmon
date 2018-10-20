@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using FFXIVMonReborn.Database;
-using FFXIVMonReborn.FileOp;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -17,10 +16,10 @@ using UserControl = System.Windows.Controls.UserControl;
 using Be.Windows.Forms;
 using System.Linq;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
 using Machina.FFXIV;
-using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace FFXIVMonReborn.Views
 {
@@ -58,7 +57,7 @@ namespace FFXIVMonReborn.Views
                 if (!string.IsNullOrEmpty(_currentXmlFile))
                 {
                     ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-                    var capture = XmlCaptureOp.Load(_currentXmlFile);
+                    var capture = XmlCaptureImporter.Load(_currentXmlFile);
                     foreach (var packet in capture.Packets)
                     {
                         AddPacketToListView(packet);
@@ -640,7 +639,7 @@ namespace FFXIVMonReborn.Views
                 };
                 try
                 {
-                    XmlCaptureOp.Save(capture, fileDialog.FileName);
+                    XmlCaptureImporter.Save(capture, fileDialog.FileName);
                     MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                     _currentXmlFile = fileDialog.FileName;
                     ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
@@ -706,8 +705,8 @@ namespace FFXIVMonReborn.Views
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
 
                     int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
-                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayOp.GetNumPackets(replay).ToString()));
-                    _mainWindow.AddTab(FfxivReplayOp.Import(replay, start, end));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayImporter.GetNumPackets(replay).ToString()));
+                    _mainWindow.AddTab(FfxivReplayImporter.Import(replay, start, end));
                     return;
                 }
                 else if (res == MessageBoxResult.No)
@@ -715,8 +714,40 @@ namespace FFXIVMonReborn.Views
                     byte[] replay = File.ReadAllBytes(openFileDialog.FileName);
 
                     int start = int.Parse(Interaction.InputBox("Enter the starting packet number.", "FFXIVMon Reborn", "0"));
-                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayOp.GetNumPackets(replay).ToString()));
-                    LoadCapture(FfxivReplayOp.Import(replay, start, end));
+                    int end = int.Parse(Interaction.InputBox("Enter the end packet number.", "FFXIVMon Reborn", FfxivReplayImporter.GetNumPackets(replay).ToString()));
+                    LoadCapture(FfxivReplayImporter.Import(replay, start, end));
+                }
+                else
+                {
+                    return;
+                }
+            }
+            UpdateInfoLabel();
+        }
+        
+        public void LoadActLog()
+        {
+            _encryptionProvider = null;
+            _currentPacketStream = new MemoryStream(new byte[] { });
+            _filterString = "";
+
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = @"LOG|*.log",
+                Title = @"Select a ACT log file"
+            };
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
+                if (res == MessageBoxResult.Yes)
+                {
+                    _mainWindow.AddTab(ActLogImporter.Import(openFileDialog.FileName));
+                    return;
+                }
+                else if (res == MessageBoxResult.No)
+                {
+                    LoadCapture(ActLogImporter.Import(openFileDialog.FileName));
                 }
                 else
                 {
@@ -734,7 +765,7 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                var capture = XmlCaptureOp.Load(path);
+                var capture = XmlCaptureImporter.Load(path);
 
                 _version = capture.Version;
                 _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
@@ -761,7 +792,7 @@ namespace FFXIVMonReborn.Views
         public void LoadCapture(PacketEntry[] packets)
         {
             PacketListView.Items.Clear();
-            ChangeTitle("FFXIV Replay");
+            ChangeTitle("Imported Capture");
 
             _version = -1;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);

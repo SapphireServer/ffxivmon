@@ -20,7 +20,8 @@
                     <MenuItem Header="_Open" Click="LoadCaptureRelay"/>
                     <MenuItem Header="_Save" Click="SaveCaptureRelay"/>
                     <Separator></Separator>
-                    <MenuItem Header="_Open FFXIV Replay" Click="LoadFFXIVReplayRelay"/>
+                    <MenuItem Header="_Import FFXIV Replay" Click="LoadFFXIVReplayRelay"/>
+                    <MenuItem Header="_Import ACT Log" Click="LoadActLog"/>
                     <Separator></Separator>
                     <MenuItem Header="_Clear" Click="ClearCaptureRelay"/>
                     <Separator></Separator>
