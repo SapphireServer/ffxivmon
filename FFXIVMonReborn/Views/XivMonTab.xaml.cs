@@ -117,7 +117,7 @@ namespace FFXIVMonReborn.Views
                 else
                     CaptureInfoLabel.Content += " | Using packet time";
 
-            if (!_mainWindow.IsPausedCheckBox.IsChecked)
+            if (_mainWindow != null && !_mainWindow.IsPausedCheckBox.IsChecked)
                 CaptureInfoLabel.Content += " | Capture Paused";
             
             var versionInfo = "";
@@ -178,7 +178,7 @@ namespace FFXIVMonReborn.Views
 
         public void ChangeTitle()
         {
-            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+            ChangeTitle(_currentXmlFile == null ? "" : System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
         }
         
         public void ChangeTitle(string newTitle)

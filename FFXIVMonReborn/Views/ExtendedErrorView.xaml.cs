@@ -25,7 +25,7 @@ namespace FFXIVMonReborn
 
             ErrorMessage.Content = message;
             InfoBox.AppendText(info);
-            this.Title = title;
+            this.Title = title + $"({Util.GetGitHash()})";
 
             System.Media.SystemSounds.Exclamation.Play();
         }
