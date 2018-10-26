@@ -665,5 +665,10 @@ namespace FFXIVMonReborn.Views
         {
             ((XivMonTab)MainTabControl.SelectedContent).LoadActLog();
         }
+
+        private void PauseCapture(object sender, RoutedEventArgs e)
+        {
+            ((XivMonTab)MainTabControl.SelectedContent).ChangeTitle();
+        }
     }
 }

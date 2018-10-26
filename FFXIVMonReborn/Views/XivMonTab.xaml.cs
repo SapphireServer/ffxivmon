@@ -117,6 +117,9 @@ namespace FFXIVMonReborn.Views
                 else
                     CaptureInfoLabel.Content += " | Using packet time";
 
+            if (!_mainWindow.IsPausedCheckBox.IsChecked)
+                CaptureInfoLabel.Content += " | Capture Paused";
+            
             var versionInfo = "";
             if (_mainWindow != null)
             {
@@ -173,23 +176,33 @@ namespace FFXIVMonReborn.Views
             }
         }
 
-        private void ChangeTitle(string newTitle)
+        public void ChangeTitle()
+        {
+            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+        }
+        
+        public void ChangeTitle(string newTitle)
         {
             string windowTitle = string.IsNullOrEmpty(newTitle) ? $"FFXIVMonReborn({Util.GetGitHash()})" : newTitle;
             windowTitle = !windowTitle.Contains("FFXIVMonReborn") ? $"FFXIVMonReborn({Util.GetGitHash()}) - " + windowTitle : windowTitle;
+            if (_mainWindow.IsPausedCheckBox.IsChecked)
+                windowTitle += " - PAUSED";
             _mainWindow.Title = windowTitle;
 
             string header = string.IsNullOrEmpty(newTitle) ? "New Capture" : newTitle;
 
             if (_captureWorker != null)
                 header = "• " + header;
+            
+            if (_mainWindow.IsPausedCheckBox.IsChecked)
+                header += " - PAUSED";
 
             _thisTabItem.Header = header;
         }
 
         public void OnTabFocus()
         {
-            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+            ChangeTitle();
         }
 
         private void ReloadCurrentPackets()
@@ -434,6 +447,9 @@ namespace FFXIVMonReborn.Views
 
         public void AddPacketToListView(PacketEntry item, bool silent = false)
         {
+            if (_mainWindow.IsPausedCheckBox.IsChecked && !silent)
+                return;
+            
             if (_encryptionProvider != null && !item.IsDecrypted && item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
             {
                 var data = item.Data;

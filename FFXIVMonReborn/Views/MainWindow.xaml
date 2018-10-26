@@ -31,6 +31,8 @@
                 <MenuItem Header="_Capture">
                     <MenuItem Header="_Start (CTRL+ALT+F12)" Click="StartCaptureRelay"/>
                     <MenuItem Header="_Stop (CTRL+ALT+F12)" Click="StopCaptureRelay"/>
+                    <Separator></Separator>
+                    <MenuItem x:Name="IsPausedCheckBox" Header="_Pause" IsCheckable="True" Click="PauseCapture"/>
                 </MenuItem>
                 <MenuItem Header="_Database">
                     <MenuItem Header="_Reload DB" Click="ReloadDBRelay"/>
