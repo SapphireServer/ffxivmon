@@ -140,6 +140,8 @@ namespace FFXIVMonReborn.Views
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
             ScriptDebugView.Show();
             ScriptDebugView.Visibility = Visibility.Hidden;
+            
+            VersionChecker.CheckVersion();
         }
 
         private void VersioningProviderOnLocalDbChanged(object sender, EventArgs eventArgs)
