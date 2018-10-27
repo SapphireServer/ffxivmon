@@ -670,5 +670,29 @@ namespace FFXIVMonReborn.Views
         {
             ((XivMonTab)MainTabControl.SelectedContent).ChangeTitle();
         }
+
+        private void Scripting_RunOnMultipleCaptures(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "XML|*.xml";
+            openFileDialog.Title = "Select captures";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                foreach (var fileName in openFileDialog.FileNames)
+                {
+                    var tab = new XivMonTab();
+                    
+                    tab.SetParents(null, this);
+                    tab.LoadCapture(fileName);
+                    
+                    tab.Scripting_RunOnCapture(true);
+                }
+
+                MessageBox.Show("Ran loaded scripts on captures.", "FFXIVMon Reborn", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
     }
 }

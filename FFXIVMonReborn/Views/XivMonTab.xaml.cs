@@ -197,7 +197,8 @@ namespace FFXIVMonReborn.Views
             if (_mainWindow.IsPausedCheckBox.IsChecked)
                 header += " - PAUSED";
 
-            _thisTabItem.Header = header;
+            if(_thisTabItem != null)
+                _thisTabItem.Header = header;
         }
 
         public void OnTabFocus()
@@ -1102,38 +1103,38 @@ namespace FFXIVMonReborn.Views
         #endregion
 
         #region Scripting
-        public void Scripting_RunOnCapture()
+        public void Scripting_RunOnCapture(bool silent = false)
         {
-            var res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-            if (res == MessageBoxResult.OK)
+            var res = silent;
+            
+            if(!res)
+                res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
+
+            if (!res) return;
+            
+            if (_mainWindow.ScriptProvider == null)
             {
-                if (_mainWindow.ScriptProvider == null)
-                {
-                    _mainWindow.ScriptProvider = new ScriptingProvider();
-                    _mainWindow.ScriptProvider.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
-                }
+                _mainWindow.ScriptProvider = new ScriptingProvider();
+                _mainWindow.ScriptProvider.LoadScripts(System.IO.Path.Combine(Environment.CurrentDirectory, "Scripts"));
+            }
 
-                try
+            try
+            {
+                foreach (var item in PacketListView.Items)
                 {
-                    foreach (var item in PacketListView.Items)
+                    var packet = item as PacketEntry;
+
+                    if (packet.IsVisible)
                     {
-                        var packet = item as PacketEntry;
-
-                        if (packet.IsVisible)
-                        {
-                            Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider, true);
-                        }
+                        Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider, true);
                     }
-                    MessageBox.Show("Scripts ran successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
-                        MessageBoxImage.Asterisk);
                 }
-                catch (Exception exc)
-                {
-                    new ExtendedErrorView("Script error!", exc.ToString(), "Error").ShowDialog();
-                    _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
-                    return;
-                }
-
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView("Script error!", exc.ToString(), "Error").ShowDialog();
+                _mainWindow.RunScriptsOnNewCheckBox.IsChecked = false;
+                return;
             }
         }
 

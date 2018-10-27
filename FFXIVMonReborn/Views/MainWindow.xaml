@@ -48,8 +48,9 @@
                     <MenuItem Header="_Show Help" Click="ShowFilterHelp"/>
                 </MenuItem>
                 <MenuItem Header="_Scripting">
-                    <MenuItem Header="_Run on Capture" Click="Scripting_RunOnCaptureRelay"/>
-                    <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="_Run on new Packets" IsCheckable="True"/>
+                    <MenuItem Header="_Run on capture" Click="Scripting_RunOnCaptureRelay"/>
+                    <MenuItem x:Name="RunScriptsOnNewCheckBox" Header="_Run on new packets" IsCheckable="True"/>
+                    <MenuItem Header="_Run multiple captures" Click="Scripting_RunOnMultipleCaptures"/>
                     <MenuItem Header="Open Output Window" Click="Scripting_OpenOutputWindow"/>
                     <Separator></Separator>
                     <MenuItem Header="Select scripts" Click="Scripting_SelectScripts"/>
