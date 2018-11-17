@@ -257,9 +257,18 @@ namespace FFXIVMonReborn.Database
                     item.OffsetCol = reader.BaseStream.Position.ToString();
                     item.offset = reader.BaseStream.Position;
 
-                    ParseCType(item.DataTypeCol, reader, ref item, ref debugMsg);
+                    StructListItem[] aryItems = null;
+                    
+                    //TODO: All of this is fucked and should be redone also this isn't gonna be in the expando object i'm pretty sure
+                    if (!item.NameCol.EndsWith("]"))
+                        ParseCType(item.DataTypeCol, reader, ref item, ref debugMsg);
+                    else
+                        aryItems = ParseCArray(item.DataTypeCol, reader, ref item, item.NameCol, ref exobj, ref debugMsg);
                     
                     output.Add(item);
+                    
+                    if(aryItems != null)
+                        output.AddRange(aryItems);
                 }
             }
 
