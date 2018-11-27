@@ -75,6 +75,11 @@ namespace FFXIVMonReborn.Database
                 MessageBox.Show(
                     $"[Database] Could not parse files.\n\n{exc}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                 
+                #if DEBUG
+                throw;
+                #endif
+                
                 return false;
             }
         }

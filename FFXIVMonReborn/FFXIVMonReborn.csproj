@@ -66,6 +66,14 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp, Version=106.5.4.0, Culture=neutral, PublicKeyToken=598062e77f915f75">
+      <HintPath>..\packages\RestSharp.106.5.4\lib\net452\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp.Serializers.Newtonsoft.Json, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\RestSharp.Newtonsoft.Json.1.5.0\lib\net452\RestSharp.Serializers.Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
@@ -123,6 +131,7 @@
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -176,9 +185,11 @@
     <Compile Include="CaptureDiff.cs" />
     <Compile Include="Database\DataTypes\CustomDataType.cs" />
     <Compile Include="Database\DataTypes\FfxivArrPosition3DataType.cs" />
+    <Compile Include="Database\GitHub\GitHubApi.cs" />
+    <Compile Include="Database\GitHub\Model\GitHubCommit.cs" />
+    <Compile Include="Database\GitHub\Model\GitHubBranch.cs" />
+    <Compile Include="Database\GitHub\Model\GitHubTag.cs" />
     <Compile Include="Database\MainDB.cs" />
-    <Compile Include="Database\GithubApiCommits.cs" />
-    <Compile Include="Database\GithubApiTags.cs" />
     <Compile Include="Database\Struct.cs" />
     <Compile Include="Database\Versioning.cs" />
     <Compile Include="DataModel\Capture.cs" />

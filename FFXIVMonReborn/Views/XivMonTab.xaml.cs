@@ -273,7 +273,7 @@ namespace FFXIVMonReborn.Views
                 return;
 
             if (_version == -1)
-                _version = _mainWindow.VersioningProvider.Versions.Length;
+                _version = _mainWindow.VersioningProvider.Api.Tags.Length;
 
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
 
@@ -615,7 +615,7 @@ namespace FFXIVMonReborn.Views
         {
             _version = version;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
-            if (_db.Reload())
+            if (_db != null)
             {
                 ReloadCurrentPackets();
                 MessageBox.Show("Version changed: " + _version, "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
@@ -626,7 +626,7 @@ namespace FFXIVMonReborn.Views
         public void ReloadDb()
         {
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
-            if (_db.Reload())
+            if (_db != null)
             {
                 ReloadCurrentPackets();
             }

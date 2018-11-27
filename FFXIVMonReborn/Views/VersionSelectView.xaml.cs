@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using FFXIVMonReborn.Database;
+using FFXIVMonReborn.Database.GitHub.Model;
 
 namespace FFXIVMonReborn
 {
@@ -22,12 +23,12 @@ namespace FFXIVMonReborn
     /// </summary>
     public partial class VersionSelectView : Window
     {
-        public VersionSelectView(GithubApiTags[] versions)
+        public VersionSelectView(GitHubTag[] versions)
         {
             InitializeComponent();
             foreach (var version in versions)
             {
-                ScriptListBox.Items.Add($"{version.Name} - {version.Commit.Sha}");
+                ScriptListBox.Items.Add($"{version.Name} - {version.TagCommit.Sha}");
             }
 
             ScriptListBox.Items.Add("Latest");

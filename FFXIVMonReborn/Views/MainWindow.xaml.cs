@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 using FFXIVMonReborn.Database;
+using FFXIVMonReborn.Database.GitHub;
 using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
@@ -39,6 +40,7 @@ namespace FFXIVMonReborn.Views
         {
             InitializeComponent();
             
+            #if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs eventArgs)
                 {
                     new ExtendedErrorView("FFXIVMon Reborn ran into an error and needs to close.",
@@ -46,6 +48,7 @@ namespace FFXIVMonReborn.Views
                     
                     Process.GetCurrentProcess().Kill();
                 };
+            #endif
 
             bool loadedByArg = false;
             var args = Environment.GetCommandLineArgs();
@@ -369,6 +372,7 @@ namespace FFXIVMonReborn.Views
         #region TabRelays
         private void LoadCaptureRelay(object sender, RoutedEventArgs e)
         {
+            var a = new GitHubApi("SapphireMordred/Sapphire");
             ((XivMonTab)MainTabControl.SelectedContent).LoadCapture();
         }
 
@@ -563,7 +567,7 @@ namespace FFXIVMonReborn.Views
 
         private void SelectVersion(object sender, RoutedEventArgs e)
         {
-            var view = new VersionSelectView(VersioningProvider.Versions);
+            var view = new VersionSelectView(VersioningProvider.Api.Tags);
             view.ShowDialog();
             ((XivMonTab)MainTabControl.SelectedContent).SetVersion(view.GetSelectedVersion());
         }

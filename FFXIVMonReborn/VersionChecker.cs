@@ -1,5 +1,5 @@
 using System.Net;
-using FFXIVMonReborn.Database.Commits;
+using FFXIVMonReborn.Database.GitHub.Model;
 
 namespace FFXIVMonReborn
 {
@@ -25,11 +25,11 @@ namespace FFXIVMonReborn
             {
                 new ExtendedErrorView(
                     "There is a new version available. Please check out new changes from the github repo.",
-                    $"New Version: {newCommit.Sha}\n\n{newCommit.Commit.Message}\nBy: {newCommit.Commit.Author.Name}", "New Version available").ShowDialog();
+                    $"New Version: {newCommit.Sha}\n\n{newCommit.CommitInfo.Message}\nBy: {newCommit.CommitInfo.Author.Name}", "New Version available").ShowDialog();
             }    
         }
 
-        public static GithubApiCommits GetNewestCommit()
+        public static GitHubCommit GetNewestCommit()
         {
             using (WebClient client = new WebClient())
             {
@@ -37,7 +37,7 @@ namespace FFXIVMonReborn
                 var result =
                     client.DownloadString($"https://api.github.com/repos/{Repo}/commits");
                 
-                return GithubApiCommits.FromJson(result)[0];
+                return GitHubCommit.FromJson(result)[0];
             }
         }
     }

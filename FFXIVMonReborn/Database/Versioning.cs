@@ -2,55 +2,30 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Windows;
-using FFXIVMonReborn.Database.Commits;
+using FFXIVMonReborn.Database.GitHub;
+using FFXIVMonReborn.Database.GitHub.Model;
 using FFXIVMonReborn.Properties;
 
 namespace FFXIVMonReborn.Database
 {
     public class Versioning
     {
-        public GithubApiTags[] Versions;
-        private GithubApiCommits _latestCommit;
-
         private FileSystemWatcher _watcher;
         
-        public event EventHandler LocalDbChanged;   
+        public event EventHandler LocalDbChanged;
+
+        public GitHubApi Api;
 
         public Versioning()
         {
             try
             {
-                if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded")))
-                {
-                    Properties.Settings.Default.Repo = Resources.DefaultRepo;
-                    Properties.Settings.Default.Save();
-
-                    MessageBox.Show(
-                        $"Could not find downloaded database - repo reset to {Resources.DefaultRepo}, change via Options -> Set Repository.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    Directory.CreateDirectory("downloaded");
-                    Versions = GetTags(Properties.Settings.Default.Repo);
-                    _latestCommit = GetLatestCommit();
-                }
-                else
-                {
-                    Versions = GetTags(Properties.Settings.Default.Repo);
-                    _latestCommit = GetLatestCommit();
-                    return;
-                }
-
-                foreach (var version in Versions)
-                {
-                    DownloadDefinitions(version.Commit.Sha);
-                }
-
-                DownloadDefinitions(_latestCommit.Sha);
+                Api = new GitHubApi(Properties.Settings.Default.Repo);
             }
             catch (Exception exc)
             {
-                new ExtendedErrorView("[Versioning] Failed to reset definitions.", exc.ToString(), "Error")
+                new ExtendedErrorView("[Versioning] Failed to connect to GitHub.", exc.ToString(), "Error")
                     .ShowDialog();
             }
         }
@@ -86,160 +61,47 @@ namespace FFXIVMonReborn.Database
             
             try
             {
-                Directory.Delete(Path.Combine(Environment.CurrentDirectory, "downloaded"), true);
-
-                while (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded"))) ; // These are here because Windows is retarded and takes it's time with updating the FS
-
-                Directory.CreateDirectory("downloaded");
-
-                while (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded"))) ;
-                
-                Versions = GetTags(Properties.Settings.Default.Repo, true);
-
-                foreach (var version in Versions)
-                {
-                    DownloadDefinitions(version.Commit.Sha);
-                }
-
-                _latestCommit = GetLatestCommit();
-                DownloadDefinitions(_latestCommit.Sha);
+                Api.ResetCache();
             }
             catch (Exception exc)
             {
                 new ExtendedErrorView("[Versioning] Failed to reset definitions.", exc.ToString(), "Error")
                     .ShowDialog();
                 #if DEBUG
-                throw exc;
+                throw;
                 #endif
             }
         }
 
         public MainDB GetDatabaseForVersion(int version)
         {
-            if (Versions.Length > version && version >= 0)
+            if (Api.Tags.Length > version && version >= 0)
             {
-                return new MainDB(GetIpcs(Versions[version].Commit.Sha), GetCommon(Versions[version].Commit.Sha), GetServerZoneDef(Versions[version].Commit.Sha), GetClientZoneDef(Versions[version].Commit.Sha), GetCommonActorControl(Versions[version].Commit.Sha));
+                return new MainDB(Api.GetContent(Api.Tags[version].TagCommit.Sha, "/src/common/Network/PacketDef/Ipcs.h"),
+                    Api.GetContent(Api.Tags[version].TagCommit.Sha, "/src/common/Common.h"),
+                    Api.GetContent(Api.Tags[version].TagCommit.Sha, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h"),
+                    Api.GetContent(Api.Tags[version].TagCommit.Sha, "/src/common/Network/PacketDef/Zone/ClientZoneDef.h"),
+                    Api.GetContent(Api.Tags[version].TagCommit.Sha, "/src/common/Network/CommonActorControl.h"));
             }
             else
             {
-                return new MainDB(GetIpcs(_latestCommit.Sha), GetCommon(_latestCommit.Sha), GetServerZoneDef(_latestCommit.Sha), GetClientZoneDef(_latestCommit.Sha), GetCommonActorControl(_latestCommit.Sha));
+                return new MainDB(Api.GetContent(Api.Commits[Api.Commits.Length - 1].Sha, "/src/common/Network/PacketDef/Ipcs.h"),
+                    Api.GetContent(Api.Commits[Api.Commits.Length - 1].Sha, "/src/common/Common.h"),
+                    Api.GetContent(Api.Commits[Api.Commits.Length - 1].Sha, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h"),
+                    Api.GetContent(Api.Commits[Api.Commits.Length - 1].Sha, "/src/common/Network/PacketDef/Zone/ClientZoneDef.h"),
+                    Api.GetContent(Api.Commits[Api.Commits.Length - 1].Sha, "/src/common/Network/CommonActorControl.h"));
             }
         }
 
         public string GetVersionInfo(int version)
         {
-            if (Versions.Length > version && version >= 0)
+            if (Api.Tags.Length > version && version >= 0)
             {
-                return $"Tagged Version: {version} - {Versions[version].Name} - {Versions[version].Commit.Sha}";
+                return $"Tagged Version: {version} - {Api.Tags[version].Name} - {Api.Tags[version].TagCommit.Sha}";
             }
             else
             {
-                return $"Untagged Version: {_latestCommit.Sha} - {_latestCommit.Commit.Message} by {_latestCommit.Commit.Author.Name}";
-            }
-        }
-
-        private GithubApiCommits GetLatestCommit()
-        {
-            if (File.Exists(Path.Combine("downloaded", "commits.json")))
-                return Commits.GithubApiCommits.FromJson(File.ReadAllText(Path.Combine("downloaded", "commits.json")))[0];
-
-            using (WebClient client = new WebClient())
-            {
-                client.Headers.Add("User-Agent", "XIVMon");
-                var result =
-                    client.DownloadString($"https://api.github.com/repos/{Properties.Settings.Default.Repo}/commits");
-                File.WriteAllText(Path.Combine("downloaded", "commits.json"), result);
-
-                return GithubApiCommits.FromJson(result)[0];
-            }
-        }
-
-        private string GetCommon(string commit)
-        {
-            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "Common.h"));
-        }
-        
-        private string GetCommonActorControl(string commit)
-        {
-            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "CommonActorControl.h"));
-        }
-
-        private string GetIpcs(string commit)
-        {
-            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "Ipcs.h"));
-        }
-
-        private string GetServerZoneDef(string commit)
-        {
-            return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "ServerZoneDef.h"));
-        }
-
-        private string GetClientZoneDef(string commit)
-        {
-            if(File.Exists(Path.Combine("downloaded", commit, "ClientZoneDef.h")))
-                return Util.FileWaitReadAllText(Path.Combine("downloaded", commit, "ClientZoneDef.h"));
-
-            return null;
-        }
-
-        private void DownloadDefinitions(string commit)
-        {
-            try
-            {
-                DownloadFile(commit, "/src/common/Network/PacketDef/Ipcs.h", "Ipcs.h");
-                DownloadFile(commit, "/src/common/Network/CommonActorControl.h", "CommonActorControl.h");
-                DownloadFile(commit, "/src/common/Common.h", "Common.h");
-                DownloadFile(commit, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-                    "ServerZoneDef.h");
-                DownloadFile(commit, "/src/common/Network/PacketDef/Zone/ClientZoneDef.h",
-                    "ClientZoneDef.h");
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(
-                    $"[Versioning] Could not download files.\n\n{exc}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-        }
-
-        private void DownloadFile(string commit, string path, string fileName)
-        {
-            if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, "downloaded", commit)))
-                Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "downloaded", commit));
-                
-
-            using (WebClient client = new WebClient())
-            {
-                Debug.WriteLine($"Downloading https://raw.githubusercontent.com/{Properties.Settings.Default.Repo}/{commit}{path}");
-                try
-                {
-                    client.DownloadFile(
-                        $"https://raw.githubusercontent.com/{Properties.Settings.Default.Repo}/{commit}{path}",
-                        Path.Combine(Environment.CurrentDirectory, "downloaded", commit, fileName));
-                }
-                catch (Exception exc)
-                {
-                    Debug.WriteLine("Couldn't download: " + exc);
-                }
-            }
-        }
-
-
-        private static GithubApiTags[] GetTags(string repo, bool forceNew = false)
-        {
-            if (File.Exists(Path.Combine("downloaded", "tags.json")) && !forceNew)
-                return GithubApiTags.FromJson(File.ReadAllText(Path.Combine("downloaded", "tags.json")));
-
-            using (WebClient client = new WebClient())
-            {
-                client.Headers.Add("User-Agent", "XIVMon");
-
-                string result = client.DownloadString($"https://api.github.com/repos/{repo}/tags");
-
-                File.WriteAllText(Path.Combine("downloaded", "tags.json"), result);
-
-                return GithubApiTags.FromJson(result);
+                return $"Untagged Version: {Api.Commits[Api.Commits.Length - 1].Sha} - {Api.Commits[Api.Commits.Length - 1].CommitInfo.Message} by {Api.Commits[Api.Commits.Length - 1].CommitInfo.Author.Name}";
             }
         }
     }
