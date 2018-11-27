@@ -372,7 +372,6 @@ namespace FFXIVMonReborn.Views
         #region TabRelays
         private void LoadCaptureRelay(object sender, RoutedEventArgs e)
         {
-            var a = new GitHubApi("SapphireMordred/Sapphire");
             ((XivMonTab)MainTabControl.SelectedContent).LoadCapture();
         }
 
