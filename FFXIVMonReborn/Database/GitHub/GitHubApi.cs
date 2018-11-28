@@ -5,9 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Windows.Controls;
 using FFXIVMonReborn.Database.GitHub.Model;
-using Microsoft.CodeAnalysis.CSharp;
 using Newtonsoft.Json;
 using RestSharp;
 
@@ -28,6 +26,8 @@ namespace FFXIVMonReborn.Database.GitHub
         public GitHubApi(string repo)
         {
             this.Repository = repo;
+            
+            Directory.CreateDirectory(_cacheFolder);
             
             Update();
 
@@ -62,12 +62,10 @@ namespace FFXIVMonReborn.Database.GitHub
         private string Request(string endpoint, bool ignoreCache = false)
         {
             var apiCachePath = Path.Combine(_cacheFolder, _apiCacheFile);
-            Directory.CreateDirectory(_cacheFolder);
-            
-            if (!File.Exists(apiCachePath))
-                File.Create(apiCachePath);
 
-            var cache = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(apiCachePath)) ?? new Dictionary<string, string>(); // Load or create
+            Dictionary<string, string> cache;
+
+            cache = File.Exists(apiCachePath) ? JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(apiCachePath)) : new Dictionary<string, string>(); // Load or Create
 
             if (cache.ContainsKey(endpoint) && !ignoreCache)
                 return cache[endpoint];
@@ -90,6 +88,7 @@ namespace FFXIVMonReborn.Database.GitHub
         public void ResetCache()
         {
             Directory.Delete(_cacheFolder, true);
+            Directory.CreateDirectory(_cacheFolder);
             Update();
         }
 
