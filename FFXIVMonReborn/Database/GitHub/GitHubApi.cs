@@ -30,9 +30,6 @@ namespace FFXIVMonReborn.Database.GitHub
             Directory.CreateDirectory(_cacheFolder);
             
             Update();
-
-            if (!Directory.Exists(_cacheFolder))
-                Directory.CreateDirectory(_cacheFolder);
         }
 
         private void Update()
