@@ -37,6 +37,7 @@ namespace FFXIVMonReborn.Views
         private MemoryStream _currentPacketStream;
         private MainDB _db;
         private int _version = -1;
+        private string _commitSha = null;
 
         private LobbyEncryptionProvider _encryptionProvider;
 
@@ -123,7 +124,11 @@ namespace FFXIVMonReborn.Views
             var versionInfo = "";
             if (_mainWindow != null)
             {
-                versionInfo = _mainWindow.VersioningProvider.GetVersionInfo(_version);
+                if (_commitSha != null)
+                    versionInfo = "Commit: " + _commitSha;
+                else
+                    versionInfo = _mainWindow.VersioningProvider.GetVersionInfo(_version);
+                
                 CaptureInfoLabel.Content += " | . . .";
             }
             CaptureInfoLabel.ToolTip = versionInfo;
@@ -274,6 +279,7 @@ namespace FFXIVMonReborn.Views
 
             if (_version == -1)
                 _version = _mainWindow.VersioningProvider.Api.Tags.Length;
+            _commitSha = null;
 
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
 
@@ -611,14 +617,27 @@ namespace FFXIVMonReborn.Views
         #endregion
 
         #region Database
-        public void SetVersion(int version)
+        public void SetDBViaVersion(int version)
         {
+            _commitSha = null;
             _version = version;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             if (_db != null)
             {
                 ReloadCurrentPackets();
                 MessageBox.Show("Version changed: " + _version, "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
+            UpdateInfoLabel();
+        }
+
+        public void SetDBViaCommit(string commitSha)
+        {
+            _commitSha = commitSha;
+            _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha, true);
+            if (_db != null)
+            {
+                ReloadCurrentPackets();
+                MessageBox.Show("Version changed: " + _commitSha, "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
             UpdateInfoLabel();
         }
@@ -656,6 +675,7 @@ namespace FFXIVMonReborn.Views
                 };
                 try
                 {
+                    capture.LastSavedAppCommit = Util.GetGitHash();
                     XmlCaptureImporter.Save(capture, fileDialog.FileName);
                     MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                     _currentXmlFile = fileDialog.FileName;
@@ -784,6 +804,7 @@ namespace FFXIVMonReborn.Views
             {
                 var capture = XmlCaptureImporter.Load(path);
 
+                _commitSha = null;
                 _version = capture.Version;
                 _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
                 foreach (var packet in capture.Packets)
@@ -811,6 +832,7 @@ namespace FFXIVMonReborn.Views
             PacketListView.Items.Clear();
             ChangeTitle("Imported Capture");
 
+            _commitSha = null;
             _version = -1;
             _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             foreach (var packet in packets)

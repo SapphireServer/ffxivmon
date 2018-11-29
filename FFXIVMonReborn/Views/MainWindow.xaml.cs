@@ -568,7 +568,7 @@ namespace FFXIVMonReborn.Views
         {
             var view = new VersionSelectView(VersioningProvider.Api.Tags);
             view.ShowDialog();
-            ((XivMonTab)MainTabControl.SelectedContent).SetVersion(view.GetSelectedVersion());
+            ((XivMonTab)MainTabControl.SelectedContent).SetDBViaVersion(view.GetSelectedVersion());
         }
 
         private void ReloadExClick(object sender, RoutedEventArgs e)
@@ -696,6 +696,16 @@ namespace FFXIVMonReborn.Views
                 MessageBox.Show("Ran loaded scripts on captures.", "FFXIVMon Reborn", MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
+        }
+
+        private void SelectCommitSHA(object sender, RoutedEventArgs e)
+        {
+            string sha = Interaction.InputBox("Please enter a git commit hash to switch to.", "FFXIVMon Reborn");
+
+            if (sha == "")
+                return;
+            
+            ((XivMonTab)MainTabControl.SelectedContent).SetDBViaCommit(sha);
         }
     }
 }
