@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintCoinach", "lib\SaintCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotSquish", "lib\SaintCoinach\DotSquish\DotSquish.csproj", "{F9681545-4BEA-4FD3-9AB9-A67BD37AB36D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVMonReborn.Tests", "FFXIVMonReborn.Tests\FFXIVMonReborn.Tests.csproj", "{315981FE-967E-4C97-8050-70570B1A817E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,12 @@ Global
 		{F9681545-4BEA-4FD3-9AB9-A67BD37AB36D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F9681545-4BEA-4FD3-9AB9-A67BD37AB36D}.Release-Unsigned|Any CPU.ActiveCfg = Release|Any CPU
 		{F9681545-4BEA-4FD3-9AB9-A67BD37AB36D}.Release-Unsigned|Any CPU.Build.0 = Release|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release-Unsigned|Any CPU.ActiveCfg = Debug|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release-Unsigned|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -17,7 +17,7 @@ namespace FFXIVMonReborn.Database.GitHub.Model
         [JsonProperty("protection_url")]
         public Uri ProtectionUrl { get; set; }
 
-        public override string ToString() => Name;
+        public override string ToString() => $"{Name} - {Commit.Sha}";
     }
 
     public partial class GitHubBranch

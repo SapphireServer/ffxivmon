@@ -203,6 +203,9 @@
     <Compile Include="LobbyEncryption\LobbyEncryptionProvider.cs" />
     <Compile Include="Scripting\ScriptingDataStorage.cs" />
     <Compile Include="VersionChecker.cs" />
+    <Compile Include="Views\BranchSelectView.xaml.cs">
+      <DependentUpon>BranchSelectView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TextInputView.xaml.cs">
       <DependentUpon>TextInputView.xaml</DependentUpon>
     </Compile>
@@ -235,6 +238,10 @@
     <Compile Include="Views\XivMonTab.xaml.cs">
       <DependentUpon>XivMonTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\BranchSelectView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\TextInputView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

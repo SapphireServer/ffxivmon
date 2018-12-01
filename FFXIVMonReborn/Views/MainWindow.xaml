@@ -38,7 +38,7 @@
                     <MenuItem Header="_Reload DB" Click="ReloadDBRelay"/>
                     <MenuItem Header="_Redownload Definitions" Click="RedownloadDefs"/>
                     <MenuItem Header="_Select Version" Click="SelectVersion"/>
-                    <MenuItem Header="_Enter Commit SHA" Click="SelectCommitSHA"/>
+                    <MenuItem Header="_Select Branch/Commit" Click="SelectBranch_OnClick"/>
                     <Separator></Separator>
                     <MenuItem x:Name="WatchDefFilesCheckBox" Header="_Enable File Watcher for Definition Files" IsCheckable="True" Checked="WatchDefFilesCheckBox_OnChecked" Unchecked="WatchDefFilesCheckBox_OnUnchecked"/>
                 </MenuItem>

@@ -698,14 +698,13 @@ namespace FFXIVMonReborn.Views
             }
         }
 
-        private void SelectCommitSHA(object sender, RoutedEventArgs e)
+        private void SelectBranch_OnClick(object sender, RoutedEventArgs e)
         {
-            string sha = Interaction.InputBox("Please enter a git commit hash to switch to.", "FFXIVMon Reborn");
-
-            if (sha == "")
-                return;
+            var selector = new BranchSelectView(VersioningProvider.Api.Branches);
+            selector.ShowDialog();
             
-            ((XivMonTab)MainTabControl.SelectedContent).SetDBViaCommit(sha);
+            if(selector.GetSelectedVersion() != null)
+                ((XivMonTab)MainTabControl.SelectedContent).SetDBViaCommit(selector.GetSelectedVersion());
         }
     }
 }
