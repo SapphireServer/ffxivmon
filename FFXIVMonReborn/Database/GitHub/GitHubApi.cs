@@ -64,6 +64,9 @@ namespace FFXIVMonReborn.Database.GitHub
 
             cache = File.Exists(apiCachePath) ? JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(apiCachePath)) : new Dictionary<string, string>(); // Load or Create
 
+            if (cache == null)
+                throw new Exception($"ApiCache exists but could not load it. Please delete {Environment.CurrentDirectory + "/downloaded folder and relaunch FFXIVMonReborn."}");
+
             if (cache.ContainsKey(endpoint) && !ignoreCache)
                 return cache[endpoint];
             

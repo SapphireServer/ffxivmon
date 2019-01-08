@@ -5,7 +5,7 @@ namespace FFXIVMonReborn
 {
     public static class VersionChecker
     {
-        private const string Repo = "SapphireMordred/ffxivmon";
+        private const string Repo = "SapphireServer/ffxivmon";
 
         public static void CheckVersion()
         {
