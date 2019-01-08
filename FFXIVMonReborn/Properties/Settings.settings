@@ -3,7 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="Repo" Type="System.String" Scope="User">
-      <Value Profile="(Default)">SapphireMordred/Sapphire</Value>
+      <Value Profile="(Default)">SapphireServer/Sapphire</Value>
+    </Setting>
+    <Setting Name="GamePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:/Program Files (x86)/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack</Value>
     </Setting>
     <Setting Name="ColorServerSet0" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">255, 198, 95</Value>

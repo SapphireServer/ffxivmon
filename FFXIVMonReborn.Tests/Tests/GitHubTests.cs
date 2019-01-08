@@ -9,7 +9,7 @@ namespace FFXIVMonReborn.Tests
 {
     public class GitHubTestFixture : IDisposable
     {
-        private const string TestRepository = "SapphireMordred/Sapphire";
+        private const string TestRepository = "SapphireServer/Sapphire";
         
         public GitHubApi Api { get; }
 
