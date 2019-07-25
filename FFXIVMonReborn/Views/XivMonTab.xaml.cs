@@ -45,6 +45,7 @@ namespace FFXIVMonReborn.Views
         private string _currentXmlFile = "";
 
         private bool _wasCapturedMs = false;
+
         private FilterSet[] _filters;
 
         private List<string> _erroredOpcodes = new List<string>();
@@ -1303,6 +1304,30 @@ namespace FFXIVMonReborn.Views
         private void HexEditor_OnOnSelectionStartChanged(object sender, EventArgs e)
         {
             DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
+
+            int i = 0;
+            StructListItem prevItem = null;
+
+            foreach (StructListItem item in StructListView.Items)
+            {
+                if (prevItem != null)
+                {
+                    if (HexEditor.SelectionStart == item.offset)
+                    {
+                        StructListView.SelectedIndex = i;
+                        StructListView.ScrollIntoView(item);
+                        break;
+                    }
+                    else if (HexEditor.SelectionStart < item.offset && HexEditor.SelectionStart >= prevItem.offset)
+                    {
+                        StructListView.SelectedIndex = i - 1;
+                        StructListView.ScrollIntoView(prevItem);
+                        break;
+                    }
+                }
+                prevItem = item;
+                i++;
+            }
         }
         #endregion
     }
