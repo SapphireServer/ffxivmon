@@ -2,7 +2,6 @@ using System;
 
 namespace FFXIVMonReborn.LobbyEncryption
 {
-	// FFXIV Classic
     public class Blowfish
     {   
         const int N = 16;

@@ -199,8 +199,10 @@
     <Compile Include="Importers\ActLogImporter.cs" />
     <Compile Include="Importers\XmlCaptureImporter.cs" />
     <Compile Include="Importers\FfxivReplayImporter.cs" />
+    <Compile Include="LobbyEncryption\BlockProcessor.cs" />
     <Compile Include="LobbyEncryption\Blowfish.cs" />
     <Compile Include="LobbyEncryption\LobbyEncryptionProvider.cs" />
+    <Compile Include="LobbyEncryption\LobbyKeyHelper.cs" />
     <Compile Include="Scripting\ScriptingDataStorage.cs" />
     <Compile Include="VersionChecker.cs" />
     <Compile Include="Views\BranchSelectView.xaml.cs">
