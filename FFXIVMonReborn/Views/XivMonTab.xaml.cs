@@ -457,11 +457,12 @@ namespace FFXIVMonReborn.Views
             if (_mainWindow.IsPausedCheckBox.IsChecked && !silent)
                 return;
             
-            if (_encryptionProvider != null && !item.IsDecrypted && item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
+            if (_encryptionProvider != null && !item.IsDecrypted &&
+                item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 &&
+                item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
             {
                 var data = item.Data;
-                _encryptionProvider.DecryptPacket(ref data);
-                item.Data = data;
+                _encryptionProvider.DecryptPacket(data);
 
                 item.Message = BitConverter.ToUInt16(item.Data, 0x12).ToString("X4");
 
@@ -552,9 +553,9 @@ namespace FFXIVMonReborn.Views
                 
                 if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
-                    _encryptionProvider = new LobbyEncryptionProvider(item.Data);
+                    _encryptionProvider = new LobbyEncryptionProvider(item.Data, 5000);
 
-                    item.Comment = "Lobby Encryption INIT: " + Util.ByteArrayToString(_encryptionProvider.EncKey);
+                    item.Comment = "Lobby Encryption INIT";
                 }
             }
 
