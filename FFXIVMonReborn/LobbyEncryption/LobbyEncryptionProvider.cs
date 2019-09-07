@@ -30,14 +30,15 @@ namespace FFXIVMonReborn.LobbyEncryption
         {
             ulong guessedNullBlock = 0;
 
-            // This is possible because block cipher mode of operation implemented in FFXIV is ECB mode
-            // and most of packets are filled with 0x00
+            // This is possible because block cipher mode of operation implemented in FFXIV is ECB mode and most of packets are filled with 0x00 byte.
             // (actually, there's so many bytes are filled with 0x00 that it's enough to inspect the first packet sent from the server.)
-            // https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_(ECB)
             //
             // We know that the encryption key is derived from "keyPhrase", "timestamp" and "gameVersion".
-            // Note that "keyPhrase" and "timestamp" are sent as a plaintext in initial handkeshake phase and only thing not sent off the wire is the
-            // "gameVersion" component and this component can be brute forced in a reasonable time.
+            // where "keyPhrase" and "timestamp" are sent as a plaintext in the initial handkeshake phase.
+            // Only thing not sent off the wire is the "gameVersion" component but this component can be brute forced in a reasonable time
+            // and verify the key by exploiting the fact that ECB mode lacks diffusion.
+            //
+            // https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_(ECB)
             {
                 var processor = new BlockProcessor();
                 processor.Process(packet, pos, length);
