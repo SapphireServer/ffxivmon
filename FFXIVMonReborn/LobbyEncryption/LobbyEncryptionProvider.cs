@@ -9,7 +9,7 @@ namespace FFXIVMonReborn.LobbyEncryption
         private Blowfish _blowfish;
         private byte[] _initPacket;
         
-        public LobbyEncryptionProvider(byte[] initPacket, ushort version)
+        public LobbyEncryptionProvider(byte[] initPacket)
         {
             // Copy the initial packet here because I'm not really sure FFXIVMon mutates the buffer or not.
             _initPacket = new byte[initPacket.Length];

@@ -553,7 +553,7 @@ namespace FFXIVMonReborn.Views
                 
                 if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
-                    _encryptionProvider = new LobbyEncryptionProvider(item.Data, 5000);
+                    _encryptionProvider = new LobbyEncryptionProvider(item.Data);
 
                     item.Comment = "Lobby Encryption INIT";
                 }
