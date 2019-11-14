@@ -468,7 +468,7 @@ namespace FFXIVMonReborn.Views
 
                 item.IsDecrypted = true;
             }
-            
+
             if (item.Direction == "S")
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
@@ -596,13 +596,14 @@ namespace FFXIVMonReborn.Views
                 }
             }
 
+            item.Size = item.Data.Length.ToString();
+
             PacketListView.Items.Add(item);
 
             if (!silent)
             {
                 UpdateInfoLabel();
             }
-
         }
 
         private void EditPacketNoteClick(object sender, RoutedEventArgs e)
