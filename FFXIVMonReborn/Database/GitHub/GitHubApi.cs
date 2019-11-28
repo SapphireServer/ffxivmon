@@ -53,7 +53,8 @@ namespace FFXIVMonReborn.Database.GitHub
         
         private void LoadCommits()
         {
-            Commits = GitHubCommit.FromJson(Request($"/repos/{Repository}/commits"));
+            // TODO: This is hardcoded to develop right now to make version switching obsolete and make it easier to use tagged versions
+            Commits = GitHubCommit.FromJson(Request($"/repos/{Repository}/commits?sha=develop"));
         }
 
         private string Request(string endpoint, bool ignoreCache = false)
@@ -76,12 +77,9 @@ namespace FFXIVMonReborn.Database.GitHub
             if (result.ResponseStatus != ResponseStatus.Completed && result.StatusCode != HttpStatusCode.OK)
                 throw new Exception("Could not complete Request.");
 
-            if (!ignoreCache)
-            {
-                cache[endpoint] = result.Content;
-                File.WriteAllText(apiCachePath, JsonConvert.SerializeObject(cache));
-            }
-            
+            cache[endpoint] = result.Content;
+            File.WriteAllText(apiCachePath, JsonConvert.SerializeObject(cache));
+
             return result.Content;
         }
 

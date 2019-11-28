@@ -69,7 +69,7 @@ namespace FFXIVMonReborn.Tests
         [Fact]
         public void TestGetContent()
         {
-            var content = _api.GetContent(_api.Commits[_api.Commits.Length - 1].Sha, "CMakeLists.txt");
+            var content = _api.GetContent(_api.Commits[0].Sha, "CMakeLists.txt");
             
             Assert.NotNull(content);
         }

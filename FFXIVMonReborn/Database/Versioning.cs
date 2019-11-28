@@ -90,7 +90,7 @@ namespace FFXIVMonReborn.Database
             }
             else
             {
-                return GetDatabaseForCommitHash(Api.Commits[Api.Commits.Length - 1].Sha);
+                return GetDatabaseForCommitHash(Api.Commits[0].Sha);
             }
         }
 
@@ -102,7 +102,7 @@ namespace FFXIVMonReborn.Database
             }
             else
             {
-                return $"Untagged Version: {Api.Commits[Api.Commits.Length - 1].Sha} - {Api.Commits[Api.Commits.Length - 1].CommitInfo.Message} by {Api.Commits[Api.Commits.Length - 1].CommitInfo.Author.Name}";
+                return $"Untagged Version: {Api.Commits[0].Sha} - {Api.Commits[0].CommitInfo.Message} by {Api.Commits[0].CommitInfo.Author.Name}";
             }
         }
     }
