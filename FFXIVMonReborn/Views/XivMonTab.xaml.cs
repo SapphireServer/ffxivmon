@@ -35,7 +35,7 @@ namespace FFXIVMonReborn.Views
         private Thread _captureThread;
 
         private MemoryStream _currentPacketStream;
-        private MainDB _db;
+        private DatabaseParser _db;
         private int _version = -1;
         private string _commitSha = null;
 
@@ -627,7 +627,6 @@ namespace FFXIVMonReborn.Views
             if (_db != null)
             {
                 ReloadCurrentPackets();
-                MessageBox.Show("Version changed: " + _version, "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
             UpdateInfoLabel();
         }
@@ -639,7 +638,6 @@ namespace FFXIVMonReborn.Views
             if (_db != null)
             {
                 ReloadCurrentPackets();
-                MessageBox.Show("Version changed: " + _commitSha, "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
             UpdateInfoLabel();
         }
@@ -1150,7 +1148,7 @@ namespace FFXIVMonReborn.Views
 
                     if (packet.IsVisible)
                     {
-                        Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider, true);
+                        Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider);
                     }
                 }
             }
@@ -1162,7 +1160,7 @@ namespace FFXIVMonReborn.Views
             }
         }
 
-        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider, bool silent = false)
+        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider)
         {
             PacketEventArgs args = null;
 
@@ -1177,20 +1175,20 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         var structProvider = new Struct();
-                        var structEntries = structProvider.Parse(structText, item.Data, silent);
+                        var structEntries = structProvider.Parse(structText, item.Data);
 
-                        args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.ScriptDebugView);
+                        args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.LogView);
                     }
                     catch (Exception exc)
                     {
-                        _mainWindow.ScriptDebugView.WriteLine($"[EXCEPTION] Thrown for {item.Message} - {item.Name}: {exc}");
-                        args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
+                        _mainWindow.LogView.WriteLine($"[EXCEPTION] Thrown for {item.Message} - {item.Name}: {exc}");
+                        args = new PacketEventArgs(item, null, _mainWindow.LogView);
                     }
                 }
             }
             else
             {
-                args = new PacketEventArgs(item, null, _mainWindow.ScriptDebugView);
+                args = new PacketEventArgs(item, null, _mainWindow.LogView);
             }
 
             if(args != null)

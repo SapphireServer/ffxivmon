@@ -30,7 +30,7 @@ namespace FFXIVMonReborn.Views
         public ExdDataCache ExdProvider = null;
         public ScriptingProvider ScriptProvider = null;
 
-        public readonly ScriptDebugView ScriptDebugView = new ScriptDebugView();
+        public readonly LogView LogView = new LogView();
         private string[] _selectedScripts = new string[0];
         
         public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
@@ -141,8 +141,8 @@ namespace FFXIVMonReborn.Views
             }
 
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
-            ScriptDebugView.Show();
-            ScriptDebugView.Visibility = Visibility.Hidden;
+            LogView.Show();
+            LogView.Visibility = Visibility.Hidden;
             
             VersionChecker.CheckVersion();
         }
@@ -230,12 +230,12 @@ namespace FFXIVMonReborn.Views
                         {
                             ((XivMonTab)((TabItem)closeTab).Content).StopCapture();
                         }
-                        ScriptDebugView.Close();
+                        LogView.Close();
                         Environment.Exit(0);
                     }
                 }
             }
-            ScriptDebugView.Close();
+            LogView.Close();
             Environment.Exit(0);
         }
 
@@ -579,7 +579,7 @@ namespace FFXIVMonReborn.Views
 
         private void Scripting_OpenOutputWindow(object sender, RoutedEventArgs e)
         {
-            ScriptDebugView.Visibility = Visibility.Visible;
+            LogView.Visibility = Visibility.Visible;
         }
 
         private void WatchDefFilesCheckBox_OnClick(object sender, RoutedEventArgs e)

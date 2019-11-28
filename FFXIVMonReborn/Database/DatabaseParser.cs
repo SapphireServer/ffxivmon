@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVMonReborn.Views;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,7 +12,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace FFXIVMonReborn.Database
 {
-    public class MainDB
+    public class DatabaseParser
     {
         private Dictionary<int, Tuple<string, string>> ServerLobbyIpcType;
         private Dictionary<int, Tuple<string, string>> ClientLobbyIpcType;
@@ -29,7 +30,7 @@ namespace FFXIVMonReborn.Database
         public bool HasClientDefs = true;
         public bool HasCommonActorControl = true;
 
-        public MainDB(string ipcsString, string commonString, string serverZoneDefString, string clientZoneDefString, string commonActorControlString)
+        public DatabaseParser(string ipcsString, string commonString, string serverZoneDefString, string clientZoneDefString, string commonActorControlString)
         {
             _ipcsString = ipcsString;
             _commonString = commonString;
@@ -149,8 +150,6 @@ namespace FFXIVMonReborn.Database
 
         private Dictionary<int, Tuple<string, string>> ParseEnum(string data, string enumName)
         {
-            string errLog = "";
-            
             Dictionary<int, Tuple<string, string>> output = new Dictionary<int, Tuple<string, string>>();
 
             var lines = Regex.Split(data, "\r\n|\r|\n");
@@ -261,15 +260,12 @@ namespace FFXIVMonReborn.Database
                     }
                     catch (ArgumentException)
                     {
-                        errLog += $"Duplicate Entry! Could not add {name} - {opcode.ToString("X4")}\n";
+                        LogView.Instance?.WriteLine($"Duplicate Entry! Could not add {name} - {opcode.ToString("X4")}\n");
                     }
 
                     at++;
                 }
             }
-
-            if (errLog.Length > 0)
-                new ExtendedErrorView("Finished parsing database, but there were problems:", errLog, "Database Problem").ShowDialog();
 
             return output;
         }

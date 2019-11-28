@@ -73,16 +73,16 @@ namespace FFXIVMonReborn.Database
             }
         }
 
-        public MainDB GetDatabaseForCommitHash(string commitSha, bool ignoreCache = false)
+        public DatabaseParser GetDatabaseForCommitHash(string commitSha, bool ignoreCache = false)
         {
-            return new MainDB(Api.GetContent(commitSha, "/src/common/Network/PacketDef/Ipcs.h", ignoreCache),
+            return new DatabaseParser(Api.GetContent(commitSha, "/src/common/Network/PacketDef/Ipcs.h", ignoreCache),
                 Api.GetContent(commitSha, "/src/common/Common.h", ignoreCache),
                 Api.GetContent(commitSha, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h", ignoreCache),
                 Api.GetContent(commitSha, "/src/common/Network/PacketDef/Zone/ClientZoneDef.h", ignoreCache),
                 Api.GetContent(commitSha, "/src/common/Network/CommonActorControl.h", ignoreCache));
         }
 
-        public MainDB GetDatabaseForVersion(int version)
+        public DatabaseParser GetDatabaseForVersion(int version)
         {
             if (Api.Tags.Length > version && version >= 0)
             {

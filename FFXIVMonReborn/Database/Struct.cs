@@ -63,7 +63,7 @@ namespace FFXIVMonReborn.Database
 
         private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
 
-        public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet, bool silent = false)
+        public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
         {
             string debugMsg = "";
             try
@@ -219,8 +219,7 @@ namespace FFXIVMonReborn.Database
                     }
                 }
 
-                if (debugMsg.Contains("No info for native type") && !silent)
-                    new ExtendedErrorView($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs.", debugMsg, "Error", WindowStartupLocation.CenterScreen).ShowDialog();
+                LogView.Instance?.WriteLine($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs. {debugMsg}");
 
                 return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
             }

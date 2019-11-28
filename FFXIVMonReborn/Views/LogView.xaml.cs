@@ -7,11 +7,15 @@ namespace FFXIVMonReborn
     /// <summary>
     /// Interaktionslogik für ExtendedErrorView.xaml
     /// </summary>
-    public partial class ScriptDebugView : Window
+    public partial class LogView : Window
     {
-        public ScriptDebugView()
+        public static LogView Instance { get; set; }
+
+        public LogView()
         {
             InitializeComponent();
+
+            Instance = this;
         }
 
         public void WriteLine(string line)

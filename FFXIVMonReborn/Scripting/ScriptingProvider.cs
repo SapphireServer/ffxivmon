@@ -93,10 +93,10 @@ namespace FFXIVMonReborn.Scripting
         // Used by event handlers
         public readonly PacketEntry Packet;
         public readonly ExpandoObject PacketObj;
-        public readonly ScriptDebugView Debug;
+        public readonly LogView Debug;
         public ScriptingDataStorage DataStorage;
 
-        public PacketEventArgs(PacketEntry packet, ExpandoObject packetobj, ScriptDebugView debugView)
+        public PacketEventArgs(PacketEntry packet, ExpandoObject packetobj, LogView debugView)
         {
             this.Packet = packet;
             this.PacketObj = packetobj;
