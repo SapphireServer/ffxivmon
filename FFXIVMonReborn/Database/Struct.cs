@@ -43,7 +43,7 @@ namespace FFXIVMonReborn.Database
             //Sapphire Common Types
             { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
             { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(typeof(FfxivArrPosition3DataType), 12, TypePrintMode.CustomDataType, "") },
-            { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 12, TypePrintMode.ObjectToString, "") },
+            { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), sizeof(byte), TypePrintMode.ObjectToString, "") },
             
             // Types in IPC (TODO: Parse?)
             { "effectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
