@@ -7,19 +7,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
 using FFXIVMonReborn.Database;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
-using Be.Windows.Forms;
 using System.Linq;
+using System.Windows.Media;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
 using Machina.FFXIV;
+using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
 
 namespace FFXIVMonReborn.Views
 {
@@ -388,7 +389,7 @@ namespace FFXIVMonReborn.Views
             _currentPacketStream = new MemoryStream(data);
             try
             {
-                HexEditor.ByteProvider = new DynamicByteProvider(data);
+                HexEditor.Stream = _currentPacketStream;
             }
             catch (Exception exception)
             {
@@ -418,13 +419,17 @@ namespace FFXIVMonReborn.Views
 
                 
                 // Highlight the IPC header lightly grey
-                HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
+                // HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
+                HexEditor.HighLightColor = System.Windows.Media.Brushes.LightGray;
+                HexEditor.AddHighLight(0, 0x20);
                 
                 foreach (var entry in structEntries.Item1)
                 {
-                    System.Drawing.Color colour = Struct.TypeColours.ElementAt(i).Value;
+                    Color colour = Struct.TypeColours.ElementAt(i).Value;
                     StructListView.Items.Add(entry);
-                    HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
+                    // HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
+                    HexEditor.HighLightColor = new SolidColorBrush(colour);
+                    HexEditor.AddHighLight(entry.offset, entry.typeLength);
                     ++i;
                     if (i == colours.Count)
                         i = 1;
@@ -491,7 +496,7 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-
+                
                         if (structText != null && structText.Length != 0)
                         {
                             switch (item.Name)
@@ -500,22 +505,22 @@ namespace FFXIVMonReborn.Views
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
+                
                                         item.Comment =
-                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
+                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName(obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
                                     }
                                     break;
-
+                
                                 case "ActorCast":
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
+                
                                         item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
                                     }
                                     break;
                             }
-
+                
                             if (item.Name.Contains("ActorControl"))
                             {
                                 switch (item.ActorControl)
@@ -523,16 +528,16 @@ namespace FFXIVMonReborn.Views
                                     case 3: //CastStart
                                         {
                                             var ctrl = Util.FastParseActorControl(item.Data);
-
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                
+                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                         }
                                         break;
-
+                
                                     case 17: //ActionStart
                                         {
                                             var ctrl = Util.FastParseActorControl(item.Data);
-
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                
+                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                         }
                                         break;
                                 }
@@ -1245,7 +1250,9 @@ namespace FFXIVMonReborn.Views
                 return;
 
             var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            HexEditor.Select(item.offset, item.typeLength);
+            // HexEditor.Select(item.offset, item.typeLength);
+            HexEditor.SelectionStart = item.offset;
+            HexEditor.SelectionStop = item.offset + item.typeLength;
         }
 
         private void StructListView_KeyDown(object sender, KeyEventArgs e)

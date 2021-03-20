@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Media;
 using FFXIVMonReborn.Database.DataTypes;
 
 namespace FFXIVMonReborn.Database
@@ -51,14 +52,14 @@ namespace FFXIVMonReborn.Database
             { "PlayerEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 88, TypePrintMode.Raw, "") }, //used in FFXIVIpcSocialList
         };
 
-        public static readonly Dictionary<string, System.Drawing.Color> TypeColours = new Dictionary<string, System.Drawing.Color>
+        public static readonly Dictionary<string, Color> TypeColours = new Dictionary<string, Color>
         {
-            { "uint8_t", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
-            { "uint16_t", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
-            { "uint32_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },
-            { "uint64_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xd7) },
-            { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
-            { "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
+            { "uint8_t",Color.FromArgb(0xff, 0xab, 0xc8, 0xf4) },
+            { "uint16_t", Color.FromArgb(0xff, 0xd7, 0x89, 0x8c) },
+            { "uint32_t", Color.FromArgb(0xff, 0x89, 0xd7, 0xb7) },
+            { "uint64_t", Color.FromArgb(0xff, 0x89, 0xd7, 0xd7) },
+            { "char", Color.FromArgb(0xff, 0x7b, 0xc8, 0xf4) },
+            { "float", Color.FromArgb(0xff, 0x7f, 0xc0, 0xc0) },
         };
 
         private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
