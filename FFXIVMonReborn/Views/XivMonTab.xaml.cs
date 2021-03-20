@@ -7,19 +7,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
 using FFXIVMonReborn.Database;
 using Microsoft.VisualBasic;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
-using Be.Windows.Forms;
 using System.Linq;
+using System.Windows.Media;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
 using Machina.FFXIV;
+using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
 
 namespace FFXIVMonReborn.Views
 {
@@ -121,7 +122,7 @@ namespace FFXIVMonReborn.Views
 
             if (_mainWindow != null && !_mainWindow.IsPausedCheckBox.IsChecked)
                 CaptureInfoLabel.Content += " | Capture Paused";
-
+            
             var versionInfo = "";
             if (_mainWindow != null)
             {
@@ -129,7 +130,7 @@ namespace FFXIVMonReborn.Views
                     versionInfo = "Commit: " + _commitSha;
                 else
                     versionInfo = _mainWindow.VersioningProvider.GetVersionInfo(_version);
-
+                
                 CaptureInfoLabel.Content += " | . . .";
             }
             CaptureInfoLabel.ToolTip = versionInfo;
@@ -161,7 +162,7 @@ namespace FFXIVMonReborn.Views
                 _wasCapturedMs = false;
                 return;
             }
-
+            
             MessageBoxResult res = MessageBox.Show("Do you want to clear this capture?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (res == MessageBoxResult.Yes)
             {
@@ -186,7 +187,7 @@ namespace FFXIVMonReborn.Views
         {
             ChangeTitle(_currentXmlFile == null ? "" : System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
         }
-
+        
         public void ChangeTitle(string newTitle)
         {
             string windowTitle = string.IsNullOrEmpty(newTitle) ? $"FFXIVMonReborn({Util.GetGitHash()})" : newTitle;
@@ -199,7 +200,7 @@ namespace FFXIVMonReborn.Views
 
             if (_captureWorker != null)
                 header = "• " + header;
-
+            
             if (_mainWindow.IsPausedCheckBox.IsChecked)
                 header += " - PAUSED";
 
@@ -388,7 +389,7 @@ namespace FFXIVMonReborn.Views
             _currentPacketStream = new MemoryStream(data);
             try
             {
-                HexEditor.ByteProvider = new DynamicByteProvider(data);
+                HexEditor.Stream = _currentPacketStream;
             }
             catch (Exception exception)
             {
@@ -416,15 +417,19 @@ namespace FFXIVMonReborn.Views
                 var colours = Struct.TypeColours;
                 int i = 0;
 
-
+                
                 // Highlight the IPC header lightly grey
-                HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
-
+                // HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
+                HexEditor.HighLightColor = System.Windows.Media.Brushes.LightGray;
+                HexEditor.AddHighLight(0, 0x20);
+                
                 foreach (var entry in structEntries.Item1)
                 {
-                    System.Drawing.Color colour = Struct.TypeColours.ElementAt(i).Value;
+                    Color colour = Struct.TypeColours.ElementAt(i).Value;
                     StructListView.Items.Add(entry);
-                    HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
+                    // HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
+                    HexEditor.HighLightColor = new SolidColorBrush(colour);
+                    HexEditor.AddHighLight(entry.offset, entry.typeLength);
                     ++i;
                     if (i == colours.Count)
                         i = 1;
@@ -457,7 +462,7 @@ namespace FFXIVMonReborn.Views
         {
             if (_mainWindow.IsPausedCheckBox.IsChecked && !silent)
                 return;
-
+            
             if (_encryptionProvider != null && !item.IsDecrypted &&
                 item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 &&
                 item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
@@ -474,7 +479,7 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetServerZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-
+                
                 switch (item.Message)
                 {
                     case "0142":
@@ -491,7 +496,7 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-
+                
                         if (structText != null && structText.Length != 0)
                         {
                             switch (item.Name)
@@ -500,22 +505,22 @@ namespace FFXIVMonReborn.Views
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
+                
                                         item.Comment =
-                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName((uint)obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
+                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName(obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
                                     }
                                     break;
-
+                
                                 case "ActorCast":
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-
+                
                                         item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
                                     }
                                     break;
                             }
-
+                
                             if (item.Name.Contains("ActorControl"))
                             {
                                 switch (item.ActorControl)
@@ -523,16 +528,16 @@ namespace FFXIVMonReborn.Views
                                     case 3: //CastStart
                                         {
                                             var ctrl = Util.FastParseActorControl(item.Data);
-
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((uint)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                
+                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                         }
                                         break;
-
+                
                                     case 17: //ActionStart
                                         {
                                             var ctrl = Util.FastParseActorControl(item.Data);
-
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((uint)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                
+                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                         }
                                         break;
                                 }
@@ -551,7 +556,7 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-
+                
                 if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
                     _encryptionProvider = new LobbyEncryptionProvider(item.Data);
@@ -762,7 +767,7 @@ namespace FFXIVMonReborn.Views
             }
             UpdateInfoLabel();
         }
-
+        
         public void LoadActLog()
         {
             _encryptionProvider = null;
@@ -1129,12 +1134,12 @@ namespace FFXIVMonReborn.Views
         public void Scripting_RunOnCapture(bool silent = false)
         {
             var res = silent;
-
+            
             if(!res)
                 res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
 
             if (!res) return;
-
+            
             if (_mainWindow.ScriptProvider == null)
             {
                 _mainWindow.ScriptProvider = new ScriptingProvider();
@@ -1196,7 +1201,7 @@ namespace FFXIVMonReborn.Views
                 provider.ExecuteScripts(null, args);
         }
 
-
+        
         private void RunSpecificScriptOnPacket(object sender, RoutedEventArgs e)
         {
             var scriptView = new ScriptSelectView("Scripts");
@@ -1245,7 +1250,9 @@ namespace FFXIVMonReborn.Views
                 return;
 
             var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            HexEditor.Select(item.offset, item.typeLength);
+            // HexEditor.Select(item.offset, item.typeLength);
+            HexEditor.SelectionStart = item.offset;
+            HexEditor.SelectionStop = item.offset + item.typeLength;
         }
 
         private void StructListView_KeyDown(object sender, KeyEventArgs e)
@@ -1332,3 +1339,4 @@ namespace FFXIVMonReborn.Views
         #endregion
     }
 }
+

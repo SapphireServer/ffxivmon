@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FFXIVMonReborn"
-             xmlns:forms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:views="clr-namespace:FFXIVMonReborn.Views"
+             xmlns:wpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              mc:Ignorable="d" 
              d:DesignHeight="1024" d:DesignWidth="768">
     <Grid>
@@ -146,7 +146,8 @@
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
                                 <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
-                                <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
+                                <!-- <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" /> -->
+                                <wpfHexaEditor:HexEditor DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="Cascadia Mono" SelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
                             </DockPanel>
                         </Grid>
                     </Grid>

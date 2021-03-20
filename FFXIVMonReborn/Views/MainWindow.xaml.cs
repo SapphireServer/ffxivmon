@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 using FFXIVMonReborn.Database;
-using FFXIVMonReborn.Database.GitHub;
 using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
@@ -99,7 +98,7 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                ExdReader.Init(Properties.Settings.Default.GamePath);
+                ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             }
             catch (Exception exc)
             {
@@ -537,7 +536,7 @@ namespace FFXIVMonReborn.Views
 
         public void SetGamePath(object sender, RoutedEventArgs e)
         {
-            string gamepath = Interaction.InputBox("Enter path to /FINAL FANTASY XIV - A Realm Reborn/ folder. This will reinitialise EXDs and may take a few seconds.", "FFXIVMon Reborn", Properties.Settings.Default.GamePath);
+            string gamepath = Interaction.InputBox("Enter path to /FINAL FANTASY XIV - A Realm Reborn/game/sqpack folder. This will reinitialise EXDs and may take a few seconds.", "FFXIVMon Reborn", Properties.Settings.Default.GamePath);
 
             if (gamepath == "")
                 return;
@@ -547,14 +546,14 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                ExdReader.Init(Properties.Settings.Default.GamePath);
+                ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             }
             catch (Exception exc)
             {
                 new ExtendedErrorView("Unable to init EXD data. Please check your game path in Options -> Set Game Path.", exc.ToString(), "FFXIVMon Reborn").ShowDialog();
                 Properties.Settings.Default.LoadEXD = false;
             }
-
+            
             MessageBox.Show("EXD data set up successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
                 MessageBoxImage.Asterisk);
         }
@@ -573,7 +572,7 @@ namespace FFXIVMonReborn.Views
 
         private void ReloadExClick(object sender, RoutedEventArgs e)
         {
-            ExdProvider = new ExdDataCache();
+            ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
         }
 
@@ -620,7 +619,7 @@ namespace FFXIVMonReborn.Views
             try
             {
                 if (ExdProvider == null)
-                    ExdProvider = new ExdDataCache();
+                    ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             }
             catch (Exception exc)
             {
@@ -628,7 +627,7 @@ namespace FFXIVMonReborn.Views
                 ExEnabledCheckbox.IsChecked = false;
                 return;
             }
-
+        
             ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
             
             Properties.Settings.Default.LoadEXD = true;

@@ -6,8 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVMonReborn", "FFXIVMonReborn\FFXIVMonReborn.csproj", "{7F56C183-CFA0-47D1-9683-53C484465CB6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2681C607-A075-4070-BE13-34F0A395119E} = {2681C607-A075-4070-BE13-34F0A395119E}
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457} = {26C5F25F-B450-4CAF-AD8B-B8D11AE73457}
-		{8A7D65EB-3DE3-4631-B286-CC73A3126002} = {8A7D65EB-3DE3-4631-B286-CC73A3126002}
 		{4303E4F0-4C90-44EB-90C2-691451FE49E7} = {4303E4F0-4C90-44EB-90C2-691451FE49E7}
 	EndProjectSection
 EndProject
@@ -15,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machina", "lib\Machina\Mach
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machina.FFXIV", "lib\Machina\Machina.FFXIV\Machina.FFXIV.csproj", "{4303E4F0-4C90-44EB-90C2-691451FE49E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Be.Windows.Forms.HexBox", "lib\Be.HexEditor\sources\Be.Windows.Forms.HexBox\Be.Windows.Forms.HexBox.csproj", "{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVMonReborn.Tests", "FFXIVMonReborn.Tests\FFXIVMonReborn.Tests.csproj", "{315981FE-967E-4C97-8050-70570B1A817E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,12 +40,12 @@ Global
 		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release-Unsigned|Any CPU.ActiveCfg = Release|Any CPU
 		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release-Unsigned|Any CPU.Build.0 = Release|Any CPU
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Release-Unsigned|Any CPU.ActiveCfg = Release|Any CPU
-		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Release-Unsigned|Any CPU.Build.0 = Release|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release-Unsigned|Any CPU.ActiveCfg = Debug|Any CPU
+		{315981FE-967E-4C97-8050-70570B1A817E}.Release-Unsigned|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
