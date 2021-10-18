@@ -2,48 +2,45 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Lumina.Excel;
+using Lumina.Excel.GeneratedSheets;
 using Microsoft.VisualBasic.FileIO;
+using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace FFXIVMonReborn
 {
     public class ExdDataCache
     {
-        private List<string> _bnpcnames = new List<string>();
-        private List<string> _placenames = new List<string>();
-        private List<string> _actionnames = new List<string>();
-        private Dictionary<int, string> _fatenames = new Dictionary<int, string>();
+        private Dictionary<uint, string> _bnpcnames = new();
+        private Dictionary<uint, string> _placenames = new();
+        private Dictionary<uint, string> _actionnames = new();
+        private Dictionary<uint, string> _fatenames = new();
 
         public ExdDataCache()
         {
-            void PopulateStringList(string sheetName, string fieldName, ref List<string> list)
+            void PopulateStringList<T>(string fieldName, ref Dictionary<uint, string> list) where T: ExcelRow
             {
-                var sheet = ExdReader.GetSheet(sheetName);
+                var sheet = ExdReader.GetSheet<T>();
                 if (sheet != null)
                 {
-                    for (var i = 0; i < sheet.Count; ++i)
+                    var prop = typeof(T).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+                    foreach (var excelRow in sheet)
                     {
-                        list.Add(ExdReader.GetExdFieldAsString(sheetName, i, fieldName) ?? "");
+                        list.Add(excelRow.RowId, prop.GetValue(excelRow).ToString());
                     }
                 }
             }
 
-            PopulateStringList("BNpcName", "Singular", ref _bnpcnames);
-            PopulateStringList("PlaceName", "Name", ref _placenames);
-            PopulateStringList("Action", "Name", ref _actionnames);
-
-            var fateSheet = ExdReader.GetSheet("Fate");
-            if (fateSheet != null)
-            {
-                for (var i = 0; i < fateSheet.Count; ++i)
-                {
-                    _fatenames.Add(i, ExdReader.GetExdFieldAsString("Fate", i, "Name") ?? "");
-                }
-            }
+            PopulateStringList<BNpcName>("Singular", ref _bnpcnames);
+            PopulateStringList<PlaceName>("Name", ref _placenames);
+            PopulateStringList<Action>("Name", ref _actionnames);
+            PopulateStringList<Fate>("Name", ref _fatenames);
         }
 
-        public string GetBnpcName(int id)
+        public string GetBnpcName(uint id)
         {
             try
             {
@@ -56,7 +53,7 @@ namespace FFXIVMonReborn
 
         }
 
-        public string GetPlacename(int id)
+        public string GetPlacename(uint id)
         {
             try
             {
@@ -68,7 +65,7 @@ namespace FFXIVMonReborn
             }
         }
 
-        public string GetActionName(int id)
+        public string GetActionName(uint id)
         {
             try
             {
@@ -80,7 +77,7 @@ namespace FFXIVMonReborn
             }
         }
 
-        public string GetFateName(int id)
+        public string GetFateName(uint id)
         {
             string name;
             if (_fatenames.TryGetValue(id, out name))

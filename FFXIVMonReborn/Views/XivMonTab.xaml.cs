@@ -121,7 +121,7 @@ namespace FFXIVMonReborn.Views
 
             if (_mainWindow != null && !_mainWindow.IsPausedCheckBox.IsChecked)
                 CaptureInfoLabel.Content += " | Capture Paused";
-            
+
             var versionInfo = "";
             if (_mainWindow != null)
             {
@@ -129,7 +129,7 @@ namespace FFXIVMonReborn.Views
                     versionInfo = "Commit: " + _commitSha;
                 else
                     versionInfo = _mainWindow.VersioningProvider.GetVersionInfo(_version);
-                
+
                 CaptureInfoLabel.Content += " | . . .";
             }
             CaptureInfoLabel.ToolTip = versionInfo;
@@ -161,7 +161,7 @@ namespace FFXIVMonReborn.Views
                 _wasCapturedMs = false;
                 return;
             }
-            
+
             MessageBoxResult res = MessageBox.Show("Do you want to clear this capture?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (res == MessageBoxResult.Yes)
             {
@@ -186,7 +186,7 @@ namespace FFXIVMonReborn.Views
         {
             ChangeTitle(_currentXmlFile == null ? "" : System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
         }
-        
+
         public void ChangeTitle(string newTitle)
         {
             string windowTitle = string.IsNullOrEmpty(newTitle) ? $"FFXIVMonReborn({Util.GetGitHash()})" : newTitle;
@@ -199,7 +199,7 @@ namespace FFXIVMonReborn.Views
 
             if (_captureWorker != null)
                 header = "• " + header;
-            
+
             if (_mainWindow.IsPausedCheckBox.IsChecked)
                 header += " - PAUSED";
 
@@ -416,10 +416,10 @@ namespace FFXIVMonReborn.Views
                 var colours = Struct.TypeColours;
                 int i = 0;
 
-                
+
                 // Highlight the IPC header lightly grey
                 HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
-                
+
                 foreach (var entry in structEntries.Item1)
                 {
                     System.Drawing.Color colour = Struct.TypeColours.ElementAt(i).Value;
@@ -457,7 +457,7 @@ namespace FFXIVMonReborn.Views
         {
             if (_mainWindow.IsPausedCheckBox.IsChecked && !silent)
                 return;
-            
+
             if (_encryptionProvider != null && !item.IsDecrypted &&
                 item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 &&
                 item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
@@ -474,7 +474,7 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetServerZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-                
+
                 switch (item.Message)
                 {
                     case "0142":
@@ -502,7 +502,7 @@ namespace FFXIVMonReborn.Views
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
 
                                         item.Comment =
-                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName((int)obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
+                                            $"Name: {_mainWindow.ExdProvider.GetBnpcName((uint)obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
                                     }
                                     break;
 
@@ -524,7 +524,7 @@ namespace FFXIVMonReborn.Views
                                         {
                                             var ctrl = Util.FastParseActorControl(item.Data);
 
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((uint)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                         }
                                         break;
 
@@ -532,7 +532,7 @@ namespace FFXIVMonReborn.Views
                                         {
                                             var ctrl = Util.FastParseActorControl(item.Data);
 
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((int)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName((uint)ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
                                         }
                                         break;
                                 }
@@ -551,7 +551,7 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-                
+
                 if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
                     _encryptionProvider = new LobbyEncryptionProvider(item.Data);
@@ -762,7 +762,7 @@ namespace FFXIVMonReborn.Views
             }
             UpdateInfoLabel();
         }
-        
+
         public void LoadActLog()
         {
             _encryptionProvider = null;
@@ -1129,12 +1129,12 @@ namespace FFXIVMonReborn.Views
         public void Scripting_RunOnCapture(bool silent = false)
         {
             var res = silent;
-            
+
             if(!res)
                 res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + PacketListView.Items.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
 
             if (!res) return;
-            
+
             if (_mainWindow.ScriptProvider == null)
             {
                 _mainWindow.ScriptProvider = new ScriptingProvider();
@@ -1196,7 +1196,7 @@ namespace FFXIVMonReborn.Views
                 provider.ExecuteScripts(null, args);
         }
 
-        
+
         private void RunSpecificScriptOnPacket(object sender, RoutedEventArgs e)
         {
             var scriptView = new ScriptSelectView("Scripts");
@@ -1332,4 +1332,3 @@ namespace FFXIVMonReborn.Views
         #endregion
     }
 }
-

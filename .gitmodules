@@ -4,6 +4,3 @@
 [submodule "lib/Be.HexEditor"]
 	path = lib/Be.HexEditor
 	url = https://github.com/takhlaq/Be.HexEditor
-[submodule "lib/SaintCoinach"]
-	path = lib/SaintCoinach
-	url = https://github.com/ufx/SaintCoinach
