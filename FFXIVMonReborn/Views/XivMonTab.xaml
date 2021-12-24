@@ -39,7 +39,14 @@
 
                         </DockPanel>
 
-                        <ListView x:Name="PacketListView" SelectionChanged="PacketListView_OnSelectionChanged" Margin="0,20,0,0" Grid.ColumnSpan="2">
+                        <ListView 
+                            x:Name="PacketListView" 
+                            SelectionChanged="PacketListView_OnSelectionChanged" 
+                            Margin="0,20,0,0" 
+                            Grid.ColumnSpan="2"
+                            VirtualizingStackPanel.IsVirtualizing="True"
+                            VirtualizingStackPanel.VirtualizationMode="Recycling"
+                            ItemsSource="{Binding Packets}">
                             <ListView.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Edit Note"

@@ -126,19 +126,16 @@ namespace FFXIVMonReborn.Views
             }
 
             if (Properties.Settings.Default.LoadEXD)
-            {
                 ExEnabledCheckbox.IsChecked = true;
-            }
 
             if (Properties.Settings.Default.EnableFsWatcher)
-            {
                 WatchDefFilesCheckBox.IsChecked = true;
-            }
 
             if (Properties.Settings.Default.HideHexBoxActorId)
-            {
                 HideHexBoxActorIdCheckBox.IsChecked = true;
-            }
+
+            if (Properties.Settings.Default.StickPacketViewBottom)
+                StickPacketViewBottomCheckBox.IsChecked = true;
 
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
             LogView.Show();
