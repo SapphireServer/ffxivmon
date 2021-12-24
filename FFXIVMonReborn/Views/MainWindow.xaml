@@ -72,6 +72,7 @@
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
+                    <MenuItem x:Name="StickPacketViewBottomCheckBox" Header="_Stick Packet View to bottom" IsCheckable="True" Checked="StickPacketViewBottomCheckBox_OnChecked" Unchecked="StickPacketViewBottomCheckBox_OnUnchecked"/>
                     <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepository"/>
                     <MenuItem Header="_Set Game Path" Click="SetGamePath"/>
