@@ -652,6 +652,18 @@ namespace FFXIVMonReborn.Views
             Properties.Settings.Default.HideHexBoxActorId = false;
             Properties.Settings.Default.Save();
         }
+        
+        private void StickPacketViewBottomCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.StickPacketViewBottom = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void StickPacketViewBottomCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.StickPacketViewBottom = false;
+            Properties.Settings.Default.Save();
+        }
 
         private void ShowFilterHelp(object sender, RoutedEventArgs e)
         {

@@ -187,6 +187,7 @@ namespace FFXIVMonReborn.Views
         public void ChangeTitle()
         {
             ChangeTitle(_currentXmlFile == null ? "" : System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+            UpdateInfoLabel();
         }
         
         public void ChangeTitle(string newTitle)
@@ -605,6 +606,8 @@ namespace FFXIVMonReborn.Views
             item.Size = item.Data.Length.ToString();
 
             PacketListView.Items.Add(item);
+            if (Properties.Settings.Default.StickPacketViewBottom)
+                PacketListView.ScrollIntoView(item);
 
             if (!silent)
             {
