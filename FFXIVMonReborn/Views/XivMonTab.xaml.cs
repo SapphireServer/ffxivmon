@@ -121,7 +121,7 @@ namespace FFXIVMonReborn.Views
                 else
                     CaptureInfoLabel.Content += " | Using packet time";
 
-            if (_mainWindow != null && !_mainWindow.IsPausedCheckBox.IsChecked)
+            if (_mainWindow != null && _mainWindow.IsPausedCheckBox.IsChecked)
                 CaptureInfoLabel.Content += " | Capture Paused";
             
             var versionInfo = "";
@@ -316,13 +316,9 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                Task.Run(() =>
-                {
-                    _captureWorker.Stop();
-                    _captureThread.Join();
-                    _captureWorker = null;
-                });
-                
+                _captureWorker.Stop();
+                _captureThread.Join();
+                _captureWorker = null;
                 UpdateInfoLabel();
                 ChangeTitle(_currentXmlFile);
             }
