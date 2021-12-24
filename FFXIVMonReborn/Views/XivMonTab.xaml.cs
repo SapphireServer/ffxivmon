@@ -13,6 +13,7 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Importers;
@@ -315,10 +316,13 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                _captureWorker.Stop();
-                _captureThread.Join();
-                _captureWorker = null;
-
+                Task.Run(() =>
+                {
+                    _captureWorker.Stop();
+                    _captureThread.Join();
+                    _captureWorker = null;
+                });
+                
                 UpdateInfoLabel();
                 ChangeTitle(_currentXmlFile);
             }
