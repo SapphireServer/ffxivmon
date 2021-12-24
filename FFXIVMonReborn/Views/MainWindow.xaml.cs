@@ -15,6 +15,7 @@ using MessageBox = System.Windows.MessageBox;
 using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Scripting;
+using Machina.Infrastructure;
 
 namespace FFXIVMonReborn.Views
 {
@@ -32,7 +33,7 @@ namespace FFXIVMonReborn.Views
         public readonly LogView LogView = new LogView();
         private string[] _selectedScripts = new string[0];
         
-        public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
+        public NetworkMonitorType CaptureMode;
         public MachinaCaptureWorker.ConfigFlags CaptureFlags;
 
         public MainWindow()
@@ -89,9 +90,9 @@ namespace FFXIVMonReborn.Views
                 // ignored
             }
             
-            CaptureMode = (TCPNetworkMonitor.NetworkMonitorType)Properties.Settings.Default.NetworkMonitorType;
+            CaptureMode = (NetworkMonitorType)Properties.Settings.Default.NetworkMonitorType;
 
-            if (CaptureMode == TCPNetworkMonitor.NetworkMonitorType.RawSocket)
+            if (CaptureMode == NetworkMonitorType.RawSocket)
                 SwitchModeSockets.IsChecked = true;
             else
                 SwitchModePcap.IsChecked = true;
@@ -262,7 +263,7 @@ namespace FFXIVMonReborn.Views
                 return;
             }
 
-            CaptureMode = TCPNetworkMonitor.NetworkMonitorType.RawSocket;
+            CaptureMode = NetworkMonitorType.RawSocket;
             SwitchModePcap.IsChecked = false;
             SwitchModeSockets.IsChecked = true;
 
@@ -279,7 +280,7 @@ namespace FFXIVMonReborn.Views
                 return;
             }
 
-            CaptureMode = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
+            CaptureMode = NetworkMonitorType.WinPCap;
             SwitchModePcap.IsChecked = true;
             SwitchModeSockets.IsChecked = false;
 

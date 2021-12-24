@@ -9,11 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVMonReborn", "FFXIVMonR
 		{4303E4F0-4C90-44EB-90C2-691451FE49E7} = {4303E4F0-4C90-44EB-90C2-691451FE49E7}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVMonReborn.Tests", "FFXIVMonReborn.Tests\FFXIVMonReborn.Tests.csproj", "{315981FE-967E-4C97-8050-70570B1A817E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machina", "lib\Machina\Machina\Machina.csproj", "{2681C607-A075-4070-BE13-34F0A395119E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machina.FFXIV", "lib\Machina\Machina.FFXIV\Machina.FFXIV.csproj", "{4303E4F0-4C90-44EB-90C2-691451FE49E7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVMonReborn.Tests", "FFXIVMonReborn.Tests\FFXIVMonReborn.Tests.csproj", "{315981FE-967E-4C97-8050-70570B1A817E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,24 +28,24 @@ Global
 		{7F56C183-CFA0-47D1-9683-53C484465CB6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7F56C183-CFA0-47D1-9683-53C484465CB6}.Release-Unsigned|Any CPU.ActiveCfg = Release|Any CPU
 		{7F56C183-CFA0-47D1-9683-53C484465CB6}.Release-Unsigned|Any CPU.Build.0 = Release|Any CPU
-		{2681C607-A075-4070-BE13-34F0A395119E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2681C607-A075-4070-BE13-34F0A395119E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2681C607-A075-4070-BE13-34F0A395119E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2681C607-A075-4070-BE13-34F0A395119E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2681C607-A075-4070-BE13-34F0A395119E}.Release-Unsigned|Any CPU.ActiveCfg = Release|Any CPU
-		{2681C607-A075-4070-BE13-34F0A395119E}.Release-Unsigned|Any CPU.Build.0 = Release|Any CPU
-		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release-Unsigned|Any CPU.ActiveCfg = Release|Any CPU
-		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release-Unsigned|Any CPU.Build.0 = Release|Any CPU
 		{315981FE-967E-4C97-8050-70570B1A817E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{315981FE-967E-4C97-8050-70570B1A817E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{315981FE-967E-4C97-8050-70570B1A817E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{315981FE-967E-4C97-8050-70570B1A817E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{315981FE-967E-4C97-8050-70570B1A817E}.Release-Unsigned|Any CPU.ActiveCfg = Debug|Any CPU
 		{315981FE-967E-4C97-8050-70570B1A817E}.Release-Unsigned|Any CPU.Build.0 = Debug|Any CPU
+		{2681C607-A075-4070-BE13-34F0A395119E}.Release|Any CPU.ActiveCfg = Debug|x86
+		{2681C607-A075-4070-BE13-34F0A395119E}.Release|Any CPU.Build.0 = Debug|x86
+		{2681C607-A075-4070-BE13-34F0A395119E}.Release-Unsigned|Any CPU.ActiveCfg = Debug|x86
+		{2681C607-A075-4070-BE13-34F0A395119E}.Release-Unsigned|Any CPU.Build.0 = Debug|x86
+		{2681C607-A075-4070-BE13-34F0A395119E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2681C607-A075-4070-BE13-34F0A395119E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release-Unsigned|Any CPU.ActiveCfg = Debug|Any CPU
+		{4303E4F0-4C90-44EB-90C2-691451FE49E7}.Release-Unsigned|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
