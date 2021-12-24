@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using FFXIVMonReborn.Database.GitHub.Model;
 using Newtonsoft.Json;
 using RestSharp;
@@ -72,7 +73,10 @@ namespace FFXIVMonReborn.Database.GitHub
                 return cache[endpoint];
             
             var request = new RestRequest(endpoint);
-            var result = _client.Execute(request);
+            var task = Task.Run(async () => await _client.ExecuteAsync(request));
+            if (task.IsFaulted && task.Exception != null)
+                throw task.Exception;
+            var result = task.Result;
 
             if (result.ResponseStatus != ResponseStatus.Completed && result.StatusCode != HttpStatusCode.OK)
                 throw new Exception("Could not complete Request.");
