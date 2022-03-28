@@ -9,7 +9,7 @@
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto">Select the Version for this capture.</Label>
-            <ListBox FontFamily="MS Gothic" Height="330" x:Name="ScriptListBox">
+            <ListBox FontFamily="Consolas" Height="330" x:Name="ScriptListBox">
                 
             </ListBox>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
