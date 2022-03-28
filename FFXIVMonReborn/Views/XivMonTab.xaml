@@ -153,13 +153,13 @@
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
                                 <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
-                                <!-- <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" /> -->
+                                <!-- <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="Consolas" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" /> -->
                                 <wpfHexaEditor:HexEditor DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="Cascadia Mono" SelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
                             </DockPanel>
                         </Grid>
                     </Grid>
                     <GridSplitter Grid.Column="1" Grid.RowSpan="2"  Width="5" HorizontalAlignment="Stretch" />
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="Consolas" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>

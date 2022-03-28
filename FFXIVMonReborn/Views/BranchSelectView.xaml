@@ -9,7 +9,7 @@
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto">Select a branch.</Label>
-            <ListBox FontFamily="MS Gothic" Height="330" x:Name="BranchListBox">
+            <ListBox FontFamily="Consolas" Height="330" x:Name="BranchListBox">
                 
             </ListBox>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

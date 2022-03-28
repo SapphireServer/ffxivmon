@@ -9,7 +9,7 @@
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto">Select the struct to be applied to this packet.</Label>
-            <ListBox FontFamily="MS Gothic" Height="330" x:Name="StructListBox">
+            <ListBox FontFamily="Consolas" Height="330" x:Name="StructListBox">
                 
             </ListBox>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
