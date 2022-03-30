@@ -13,6 +13,9 @@
     <Copyright>Copyright © Sapphire 2017</Copyright>
     <OutputPath>..\bin\</OutputPath>
     <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -80,16 +83,7 @@
     <PackageReference Include="WPFHexaEditor" Version="2.1.7" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.manifest">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\EBCDIC-NoSpecialChar.tbl" />
-    <Content Include="Resources\EBCDIC.tbl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\Machina\Machina.FFXIV\Machina.FFXIV.csproj" />
