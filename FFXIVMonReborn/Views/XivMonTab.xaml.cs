@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -14,14 +15,17 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Windows.Media;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.LobbyEncryption;
 using FFXIVMonReborn.Scripting;
 using Machina.FFXIV;
+using WpfHexaEditor.Core;
 using Brushes = System.Windows.Media.Brushes;
+using Capture = FFXIVMonReborn.DataModel.Capture;
 using Color = System.Windows.Media.Color;
 
 namespace FFXIVMonReborn.Views
@@ -381,7 +385,7 @@ namespace FFXIVMonReborn.Views
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            var item = (PacketEntry)Packets[PacketListView.SelectedIndex];
+            var item = Packets[PacketListView.SelectedIndex];
 
             var data = item.Data;
 
@@ -413,34 +417,38 @@ namespace FFXIVMonReborn.Views
 
                 if (structText == null)
                 {
-                    StructListItem infoItem = new StructListItem { NameCol = "No Struct found" };
+                    var infoItem = new StructListItem { NameCol = "No struct found" };
                     StructListView.Items.Add(infoItem);
                     return;
                 }
 
                 var structProvider = new Struct();
                 var structEntries = structProvider.Parse(structText, item.Data);
-
-                var colours = Struct.TypeColours;
-                int i = 0;
-
                 
-                // Highlight the IPC header lightly grey
-                // HexEditor.HighlightBytes(0, 0x20, System.Drawing.Color.Black, System.Drawing.Color.LightGray);
-                HexEditor.HighLightColor = System.Windows.Media.Brushes.LightGray;
-                HexEditor.AddHighLight(0, 0x20);
-                
+                HexEditor.CustomBackgroundBlockItems.Clear();
+                HexEditor.CustomBackgroundBlockItems.Add(new CustomBackgroundBlock(0, 0x20, new SolidColorBrush(Colors.LightGray)));
+
+                Color lastArrayColor = default;
+                Color color = default;
                 foreach (var entry in structEntries.Item1)
                 {
-                    Color colour = Struct.TypeColours.ElementAt(i).Value;
+                    if (entry.isArrayDeclaration)
+                        lastArrayColor = Struct.TypeColours[entry.DataTypeCol];
+                    else if (entry.isArrayElement && entry.DataTypeCol == null)
+                        color = lastArrayColor;
+                    else if (!Struct.TypeColours.TryGetValue(entry.DataTypeCol, out color))
+                    {
+                        Debug.WriteLine($"No color found for {entry.DataTypeCol}");
+                        color = Struct.TypeColours.Values.First();
+                    }
+                        
                     StructListView.Items.Add(entry);
-                    // HexEditor.HighlightBytes(entry.offset, entry.typeLength, System.Drawing.Color.Black, colour);
-                    HexEditor.HighLightColor = new SolidColorBrush(colour);
-                    HexEditor.AddHighLight(entry.offset, entry.typeLength);
-                    ++i;
-                    if (i == colours.Count)
-                        i = 1;
+                    HexEditor.CustomBackgroundBlockItems.Add(new CustomBackgroundBlock(entry.offset, entry.typeLength, new SolidColorBrush(color)));
                 }
+                HexEditor.UpdateVisual();
+                
+                var statusBarUpdate = HexEditor.GetType().GetMethod("UpdateStatusBar", BindingFlags.NonPublic | BindingFlags.Instance);
+                statusBarUpdate?.Invoke(HexEditor, new object?[] { true });
 
                 if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
                     new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
@@ -1253,17 +1261,6 @@ namespace FFXIVMonReborn.Views
             StructListView.Refresh();
         }
 
-        private void StructListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (StructListView.Items.Count == 0)
-                return;
-
-            var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
-            // HexEditor.Select(item.offset, item.typeLength);
-            HexEditor.SelectionStart = item.offset;
-            HexEditor.SelectionStop = item.offset + item.typeLength;
-        }
-
         private void StructListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (StructListView.IsKeyboardFocusWithin)
@@ -1314,36 +1311,98 @@ namespace FFXIVMonReborn.Views
             System.Windows.Clipboard.SetDataObject(str);
             System.Windows.Clipboard.Flush();
         }
+        
+        private void StructListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Debug.WriteLine($"[StructListView_OnSelectionChanged] Selection changed to {StructListView.SelectedIndex} [{sender}] [{e}]");
+            if (StructListView.Items.Count == 0) return;
+            
+            var item = (StructListItem)StructListView.Items[StructListView.SelectedIndex];
+            var typeLength = item.typeLength;
+                
+            // Process highlighting for arrays
+            if (item.isArrayDeclaration)
+            {
+                var countRegex = new Regex(@"\[([0-9]*)\]");
+                var match = countRegex.Match(item.NameCol);
+                if (match.Success)
+                {
+                    var count = int.Parse(match.Groups[1].Value);
+                    var elementSize = ((StructListItem)StructListView.Items[StructListView.SelectedIndex + 1]).typeLength;
+                    if (elementSize != 0)
+                        typeLength = elementSize * count;
+                }    
+            }
+                
+            HexEditor.SelectionStart = item.offset;
+            HexEditor.SelectionStop = item.offset + typeLength - 1;
+        }
         #endregion
 
         #region HexBoxHandling
-        private void HexEditor_OnOnSelectionStartChanged(object sender, EventArgs e)
+        private void HexEditor_OnSelectionStartChanged(object sender, EventArgs e)
         {
+            var (begin, end) = GetRealHexEditorSelectionBounds();
+            
+            Debug.WriteLine($"[HexEditor_OnSelectionStartChanged] Start {HexEditor.SelectionStart} Stop {HexEditor.SelectionStop} Length {HexEditor.SelectionLength} [{sender}] [{e}]");
             DataTypeViewer.Apply(_currentPacketStream.ToArray(), (int)HexEditor.SelectionStart);
 
-            int i = 0;
-            StructListItem prevItem = null;
+            var itemToSelect = StructListView
+                .Items
+                .OfType<StructListItem>()
+                .FirstOrDefault(i => begin >= i.offset && end <= i.offset + i.typeLength - 1);
 
-            foreach (StructListItem item in StructListView.Items)
+            if (itemToSelect == default)
             {
-                if (prevItem != null)
-                {
-                    if (HexEditor.SelectionStart == item.offset)
-                    {
-                        StructListView.SelectedIndex = i;
-                        StructListView.ScrollIntoView(item);
-                        break;
-                    }
-                    else if (HexEditor.SelectionStart < item.offset && HexEditor.SelectionStart >= prevItem.offset)
-                    {
-                        StructListView.SelectedIndex = i - 1;
-                        StructListView.ScrollIntoView(prevItem);
-                        break;
-                    }
-                }
-                prevItem = item;
-                i++;
+                Debug.WriteLine("Not found...");
+                return;
             }
+
+            HexEditor_ProcessSelection(itemToSelect);
+        }
+        
+        private void HexEditor_OnSelectionStopChanged(object sender, EventArgs e)
+        {
+            var (begin, end) = GetRealHexEditorSelectionBounds();
+            
+            Debug.WriteLine($"[HexEditor_OnSelectionStopChanged] Start {begin} Stop {end} Length {HexEditor.SelectionLength} [{sender}] [{e}]");
+
+            var itemToSelect = StructListView
+                    .Items
+                    .OfType<StructListItem>()
+                    .FirstOrDefault(i => i.offset == begin && i.fullArraySize == HexEditor.SelectionLength);
+
+            if (itemToSelect == default)          
+            {
+                Debug.WriteLine("Not found...");
+                return;
+            }
+
+            HexEditor_ProcessSelection(itemToSelect);
+        }
+
+        private void HexEditor_ProcessSelection(StructListItem item)
+        {
+            StructListView.SelectionChanged -= StructListView_OnSelectionChanged;
+            StructListView.SelectedItem = item;
+            StructListView.ScrollIntoView(item);
+            StructListView.SelectionChanged += StructListView_OnSelectionChanged;
+        }
+
+        private (long, long) GetRealHexEditorSelectionBounds()
+        {
+            long begin, end;
+            if (HexEditor.SelectionStart < HexEditor.SelectionStop)
+            {
+                begin = HexEditor.SelectionStart;
+                end = HexEditor.SelectionStop;
+            }
+            else
+            {
+                begin = HexEditor.SelectionStop;
+                end = HexEditor.SelectionStart;
+            }
+            return (begin, end);
         }
         #endregion
     }

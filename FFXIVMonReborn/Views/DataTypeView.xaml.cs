@@ -65,27 +65,27 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         if (thisItem.DataTypeCol == "int8_t")
-                            thisItem.ValueCol = String.Format("{0}", Convert.ToSByte(data[offset]));
+                            thisItem.ValueCol = $"{Convert.ToSByte(data[offset])}";
                         else if (thisItem.DataTypeCol == "uint8_t")
-                            thisItem.ValueCol = String.Format("{0}", data[offset].ToString());
+                            thisItem.ValueCol = $"{data[offset].ToString()}";
                         else if (thisItem.DataTypeCol == "int16_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToInt16(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToInt16(data, offset)}";
                         else if (thisItem.DataTypeCol == "uint16_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToUInt16(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToUInt16(data, offset)}";
                         else if (thisItem.DataTypeCol == "int32_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToInt32(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToInt32(data, offset)}";
                         else if (thisItem.DataTypeCol == "uint32_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToUInt32(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToUInt32(data, offset)}";
                         else if (thisItem.DataTypeCol == "int64_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToInt64(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToInt64(data, offset)}";
                         else if (thisItem.DataTypeCol == "uint64_t")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToUInt64(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToUInt64(data, offset)}";
                         else if (thisItem.DataTypeCol == "float")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToSingle(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToSingle(data, offset)}";
                         else if (thisItem.DataTypeCol == "double")
-                            thisItem.ValueCol = String.Format("{0}", BitConverter.ToDouble(data, offset));
+                            thisItem.ValueCol = $"{BitConverter.ToDouble(data, offset)}";
                         else if (thisItem.DataTypeCol == "time_t")
-                            thisItem.ValueCol = String.Format("{0}", DateTimeOffset.FromUnixTimeSeconds(BitConverter.ToUInt32(data, offset)).ToLocalTime());
+                            thisItem.ValueCol = $"{DateTimeOffset.FromUnixTimeSeconds(BitConverter.ToUInt32(data, offset)).ToLocalTime()}";
                         else if (thisItem.DataTypeCol == "string (ascii)")
                         {
                             var str = Encoding.ASCII.GetString(data);
