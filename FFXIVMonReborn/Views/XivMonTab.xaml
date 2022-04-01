@@ -8,7 +8,7 @@
              xmlns:views="clr-namespace:FFXIVMonReborn.Views"
              xmlns:wpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              mc:Ignorable="d" 
-             d:DesignHeight="1024" d:DesignWidth="768">
+             d:DesignHeight="1024" d:DesignWidth="1280">
     <Grid>
         <DockPanel VerticalAlignment="Stretch">
             <DockPanel>
@@ -153,8 +153,17 @@
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
                                 <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
-                                <!-- <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="Consolas" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" /> -->
-                                <wpfHexaEditor:HexEditor DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="Cascadia Mono" SelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
+                                <wpfHexaEditor:HexEditor
+                                    DockPanel.Dock="Right"
+                                    x:Name="HexEditor"
+                                    FontSize="12"
+                                    ReadOnlyMode="True"
+                                    FontFamily="Consolas"
+                                    AllowAutoHighLightSelectionByte="False"
+                                    Foreground="Black"
+                                    ForegroundSecondColor="Black"
+                                    SelectionStartChanged="HexEditor_OnSelectionStartChanged"
+                                    SelectionStopChanged="HexEditor_OnSelectionStopChanged"/>
                             </DockPanel>
                         </Grid>
                     </Grid>
