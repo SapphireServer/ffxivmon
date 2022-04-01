@@ -447,8 +447,8 @@ namespace FFXIVMonReborn.Views
                 }
                 HexEditor.UpdateVisual();
                 
-                var statusBarUpdate = HexEditor.GetType().GetMethod("UpdateStatusBar", BindingFlags.NonPublic | BindingFlags.Instance);
-                statusBarUpdate?.Invoke(HexEditor, new object?[] { true });
+                // var statusBarUpdate = HexEditor.GetType().GetMethod("UpdateStatusBar", BindingFlags.NonPublic | BindingFlags.Instance);
+                // statusBarUpdate?.Invoke(HexEditor, new object?[] { true });
 
                 if (_mainWindow.ShowObjectMapCheckBox.IsChecked)
                     new ExtendedErrorView("Object map for " + item.Name, structEntries.Item2.Print(), "FFXIVMon Reborn").ShowDialog();
