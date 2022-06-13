@@ -14,6 +14,7 @@ using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
 using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.Properties;
 using FFXIVMonReborn.Scripting;
 using Machina.Infrastructure;
 
@@ -137,6 +138,9 @@ namespace FFXIVMonReborn.Views
             if (Properties.Settings.Default.StickPacketViewBottom)
                 StickPacketViewBottomCheckBox.IsChecked = true;
 
+            if (Properties.Settings.Default.OodleEnforced)
+                OodleEnforcedCheckbox.IsChecked = true;
+            
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
             LogView.Show();
             LogView.Visibility = Visibility.Hidden;
@@ -660,6 +664,18 @@ namespace FFXIVMonReborn.Views
         {
             Properties.Settings.Default.StickPacketViewBottom = false;
             Properties.Settings.Default.Save();
+        }
+        
+        private void OodleEnforcedCheckbox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.OodleEnforced = true;
+            Settings.Default.Save();
+        }
+        
+        private void OodleEnforcedCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.OodleEnforced = false;
+            Settings.Default.Save();
         }
 
         private void ShowFilterHelp(object sender, RoutedEventArgs e)

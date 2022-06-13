@@ -299,6 +299,9 @@ namespace FFXIVMonReborn.Views
 
             try
             {
+                if (!MachinaCaptureWorker.CanRun())
+                    throw new ApplicationException("Game path must be specified to use FFXIV as an Oodle library.");
+                
                 ClearCapture(true);
 
                 _captureWorker = new MachinaCaptureWorker(this, _mainWindow.CaptureMode, _mainWindow.CaptureFlags);
