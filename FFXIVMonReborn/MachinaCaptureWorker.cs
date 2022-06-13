@@ -9,11 +9,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.Properties;
 using FFXIVMonReborn.Views;
 using Machina;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers;
+using Machina.FFXIV.Oodle;
 using Machina.Infrastructure;
 
 namespace FFXIVMonReborn
@@ -112,12 +116,35 @@ namespace FFXIVMonReborn
             return result;
         }
 
+        public static bool CanRun()
+        {
+            return File.Exists(GetOodlePath()) || !Settings.Default.OodleEnforced;
+        }
+
+        private static string GetOodlePath()
+        {
+            // GamePath points to sqpack
+            var gamePath = Settings.Default.GamePath;
+            return Path.GetFullPath(Path.Combine(gamePath, "..", "ffxiv_dx11.exe"));
+        }
+
         public void Run()
         {
+            if (!CanRun())
+            {
+                throw new ThreadStateException("Oodle library not found but thread was started anyways.");
+            }
+            
             FFXIVNetworkMonitor monitor = new FFXIVNetworkMonitor();
             monitor.MonitorType = _monitorType;
             monitor.MessageReceivedEventHandler = MessageReceived;
             monitor.MessageSentEventHandler = MessageSent;
+
+            monitor.OodleImplementation = OodleImplementation.Ffxiv;
+
+            // GamePath points to sqpack
+            monitor.OodlePath = GetOodlePath();
+            
             monitor.Start();
 
             while (!_shouldStop)

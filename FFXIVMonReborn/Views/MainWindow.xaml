@@ -73,6 +73,7 @@
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
                     <MenuItem x:Name="StickPacketViewBottomCheckBox" Header="_Stick Packet View to bottom" IsCheckable="True" Checked="StickPacketViewBottomCheckBox_OnChecked" Unchecked="StickPacketViewBottomCheckBox_OnUnchecked"/>
+                    <MenuItem x:Name="OodleEnforcedCheckbox" Header="_Require valid Oodle to capture" IsCheckable="True" Checked="OodleEnforcedCheckbox_OnChecked" Unchecked="OodleEnforcedCheckbox_OnUnchecked"/>
                     <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepository"/>
                     <MenuItem Header="_Set Game Path" Click="SetGamePath"/>
