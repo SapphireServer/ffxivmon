@@ -39,9 +39,8 @@ namespace FFXIVMonReborn.Importers
 
         public static void Save(Capture capture, string path)
         {
-            //using (var fileStream = new FileStream(path, FileMode.Create))
+            using (var fileStream = new FileStream(path, FileMode.Create))
             {
-                var fileStream = new FileStream(path, FileMode.Create);
                 if (capture != null)
                 {
                     foreach (var packet in capture.Packets)
