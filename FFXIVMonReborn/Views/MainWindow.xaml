@@ -88,6 +88,7 @@
                     <MenuItem Header="_Set Repository" Click="SetRepository"/>
                     <MenuItem Header="_Set Game Path" Click="SetGamePath"/>
                     <MenuItem Header="_Set Oodle Library" Click="SetOoodleLibraryPath"/>
+                    <MenuItem Header="_Set Game Window Name" Click="SetGameWindowName"/>
                     <Separator></Separator>
                     <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>
                     <MenuItem x:Name="SwitchModePcap" Header="_Capture mode: WinPCap" Click="SwitchModePcap_OnClick"/>
