@@ -32,9 +32,10 @@ namespace FFXIVMonReborn
             DontUsePacketTimestamp = 1 << 1
         }
 
-        private readonly XivMonTab _myTab;
+        public readonly XivMonTab _myTab;
         private readonly NetworkMonitorType _monitorType;
         private readonly ConfigFlags _configFlags;
+        public FFXIVNetworkMonitor monitor;
 
         private volatile bool _shouldStop;
 
@@ -43,9 +44,12 @@ namespace FFXIVMonReborn
             this._myTab = window;
             this._monitorType = monitorType;
             this._configFlags = flags;
+            this.monitor = new FFXIVNetworkMonitor();
+            monitor.MessageReceivedEventHandler = MessageReceived;
+            monitor.MessageSentEventHandler = MessageSent;
         }
 
-        private void MessageReceived(TCPConnection connection, long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
+        public void MessageReceived(TCPConnection connection, long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
         {
             var res = Parse(message);
 
@@ -74,7 +78,7 @@ namespace FFXIVMonReborn
             _myTab.Dispatcher.Invoke(() => { _myTab.AddPacketToListView(item); });
         }
 
-        private void MessageSent(TCPConnection connection, long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
+        public void MessageSent(TCPConnection connection, long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
         {
             var res = Parse(message);
 
@@ -135,10 +139,7 @@ namespace FFXIVMonReborn
                 throw new ThreadStateException("Oodle library not found but thread was started anyways.");
             }
             
-            FFXIVNetworkMonitor monitor = new FFXIVNetworkMonitor();
             monitor.MonitorType = _monitorType;
-            monitor.MessageReceivedEventHandler = MessageReceived;
-            monitor.MessageSentEventHandler = MessageSent;
 
             monitor.OodleImplementation = OodleImplementation.Ffxiv;
 

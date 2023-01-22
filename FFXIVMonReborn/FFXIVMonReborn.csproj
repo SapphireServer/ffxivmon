@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ProjectGuid>{7F56C183-CFA0-47D1-9683-53C484465CB6}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -22,6 +22,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -80,6 +81,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RestSharp" Version="107.0.0-preview.14" />
     <PackageReference Include="RestSharp.Newtonsoft.Json" Version="1.5.1" />
+    <PackageReference Include="SharpPcap" Version="6.2.5" />
     <PackageReference Include="WPFHexaEditor" Version="2.1.7" />
   </ItemGroup>
   <ItemGroup>
@@ -88,5 +90,8 @@
   <ItemGroup>
     <ProjectReference Include="..\lib\Machina\Machina.FFXIV\Machina.FFXIV.csproj" />
     <ProjectReference Include="..\lib\Machina\Machina\Machina.csproj" />
+    <ProjectReference Include="..\lib\Pcap.Net\PcapDotNet\src\PcapDotNet.Core\PcapDotNet.Core.vcxproj">
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
 </Project>
