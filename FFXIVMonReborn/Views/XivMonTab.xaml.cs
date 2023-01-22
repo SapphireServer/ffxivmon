@@ -49,7 +49,7 @@ namespace FFXIVMonReborn.Views
         private LobbyEncryptionProvider _encryptionProvider;
 
         private string _filterString = "";
-        private string _currentXmlFile = "";
+        private string _currentFilePath = "";
 
         private bool _wasCapturedMs = false;
 
@@ -67,10 +67,10 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                if (!string.IsNullOrEmpty(_currentXmlFile))
+                if (!string.IsNullOrEmpty(_currentFilePath))
                 {
-                    ChangeTitle(Path.GetFileNameWithoutExtension(_currentXmlFile));
-                    var capture = XmlCaptureImporter.Load(_currentXmlFile);
+                    ChangeTitle(Path.GetFileNameWithoutExtension(_currentFilePath));
+                    var capture = XmlCaptureImporter.Load(_currentFilePath);
                     foreach (var packet in capture.Packets)
                     {
                         AddPacketToListView(packet);
@@ -91,7 +91,7 @@ namespace FFXIVMonReborn.Views
             InitializeComponent();
             PacketListView.ItemsSource = Packets;
 
-            if (!string.IsNullOrEmpty(_currentXmlFile))
+            if (!string.IsNullOrEmpty(_currentFilePath))
             {
                 ChangeTitle(System.IO.Path.GetFileNameWithoutExtension("FFXIV Replay"));
                 foreach (var packet in packets)
@@ -108,8 +108,8 @@ namespace FFXIVMonReborn.Views
         {
             CaptureInfoLabel.Content = "Amount of Packets: " + Packets.Count;
 
-            if (_currentXmlFile.Length != 0)
-                CaptureInfoLabel.Content += " | File: " + _currentXmlFile;
+            if (_currentFilePath.Length != 0)
+                CaptureInfoLabel.Content += " | File: " + _currentFilePath;
             if (_captureWorker != null)
                 CaptureInfoLabel.Content += " | Capturing ";
             else
@@ -165,7 +165,7 @@ namespace FFXIVMonReborn.Views
 
                 _filterString = "";
 
-                _currentXmlFile = "";
+                _currentFilePath = "";
                 ChangeTitle("");
 
                 UpdateInfoLabel();
@@ -185,7 +185,7 @@ namespace FFXIVMonReborn.Views
 
                 _filterString = "";
 
-                _currentXmlFile = "";
+                _currentFilePath = "";
                 ChangeTitle("");
 
                 UpdateInfoLabel();
@@ -196,7 +196,7 @@ namespace FFXIVMonReborn.Views
 
         public void ChangeTitle()
         {
-            ChangeTitle(_currentXmlFile == null ? "" : System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+            ChangeTitle(_currentFilePath == null ? "" : System.IO.Path.GetFileNameWithoutExtension(_currentFilePath));
             UpdateInfoLabel();
         }
         
@@ -230,14 +230,15 @@ namespace FFXIVMonReborn.Views
             var lastIndex = PacketListView.SelectedIndex;
 
             var array = new PacketEntry[Packets.Count];
-            Packets.CopyTo(array, 0);
+            for (int i = 0; i < Packets.Count; ++i)
+                array[i] = Packets[i];
             Packets.Clear();
 
             foreach (var item in array)
             {
-                AddPacketToListView(item);
+                AddPacketToListView(item, true);
             }
-
+            UpdateInfoLabel();
             PacketListView.SelectedIndex = lastIndex;
         }
 
@@ -250,7 +251,7 @@ namespace FFXIVMonReborn.Views
                 return false;
             }
 
-            if (Packets.Count != 0 && _currentXmlFile == "")
+            if (Packets.Count != 0 && _currentFilePath == "")
             {
                 MessageBoxResult res = MessageBox.Show("Currently captured packets were not yet saved.\nDo you want to close without saving?", "Unsaved Packets", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (res == MessageBoxResult.No)
@@ -269,7 +270,7 @@ namespace FFXIVMonReborn.Views
                 return false;
             }
 
-            if (Packets.Count != 0 && _currentXmlFile == "")
+            if (Packets.Count != 0 && _currentFilePath == "")
             {
                 return false;
             }
@@ -310,7 +311,7 @@ namespace FFXIVMonReborn.Views
                 _captureThread.Start();
 
                 UpdateInfoLabel();
-                ChangeTitle(_currentXmlFile);
+                ChangeTitle(_currentFilePath);
 
                 _wasCapturedMs = _mainWindow.DontUsePacketTimestamp.IsChecked;
             }
@@ -334,7 +335,7 @@ namespace FFXIVMonReborn.Views
                 _captureThread.Join();
                 _captureWorker = null;
                 UpdateInfoLabel();
-                ChangeTitle(_currentXmlFile);
+                ChangeTitle(_currentFilePath);
             }
             catch (Exception e)
             {
@@ -388,7 +389,7 @@ namespace FFXIVMonReborn.Views
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            var item = Packets[PacketListView.SelectedIndex];
+            var item = (PacketEntry)PacketListView.SelectedItem;
 
             var data = item.Data;
 
@@ -478,6 +479,12 @@ namespace FFXIVMonReborn.Views
 
         public void AddPacketToListView(PacketEntry item, bool silent = false)
         {
+            if (_commitSha == null && _version == -1)
+            {
+                _version = _mainWindow.VersioningProvider.Api.Tags.Length;
+                _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+            }
+
             if (_mainWindow.IsPausedCheckBox.IsChecked && !silent)
                 return;
             
@@ -497,16 +504,12 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetServerZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetServerZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-                
-                switch (item.Message)
+
+                if (_db.ActorControlMainOpcodes.ContainsKey(item.Message))
                 {
-                    case "0142":
-                    case "0143":
-                    case "0144":
-                        int cat = BitConverter.ToUInt16(item.Data, 0x20);
-                        item.ActorControl = cat;
-                        item.Name = _db.GetActorControlTypeName(cat);
-                        break;
+                    int cat = BitConverter.ToUInt16(item.Data, 0x20);
+                    item.ActorControl = cat;
+                    item.Name = _db.GetActorControlTypeName(cat);
                 }
 
                 if (_mainWindow.ExEnabledCheckbox.IsChecked)
@@ -514,51 +517,57 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-                
+
                         if (structText != null && structText.Length != 0)
                         {
-                            switch (item.Name)
+                            switch (item.Name.Trim())
                             {
                                 case "NpcSpawn":
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-                
+
                                         item.Comment =
                                             $"Name: {_mainWindow.ExdProvider.GetBnpcName(obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
                                     }
                                     break;
-                
+
                                 case "ActorCast":
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-                
+
                                         item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
                                     }
                                     break;
-                            }
-                
-                            if (item.Name.Contains("ActorControl"))
-                            {
-                                switch (item.ActorControl)
-                                {
-                                    case 3: //CastStart
+
+                                case "ActorControl":
+                                case "ActorControlSelf":
+                                case "ActorControlTarget":
+                                case "Order":
+                                case "OrderMySelf":
+                                case "OrderTarget":
+                                    {
+                                        switch (item.ActorControl)
                                         {
-                                            var ctrl = Util.FastParseActorControl(item.Data);
-                
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                            case 3: //CastStart
+                                                {
+                                                    var ctrl = Util.FastParseActorControl(item.Data);
+
+                                                    item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                                }
+                                                break;
+
+                                            case 17: //ActionStart
+                                                {
+                                                    var ctrl = Util.FastParseActorControl(item.Data);
+
+                                                    item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                                }
+                                                break;
                                         }
-                                        break;
-                
-                                    case 17: //ActionStart
-                                        {
-                                            var ctrl = Util.FastParseActorControl(item.Data);
-                
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
-                                        }
-                                        break;
-                                }
+                                    }
+                                    break;
                             }
                         }
                     }
@@ -659,8 +668,9 @@ namespace FFXIVMonReborn.Views
 
         public void SetDBViaCommit(string commitSha)
         {
+            _version = -1;
             _commitSha = commitSha;
-            _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha, true);
+            _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
             if (_db != null)
             {
                 ReloadCurrentPackets();
@@ -697,15 +707,16 @@ namespace FFXIVMonReborn.Views
                 {
                     Packets = Packets.Cast<PacketEntry>().ToArray(),
                     UsingSystemTime = _wasCapturedMs.ToString().ToLower(),
-                    Version = _version
+                    Version = _version,
+                    ServerCommitHash = _commitSha
                 };
                 try
                 {
                     capture.LastSavedAppCommit = Util.GetGitHash();
                     XmlCaptureImporter.Save(capture, fileDialog.FileName);
                     MessageBox.Show($"Capture saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                    _currentXmlFile = fileDialog.FileName;
-                    ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
+                    _currentFilePath = fileDialog.FileName;
+                    ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentFilePath));
                 }
                 catch (Exception ex)
                 {
@@ -723,20 +734,23 @@ namespace FFXIVMonReborn.Views
             _filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = @"XML|*.xml";
-            openFileDialog.Title = @"Select a Capture XML file";
+            
+            openFileDialog.Filter = @"XML/Pcap|*.xml;*.pcap;*.pcapng";
+            openFileDialog.Title = @"Select Capture file(s)";
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
                 if (res == MessageBoxResult.Yes)
                 {
-                    _mainWindow.AddTab(openFileDialog.FileName);
+                    foreach (var filename in openFileDialog.FileNames)
+                        _mainWindow.AddTab(filename);
                     return;
                 }
                 else if (res == MessageBoxResult.No)
                 {
-                    LoadCapture(openFileDialog.FileName);
+                    foreach (var filename in openFileDialog.FileNames)
+                        LoadCapture(openFileDialog.FileName);
                 }
                 else
                 {
@@ -823,16 +837,24 @@ namespace FFXIVMonReborn.Views
         public void LoadCapture(string path)
         {
             Packets.Clear();
-            _currentXmlFile = path;
-            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentXmlFile));
-
+            _currentFilePath = path;
+            ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentFilePath));
+            
             try
             {
-                var capture = XmlCaptureImporter.Load(path);
+                Capture capture = null;
 
-                _commitSha = null;
+                if (path.EndsWith("xml"))
+                    capture = XmlCaptureImporter.Load(path);
+                else
+                    capture = PcapImporter.Load(path);
+
+                _commitSha = capture.ServerCommitHash;
                 _version = capture.Version;
-                _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                if (_version != -1)
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                else
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
                 foreach (var packet in capture.Packets)
                 {
                     // Add a packet to the view, but no update to the label

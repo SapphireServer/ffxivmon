@@ -27,7 +27,7 @@ namespace FFXIVMonReborn.Importers
                 }
 
                 Debug.WriteLine($"Loaded Packets: {capture.Packets.Length}");
-
+                fileStream.Close();
                 return capture;
             }
             catch(Exception ex)
@@ -51,6 +51,7 @@ namespace FFXIVMonReborn.Importers
                 }
                 var serializer = new XmlSerializer(typeof(Capture));
                 serializer.Serialize(fileStream, capture);
+                fileStream.Close();
             }
         }
     }

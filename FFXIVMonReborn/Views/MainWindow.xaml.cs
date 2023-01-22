@@ -702,7 +702,7 @@ namespace FFXIVMonReborn.Views
         private void Scripting_RunOnMultipleCaptures(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "XML|*.xml";
+            openFileDialog.Filter = "XML|*.xml; pcap|*.pcap; pcapng|*.pcapng";
             openFileDialog.Title = "Select captures";
             openFileDialog.Multiselect = true;
 
