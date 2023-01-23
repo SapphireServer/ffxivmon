@@ -245,11 +245,11 @@ namespace FFXIVMonReborn.Database
                     }
 
                     int opcode = int.Parse(num, NumberStyles.HexNumber);
-                    if (name.Contains("ActorControl"))
+                    if (name.Contains("ActorControl") || name.Contains("Order"))
                     {
                         ActorControlMainOpcodes.TryAdd(opcode.ToString("X4"), name);
                     }
-                    Debug.WriteLine(opcode.ToString("X4"));
+                    //Debug.WriteLine(opcode.ToString("X4"));
 
                     string comment = "";
                     if (tempLine.Contains("//"))
@@ -258,7 +258,7 @@ namespace FFXIVMonReborn.Database
                         comment = tempLine.Substring(pos + 3);
                     }
 
-                    Debug.WriteLine(comment);
+                    //Debug.WriteLine(comment);
 
                     try
                     {

@@ -230,14 +230,15 @@ namespace FFXIVMonReborn.Views
             var lastIndex = PacketListView.SelectedIndex;
 
             var array = new PacketEntry[Packets.Count];
-            Packets.CopyTo(array, 0);
+            for (int i = 0; i < Packets.Count; ++i)
+                array[i] = Packets[i];
             Packets.Clear();
 
             foreach (var item in array)
             {
-                AddPacketToListView(item);
+                AddPacketToListView(item, true);
             }
-
+            UpdateInfoLabel();
             PacketListView.SelectedIndex = lastIndex;
         }
 
@@ -517,51 +518,57 @@ namespace FFXIVMonReborn.Views
                     try
                     {
                         var structText = _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-                
+
                         if (structText != null && structText.Length != 0)
                         {
-                            switch (item.Name)
+                            switch (item.Name.Trim())
                             {
                                 case "NpcSpawn":
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-                
+
                                         item.Comment =
                                             $"Name: {_mainWindow.ExdProvider.GetBnpcName(obj.bNPCName)}({obj.bNPCName}) - Base: {obj.bNPCBase}";
                                     }
                                     break;
-                
+
                                 case "ActorCast":
                                     {
                                         Struct structProvider = new Struct();
                                         dynamic obj = structProvider.Parse(structText, item.Data).Item2;
-                
+
                                         item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(obj.action_id)}({obj.action_id}) - Type {obj.skillType} - Cast Time: {obj.cast_time}";
                                     }
                                     break;
-                            }
-                
-                            if (item.Name.Contains("ActorControl") || item.Name.Contains("Order"))
-                            {
-                                switch (item.ActorControl)
-                                {
-                                    case 3: //CastStart
+
+                                case "ActorControl":
+                                case "ActorControlSelf":
+                                case "ActorControlTarget":
+                                case "Order":
+                                case "OrderMySelf":
+                                case "OrderTarget":
+                                    {
+                                        switch (item.ActorControl)
                                         {
-                                            var ctrl = Util.FastParseActorControl(item.Data);
-                
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                            case 3: //CastStart
+                                                {
+                                                    var ctrl = Util.FastParseActorControl(item.Data);
+
+                                                    item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                                }
+                                                break;
+
+                                            case 17: //ActionStart
+                                                {
+                                                    var ctrl = Util.FastParseActorControl(item.Data);
+
+                                                    item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
+                                                }
+                                                break;
                                         }
-                                        break;
-                
-                                    case 17: //ActionStart
-                                        {
-                                            var ctrl = Util.FastParseActorControl(item.Data);
-                
-                                            item.Comment = $"Action: {_mainWindow.ExdProvider.GetActionName(ctrl.Param2)}({ctrl.Param2}) - Type {ctrl.Param1}";
-                                        }
-                                        break;
-                                }
+                                    }
+                                    break;
                             }
                         }
                     }
@@ -719,40 +726,6 @@ namespace FFXIVMonReborn.Views
             UpdateInfoLabel();
         }
 
-        public void OpenPcap()
-        {
-            _encryptionProvider = null;
-            _currentPacketStream = new MemoryStream(new byte[] { });
-            _filterString = "";
-
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = @"Pcap|(*.pcap,*.pcapng)";
-            openFileDialog.Title = @"Select PCap file(s)";
-
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
-                if (res == MessageBoxResult.Yes)
-                {
-                    foreach (var filename in openFileDialog.FileNames)
-                        _mainWindow.AddTab(filename);
-                    return;
-                }
-                else if (res == MessageBoxResult.No)
-                {
-                    foreach (var filename in openFileDialog.FileNames)
-                        LoadCapture(openFileDialog.FileName);
-                }
-                else
-                {
-                    return;
-                }
-
-            }
-
-            UpdateInfoLabel();
-        }
-
         public void LoadCapture()
         {
             _encryptionProvider = null;
@@ -865,7 +838,7 @@ namespace FFXIVMonReborn.Views
             Packets.Clear();
             _currentFilePath = path;
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentFilePath));
-
+            
             try
             {
                 Capture capture = null;
@@ -873,7 +846,7 @@ namespace FFXIVMonReborn.Views
                 if (path.EndsWith("xml"))
                     capture = XmlCaptureImporter.Load(path);
                 else
-                    capture = PcapImporter.Load(path, new MachinaCaptureWorker(this, Machina.Infrastructure.NetworkMonitorType.WinPCap, MachinaCaptureWorker.ConfigFlags.None));
+                    capture = PcapImporter.Load(path);
 
                 _commitSha = null;
                 _version = capture.Version;
