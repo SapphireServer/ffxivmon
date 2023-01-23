@@ -389,7 +389,7 @@ namespace FFXIVMonReborn.Views
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            var item = Packets[PacketListView.SelectedIndex];
+            var item = (PacketEntry)PacketListView.SelectedItem;
 
             var data = item.Data;
 
@@ -479,10 +479,9 @@ namespace FFXIVMonReborn.Views
 
         public void AddPacketToListView(PacketEntry item, bool silent = false)
         {
-            if (_version == -1)
+            if (_commitSha == null && _version == -1)
             {
                 _version = _mainWindow.VersioningProvider.Api.Tags.Length;
-                _commitSha = null;
                 _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
             }
 
@@ -669,8 +668,9 @@ namespace FFXIVMonReborn.Views
 
         public void SetDBViaCommit(string commitSha)
         {
+            _version = -1;
             _commitSha = commitSha;
-            _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha, true);
+            _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
             if (_db != null)
             {
                 ReloadCurrentPackets();
@@ -707,7 +707,8 @@ namespace FFXIVMonReborn.Views
                 {
                     Packets = Packets.Cast<PacketEntry>().ToArray(),
                     UsingSystemTime = _wasCapturedMs.ToString().ToLower(),
-                    Version = _version
+                    Version = _version,
+                    ServerCommitHash = _commitSha
                 };
                 try
                 {
@@ -848,9 +849,12 @@ namespace FFXIVMonReborn.Views
                 else
                     capture = PcapImporter.Load(path);
 
-                _commitSha = null;
+                _commitSha = capture.ServerCommitHash;
                 _version = capture.Version;
-                _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                if (_version != -1)
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                else
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
                 foreach (var packet in capture.Packets)
                 {
                     // Add a packet to the view, but no update to the label

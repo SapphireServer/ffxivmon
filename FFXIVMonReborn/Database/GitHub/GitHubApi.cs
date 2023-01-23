@@ -120,7 +120,7 @@ namespace FFXIVMonReborn.Database.GitHub
                     return null;
                 }
                 
-                if(!ignoreCache)
+                if(!ignoreCache || !File.Exists(filePath))
                     File.WriteAllText(filePath, content);
 
                 return content;

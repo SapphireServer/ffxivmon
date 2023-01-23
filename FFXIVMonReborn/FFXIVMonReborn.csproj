@@ -90,8 +90,5 @@
   <ItemGroup>
     <ProjectReference Include="..\lib\Machina\Machina.FFXIV\Machina.FFXIV.csproj" />
     <ProjectReference Include="..\lib\Machina\Machina\Machina.csproj" />
-    <ProjectReference Include="..\lib\Pcap.Net\PcapDotNet\src\PcapDotNet.Core\PcapDotNet.Core.vcxproj">
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
 </Project>
