@@ -41,6 +41,7 @@
                     <MenuItem Header="_Select Branch/Commit" Click="SelectBranch_OnClick"/>
                     <Separator></Separator>
                     <MenuItem x:Name="WatchDefFilesCheckBox" Header="_Enable File Watcher for Definition Files" IsCheckable="True" Checked="WatchDefFilesCheckBox_OnChecked" Unchecked="WatchDefFilesCheckBox_OnUnchecked"/>
+                    <MenuItem Header="_Open Current DB Folder" Click="OpenCurrentDbFolder_OnClick"/>
                 </MenuItem>
                 <MenuItem Header="_Filters">
                     <MenuItem Header="_Set Filter" Click="SetFilterRelay"/>
@@ -72,6 +73,8 @@
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
+                    <MenuItem x:Name="StickPacketViewBottomCheckBox" Header="_Stick Packet View to bottom" IsCheckable="True" Checked="StickPacketViewBottomCheckBox_OnChecked" Unchecked="StickPacketViewBottomCheckBox_OnUnchecked"/>
+                    <MenuItem x:Name="OodleEnforcedCheckbox" Header="_Require valid Oodle to capture" IsCheckable="True" Checked="OodleEnforcedCheckbox_OnChecked" Unchecked="OodleEnforcedCheckbox_OnUnchecked"/>
                     <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepository"/>
                     <MenuItem Header="_Set Game Path" Click="SetGamePath"/>

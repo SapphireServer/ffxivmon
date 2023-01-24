@@ -1,6 +1,3 @@
 [submodule "lib/Machina"]
 	path = lib/Machina
-	url = https://github.com/goaaats/machina
-[submodule "lib/Be.HexEditor"]
-	path = lib/Be.HexEditor
-	url = https://github.com/takhlaq/Be.HexEditor
+	url = https://github.com/lmcintyre/machina

@@ -178,5 +178,29 @@ namespace FFXIVMonReborn.Properties {
                 this["HideHexBoxActorId"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool StickPacketViewBottom {
+            get {
+                return ((bool)(this["StickPacketViewBottom"]));
+            }
+            set {
+                this["StickPacketViewBottom"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool OodleEnforced {
+            get {
+                return ((bool)(this["OodleEnforced"]));
+            }
+            set {
+                this["OodleEnforced"] = value;
+            }
+        }
     }
 }

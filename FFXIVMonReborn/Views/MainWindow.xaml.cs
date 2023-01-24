@@ -9,13 +9,15 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 using FFXIVMonReborn.Database;
-using FFXIVMonReborn.Database.GitHub;
 using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
 using FFXIVMonReborn.Importers;
 using FFXIVMonReborn.DataModel;
+using FFXIVMonReborn.Properties;
 using FFXIVMonReborn.Scripting;
+using Machina.Infrastructure;
+using System.IO;
 
 namespace FFXIVMonReborn.Views
 {
@@ -33,7 +35,7 @@ namespace FFXIVMonReborn.Views
         public readonly LogView LogView = new LogView();
         private string[] _selectedScripts = new string[0];
         
-        public TCPNetworkMonitor.NetworkMonitorType CaptureMode;
+        public NetworkMonitorType CaptureMode;
         public MachinaCaptureWorker.ConfigFlags CaptureFlags;
 
         public MainWindow()
@@ -90,16 +92,16 @@ namespace FFXIVMonReborn.Views
                 // ignored
             }
             
-            CaptureMode = (TCPNetworkMonitor.NetworkMonitorType)Properties.Settings.Default.NetworkMonitorType;
+            CaptureMode = (NetworkMonitorType)Properties.Settings.Default.NetworkMonitorType;
 
-            if (CaptureMode == TCPNetworkMonitor.NetworkMonitorType.RawSocket)
+            if (CaptureMode == NetworkMonitorType.RawSocket)
                 SwitchModeSockets.IsChecked = true;
             else
                 SwitchModePcap.IsChecked = true;
 
             try
             {
-                ExdReader.Init(Properties.Settings.Default.GamePath);
+                ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             }
             catch (Exception exc)
             {
@@ -126,20 +128,20 @@ namespace FFXIVMonReborn.Views
             }
 
             if (Properties.Settings.Default.LoadEXD)
-            {
                 ExEnabledCheckbox.IsChecked = true;
-            }
 
             if (Properties.Settings.Default.EnableFsWatcher)
-            {
                 WatchDefFilesCheckBox.IsChecked = true;
-            }
 
             if (Properties.Settings.Default.HideHexBoxActorId)
-            {
                 HideHexBoxActorIdCheckBox.IsChecked = true;
-            }
 
+            if (Properties.Settings.Default.StickPacketViewBottom)
+                StickPacketViewBottomCheckBox.IsChecked = true;
+
+            if (Properties.Settings.Default.OodleEnforced)
+                OodleEnforcedCheckbox.IsChecked = true;
+            
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
             LogView.Show();
             LogView.Visibility = Visibility.Hidden;
@@ -263,7 +265,7 @@ namespace FFXIVMonReborn.Views
                 return;
             }
 
-            CaptureMode = TCPNetworkMonitor.NetworkMonitorType.RawSocket;
+            CaptureMode = NetworkMonitorType.RawSocket;
             SwitchModePcap.IsChecked = false;
             SwitchModeSockets.IsChecked = true;
 
@@ -280,7 +282,7 @@ namespace FFXIVMonReborn.Views
                 return;
             }
 
-            CaptureMode = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
+            CaptureMode = NetworkMonitorType.WinPCap;
             SwitchModePcap.IsChecked = true;
             SwitchModeSockets.IsChecked = false;
 
@@ -537,7 +539,7 @@ namespace FFXIVMonReborn.Views
 
         public void SetGamePath(object sender, RoutedEventArgs e)
         {
-            string gamepath = Interaction.InputBox("Enter path to /FINAL FANTASY XIV - A Realm Reborn/ folder. This will reinitialise EXDs and may take a few seconds.", "FFXIVMon Reborn", Properties.Settings.Default.GamePath);
+            string gamepath = Interaction.InputBox("Enter path to /FINAL FANTASY XIV - A Realm Reborn/game/sqpack folder. This will reinitialise EXDs and may take a few seconds.", "FFXIVMon Reborn", Properties.Settings.Default.GamePath);
 
             if (gamepath == "")
                 return;
@@ -547,14 +549,14 @@ namespace FFXIVMonReborn.Views
 
             try
             {
-                ExdReader.Init(Properties.Settings.Default.GamePath);
+                ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             }
             catch (Exception exc)
             {
                 new ExtendedErrorView("Unable to init EXD data. Please check your game path in Options -> Set Game Path.", exc.ToString(), "FFXIVMon Reborn").ShowDialog();
                 Properties.Settings.Default.LoadEXD = false;
             }
-
+            
             MessageBox.Show("EXD data set up successfully.", "FFXIVMon Reborn", MessageBoxButton.OK,
                 MessageBoxImage.Asterisk);
         }
@@ -567,13 +569,13 @@ namespace FFXIVMonReborn.Views
         private void SelectVersion(object sender, RoutedEventArgs e)
         {
             var view = new VersionSelectView(VersioningProvider.Api.Tags);
-            view.ShowDialog();
-            ((XivMonTab)MainTabControl.SelectedContent).SetDBViaVersion(view.GetSelectedVersion());
+            if (view.ShowDialog() == true)
+                ((XivMonTab)MainTabControl.SelectedContent).SetDBViaVersion(view.GetSelectedVersion());
         }
 
         private void ReloadExClick(object sender, RoutedEventArgs e)
         {
-            ExdProvider = new ExdDataCache();
+            ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
         }
 
@@ -620,7 +622,7 @@ namespace FFXIVMonReborn.Views
             try
             {
                 if (ExdProvider == null)
-                    ExdProvider = new ExdDataCache();
+                    ExdProvider = new ExdDataCache(Properties.Settings.Default.GamePath);
             }
             catch (Exception exc)
             {
@@ -628,7 +630,7 @@ namespace FFXIVMonReborn.Views
                 ExEnabledCheckbox.IsChecked = false;
                 return;
             }
-
+        
             ((XivMonTab) MainTabControl.SelectedContent)?.ReloadDb();
             
             Properties.Settings.Default.LoadEXD = true;
@@ -651,6 +653,30 @@ namespace FFXIVMonReborn.Views
         {
             Properties.Settings.Default.HideHexBoxActorId = false;
             Properties.Settings.Default.Save();
+        }
+        
+        private void StickPacketViewBottomCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.StickPacketViewBottom = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void StickPacketViewBottomCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.StickPacketViewBottom = false;
+            Properties.Settings.Default.Save();
+        }
+        
+        private void OodleEnforcedCheckbox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.OodleEnforced = true;
+            Settings.Default.Save();
+        }
+        
+        private void OodleEnforcedCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.OodleEnforced = false;
+            Settings.Default.Save();
         }
 
         private void ShowFilterHelp(object sender, RoutedEventArgs e)
@@ -677,7 +703,7 @@ namespace FFXIVMonReborn.Views
         private void Scripting_RunOnMultipleCaptures(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "XML|*.xml";
+            openFileDialog.Filter = "XML|*.xml; pcap|*.pcap; pcapng|*.pcapng";
             openFileDialog.Title = "Select captures";
             openFileDialog.Multiselect = true;
 
@@ -705,6 +731,22 @@ namespace FFXIVMonReborn.Views
             
             if(selector.GetSelectedVersion() != null)
                 ((XivMonTab)MainTabControl.SelectedContent).SetDBViaCommit(selector.GetSelectedVersion());
+        }
+
+        private void OpenCurrentDbFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            XivMonTab currTab = (XivMonTab)MainTabControl.SelectedContent;
+            if (currTab != null)
+            {
+                var dbFolder = currTab.GetDbFolder();
+                var path = Path.Combine(Environment.CurrentDirectory, dbFolder);
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = path,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
         }
     }
 }

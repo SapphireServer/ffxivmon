@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Log" Width="719.823" Height="283.202" Closing="ScriptDebugView_OnClosing">
     <Grid>
-        <RichTextBox FontFamily="MS Gothic" VerticalScrollBarVisibility="Visible" IsReadOnly="True" x:Name="InfoBox">
+        <RichTextBox FontFamily="Consolas" VerticalScrollBarVisibility="Visible" IsReadOnly="True" x:Name="InfoBox">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>

@@ -9,7 +9,7 @@
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto">Select scripts to be loaded by FFXIVMon.</Label>
-            <ListBox ItemsSource="{Binding}" FontFamily="MS Gothic" Height="330" x:Name="ScriptListBox">
+            <ListBox ItemsSource="{Binding}" FontFamily="Consolas" Height="330" x:Name="ScriptListBox">
                 <ListBox.ItemTemplate>
                     <HierarchicalDataTemplate>
                         <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}"/>

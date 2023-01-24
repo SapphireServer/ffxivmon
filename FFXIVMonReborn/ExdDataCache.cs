@@ -1,93 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Lumina.Excel;
+using Lumina;
 using Lumina.Excel.GeneratedSheets;
-using Microsoft.VisualBasic.FileIO;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace FFXIVMonReborn
 {
     public class ExdDataCache
     {
-        private Dictionary<uint, string> _bnpcnames = new();
-        private Dictionary<uint, string> _placenames = new();
-        private Dictionary<uint, string> _actionnames = new();
-        private Dictionary<uint, string> _fatenames = new();
+        private Dictionary<uint, string> _bnpcNames = new();
+        private Dictionary<uint, string> _placeNames = new();
+        private Dictionary<uint, string> _actionNames = new();
+        private Dictionary<uint, string> _fateNames = new();
 
-        public ExdDataCache()
+        public ExdDataCache(string gamePath)
         {
-            void PopulateStringList<T>(string fieldName, ref Dictionary<uint, string> list) where T: ExcelRow
-            {
-                var sheet = ExdReader.GetSheet<T>();
-                if (sheet != null)
-                {
-                    var prop = typeof(T).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
-                    foreach (var excelRow in sheet)
-                    {
-                        list.Add(excelRow.RowId, prop.GetValue(excelRow).ToString());
-                    }
-                }
-            }
-
-            PopulateStringList<BNpcName>("Singular", ref _bnpcnames);
-            PopulateStringList<PlaceName>("Name", ref _placenames);
-            PopulateStringList<Action>("Name", ref _actionnames);
-            PopulateStringList<Fate>("Name", ref _fatenames);
+            GameData data = new GameData(gamePath);
+            _bnpcNames = data.Excel.GetSheet<BNpcName>().ToDictionary(row => row.RowId, row => row.Singular.ToString());
+            _placeNames = data.Excel.GetSheet<PlaceName>().ToDictionary(row => row.RowId, row => row.Name.ToString());
+            _actionNames = data.Excel.GetSheet<Action>().ToDictionary(row => row.RowId, row => row.Name.ToString());
+            _fateNames = data.Excel.GetSheet<Fate>().ToDictionary(row => row.RowId, row => row.Name.ToString());
         }
 
         public string GetBnpcName(uint id)
         {
-            try
-            {
-                return _bnpcnames[id];
-            }
-            catch
-            {
-                return "Unknown";
-            }
-
+            if (!_bnpcNames.TryGetValue(id, out var name))
+                name = "Unknown";
+            return name;
         }
 
         public string GetPlacename(uint id)
         {
-            try
-            {
-                return _placenames[id];
-            }
-            catch
-            {
-                return "Unknown";
-            }
+            if (!_placeNames.TryGetValue(id, out var name))
+                name = "Unknown";
+            return name;
         }
 
         public string GetActionName(uint id)
         {
-            try
-            {
-                return _actionnames[id];
-            }
-            catch
-            {
-                return "Unknown Action";
-            }
+            if (!_actionNames.TryGetValue(id, out var name))
+                name = "Unknown";
+            return name;
         }
 
         public string GetFateName(uint id)
         {
-            string name;
-            if (_fatenames.TryGetValue(id, out name))
-            {
-                return name;
-            }
-            else
-            {
-                return "Unknown Fate";
-            }
+            if (!_fateNames.TryGetValue(id, out var name))
+                name = "Unknown";
+            return name;
         }
     }
 }

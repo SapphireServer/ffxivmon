@@ -9,7 +9,7 @@
     <Grid>
         <StackPanel>
             <Label Margin="8,3,0,0" DockPanel.Dock="Top" Height="Auto" x:Name="InfoLabel">Sample text</Label>
-            <RichTextBox FontFamily="MS Gothic" VerticalScrollBarVisibility="Visible" x:Name="TextEditor" Height="330">
+            <RichTextBox FontFamily="Consolas" VerticalScrollBarVisibility="Visible" x:Name="TextEditor" Height="330">
                 <RichTextBox.Resources>
                     <Style TargetType="{x:Type Paragraph}">
                         <Setter Property="Margin" Value="0"/>

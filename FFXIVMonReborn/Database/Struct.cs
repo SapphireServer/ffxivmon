@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Media;
 using FFXIVMonReborn.Database.DataTypes;
 
 namespace FFXIVMonReborn.Database
@@ -51,14 +52,14 @@ namespace FFXIVMonReborn.Database
             { "PlayerEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 88, TypePrintMode.Raw, "") }, //used in FFXIVIpcSocialList
         };
 
-        public static readonly Dictionary<string, System.Drawing.Color> TypeColours = new Dictionary<string, System.Drawing.Color>
+        public static readonly Dictionary<string, Color> TypeColours = new Dictionary<string, Color>
         {
-            { "uint8_t", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
-            { "uint16_t", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
-            { "uint32_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },
-            { "uint64_t", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xd7) },
-            { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
-            { "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
+            { "uint8_t",Color.FromArgb(0xff, 0xab, 0xc8, 0xf4) },
+            { "uint16_t", Color.FromArgb(0xff, 0xd7, 0x89, 0x8c) },
+            { "uint32_t", Color.FromArgb(0xff, 0x89, 0xd7, 0xb7) },
+            { "uint64_t", Color.FromArgb(0xff, 0x89, 0xd7, 0xd7) },
+            { "char", Color.FromArgb(0xff, 0x7b, 0xc8, 0xf4) },
+            { "float", Color.FromArgb(0xff, 0x7f, 0xc0, 0xc0) },
         };
 
         private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
@@ -276,7 +277,8 @@ namespace FFXIVMonReborn.Database
 
         private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref ExpandoObject exobj, ref string debugMsg)
         {
-            List<StructListItem> output = new List<StructListItem>();
+            var output = new List<StructListItem>();
+            item.isArrayDeclaration = true;
 
             int count;
             if (name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")).Contains("0x"))
@@ -288,18 +290,22 @@ namespace FFXIVMonReborn.Database
 
             for (int i = 0; i < count; i++)
             {
-                StructListItem aryItem = new StructListItem();
-                aryItem.NameCol = "  " + name.SubstringBetweenIndexes(0, name.IndexOf("[")) + $"[{i}]";
-                aryItem.offset = reader.BaseStream.Position;
-                aryItem.OffsetCol = reader.BaseStream.Position.ToString("X");
-                
-                ParseCType(dataType, reader, ref aryItem, ref debugMsg);
-                
-                output.Add(aryItem);
+                var arrayItem = new StructListItem
+                {
+                    NameCol = "  " + name.SubstringBetweenIndexes(0, name.IndexOf("[")) + $"[{i}]",
+                    offset = reader.BaseStream.Position,
+                    OffsetCol = reader.BaseStream.Position.ToString("X"),
+                    isArrayElement = true,
+                };
 
-                debugMsg += $"  ->{aryItem.NameCol} - {aryItem.OffsetCol} - {aryItem.DataTypeCol} - {aryItem.ValueCol}\n";
+                ParseCType(dataType, reader, ref arrayItem, ref debugMsg);
+                
+                output.Add(arrayItem);
+
+                debugMsg += $"  ->{arrayItem.NameCol} - {arrayItem.OffsetCol} - {arrayItem.DataTypeCol} - {arrayItem.ValueCol}\n";
             }
 
+            item.fullArraySize = count * output[0].typeLength;
             return output.ToArray();
         }
 
@@ -365,6 +371,9 @@ namespace FFXIVMonReborn.Database
         public long offset;
         public byte[] dataChunk;
         public int typeLength;
+        public int fullArraySize;
+        public bool isArrayDeclaration;
+        public bool isArrayElement;
         public object RawValue { get; set; }
         public bool IsVisible { get; set; } = true;
     }

@@ -4,11 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FFXIVMonReborn"
-             xmlns:forms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:views="clr-namespace:FFXIVMonReborn.Views"
+             xmlns:wpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              mc:Ignorable="d" 
-             d:DesignHeight="1024" d:DesignWidth="768">
+             d:DesignHeight="1024" d:DesignWidth="1280">
     <Grid>
         <DockPanel VerticalAlignment="Stretch">
             <DockPanel>
@@ -39,7 +39,14 @@
 
                         </DockPanel>
 
-                        <ListView x:Name="PacketListView" SelectionChanged="PacketListView_OnSelectionChanged" Margin="0,20,0,0" Grid.ColumnSpan="2">
+                        <ListView 
+                            x:Name="PacketListView" 
+                            SelectionChanged="PacketListView_OnSelectionChanged" 
+                            Margin="0,20,0,0" 
+                            Grid.ColumnSpan="2"
+                            VirtualizingStackPanel.IsVirtualizing="True"
+                            VirtualizingStackPanel.VirtualizationMode="Recycling"
+                            ItemsSource="{Binding Packets}">
                             <ListView.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Edit Note"
@@ -146,12 +153,22 @@
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
                                 <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
-                                <forms:WpfHexBox DockPanel.Dock="Right" x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" OnSelectionStartChanged="HexEditor_OnOnSelectionStartChanged" />
+                                <wpfHexaEditor:HexEditor
+                                    DockPanel.Dock="Right"
+                                    x:Name="HexEditor"
+                                    FontSize="12"
+                                    ReadOnlyMode="True"
+                                    FontFamily="Consolas"
+                                    AllowAutoHighLightSelectionByte="False"
+                                    Foreground="Black"
+                                    ForegroundSecondColor="Black"
+                                    SelectionStartChanged="HexEditor_OnSelectionStartChanged"
+                                    SelectionStopChanged="HexEditor_OnSelectionStopChanged"/>
                             </DockPanel>
                         </Grid>
                     </Grid>
                     <GridSplitter Grid.Column="1" Grid.RowSpan="2"  Width="5" HorizontalAlignment="Stretch" />
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="MS Gothic" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="Consolas" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>

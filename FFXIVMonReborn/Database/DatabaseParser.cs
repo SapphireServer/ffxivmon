@@ -22,6 +22,8 @@ namespace FFXIVMonReborn.Database
 
         private Dictionary<int, Tuple<string, string>> ActorControlType = new Dictionary<int, Tuple<string, string>>();
 
+        public Dictionary<string, string> ActorControlMainOpcodes = new Dictionary<string, string>();
+
         public Dictionary<int, string> ServerZoneStruct = new Dictionary<int, string>();
         public Dictionary<int, string> ClientZoneStruct = new Dictionary<int, string>();
 
@@ -56,6 +58,7 @@ namespace FFXIVMonReborn.Database
             ActorControlType.Clear();
             ServerZoneStruct.Clear();
             ClientZoneStruct.Clear();
+            ActorControlMainOpcodes.Clear();
 
             try
             {
@@ -223,7 +226,7 @@ namespace FFXIVMonReborn.Database
                     }
 
                     var name = tempLine.Substring(0, tempLine.IndexOf(" "));
-                    Debug.WriteLine(name);
+                    //Debug.WriteLine("FUCKFUCKFUCKFUCK " + name);
 
                     int numStart = tempLine.IndexOf("=") + 4;
                     string num = "";
@@ -242,8 +245,11 @@ namespace FFXIVMonReborn.Database
                     }
 
                     int opcode = int.Parse(num, NumberStyles.HexNumber);
-
-                    Debug.WriteLine(opcode.ToString("X4"));
+                    if (name.Contains("ActorControl") || name.Contains("Order"))
+                    {
+                        ActorControlMainOpcodes.TryAdd(opcode.ToString("X4"), name);
+                    }
+                    //Debug.WriteLine(opcode.ToString("X4"));
 
                     string comment = "";
                     if (tempLine.Contains("//"))
@@ -252,7 +258,7 @@ namespace FFXIVMonReborn.Database
                         comment = tempLine.Substring(pos + 3);
                     }
 
-                    Debug.WriteLine(comment);
+                    //Debug.WriteLine(comment);
 
                     try
                     {

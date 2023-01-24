@@ -6,6 +6,7 @@ using System.Windows;
 using FFXIVMonReborn.Database.GitHub;
 using FFXIVMonReborn.Database.GitHub.Model;
 using FFXIVMonReborn.Properties;
+using Microsoft.VisualBasic;
 
 namespace FFXIVMonReborn.Database
 {
@@ -75,7 +76,13 @@ namespace FFXIVMonReborn.Database
 
         public DatabaseParser GetDatabaseForCommitHash(string commitSha, bool ignoreCache = false)
         {
-            return new DatabaseParser(Api.GetContent(commitSha, "/src/common/Network/PacketDef/Ipcs.h", ignoreCache),
+            // yeah
+            var ipcs = Api.GetContent(commitSha, "/src/common/Network/PacketDef/Ipcs.h", ignoreCache);
+            if (ipcs == null)
+                ipcs = Api.GetContent(commitSha, "/src/common/Network/PacketDef/ClientIpcs.h", ignoreCache) +
+                "\n" + Api.GetContent(commitSha, "/src/common/Network/PacketDef/ServerIpcs.h", ignoreCache);
+
+            return new DatabaseParser(ipcs,
                 Api.GetContent(commitSha, "/src/common/Common.h", ignoreCache),
                 Api.GetContent(commitSha, "/src/common/Network/PacketDef/Zone/ServerZoneDef.h", ignoreCache),
                 Api.GetContent(commitSha, "/src/common/Network/PacketDef/Zone/ClientZoneDef.h", ignoreCache),
@@ -104,6 +111,15 @@ namespace FFXIVMonReborn.Database
             {
                 return $"Untagged Version: {Api.Commits[0].Sha} - {Api.Commits[0].CommitInfo.Message} by {Api.Commits[0].CommitInfo.Author.Name}";
             }
+        }
+
+        public string GetCommitHashForVersion(int version)
+        {
+            if (Api.Tags.Length > version && version >= 0)
+            {
+                return Api.Commits[0].Sha;
+            }
+            return string.Empty;
         }
     }
 }
