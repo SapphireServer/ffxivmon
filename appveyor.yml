@@ -1,8 +1,15 @@
 version: 1.0.{build}
 image: Visual Studio 2022
+configuration: Release
+platform: x64
+before_build:
+- cmd: >-
+    git submodule update --init
+    nuget restore
 build:
-  verbosity: minimal
   project: FFXIVMonReborn.sln
+  parallel: true
+  verbosity: normal
 clone_script:
 - cmd: git clone --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
 - cmd: git checkout -qf %APPVEYOR_REPO_COMMIT%
