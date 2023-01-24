@@ -1,13 +1,12 @@
 version: 1.0.{build}
-
 image: Visual Studio 2022
 configuration: Release
 platform: x64
 before_build:
 - cmd: >-
     git submodule update --init
-    nuget restore
 
+    nuget restore
 build:
   project: FFXIVMonReborn.sln
   parallel: true
