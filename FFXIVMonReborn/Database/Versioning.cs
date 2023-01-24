@@ -112,5 +112,14 @@ namespace FFXIVMonReborn.Database
                 return $"Untagged Version: {Api.Commits[0].Sha} - {Api.Commits[0].CommitInfo.Message} by {Api.Commits[0].CommitInfo.Author.Name}";
             }
         }
+
+        public string GetCommitHashForVersion(int version)
+        {
+            if (Api.Tags.Length > version && version >= 0)
+            {
+                return Api.Commits[0].Sha;
+            }
+            return string.Empty;
+        }
     }
 }

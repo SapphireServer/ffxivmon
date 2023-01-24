@@ -21,7 +21,7 @@ namespace FFXIVMonReborn.Database.GitHub
         public GitHubCommit[] Commits { get; private set; }
 
         private RestClient _client = new RestClient("https://api.github.com");
-        private readonly string _cacheFolder = "downloaded";
+        public static readonly string _cacheFolder = "downloaded";
         private readonly string _apiCacheFile = "ApiCache.json";
 
         public GitHubApi(string repo)

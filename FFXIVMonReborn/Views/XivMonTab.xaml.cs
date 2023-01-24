@@ -27,6 +27,7 @@ using WpfHexaEditor.Core;
 using Brushes = System.Windows.Media.Brushes;
 using Capture = FFXIVMonReborn.DataModel.Capture;
 using Color = System.Windows.Media.Color;
+using FFXIVMonReborn.Database.GitHub;
 
 namespace FFXIVMonReborn.Views
 {
@@ -145,6 +146,19 @@ namespace FFXIVMonReborn.Views
                 CaptureInfoLabel.Content += " | . . .";
             }
             CaptureInfoLabel.ToolTip = versionInfo;
+        }
+
+        public string GetDbFolder()
+        {
+            // Path.Combine doesnt seem to work..
+            string ret = ".\\" + GitHubApi._cacheFolder;
+            if (string.IsNullOrEmpty(_commitSha) && _version == -1)
+                return ret;
+            if (!string.IsNullOrEmpty(_commitSha))
+                ret += "\\" + _commitSha;
+            else
+                ret += "\\" + _mainWindow.VersioningProvider.GetCommitHashForVersion(_version);
+            return ret;
         }
 
         public void SetParents(TabItem me, MainWindow mainWindow)
@@ -356,7 +370,7 @@ namespace FFXIVMonReborn.Views
             var view = new StructSelectView(_db.ServerZoneIpcType);
             view.ShowDialog();
 
-            var item = (PacketEntry)Packets[PacketListView.SelectedIndex];
+            var item = (PacketEntry)PacketListView.SelectedItem;
 
             StructListView.Items.Clear();
 
@@ -448,9 +462,9 @@ namespace FFXIVMonReborn.Views
                         
                     StructListView.Items.Add(entry);
                     HexEditor.CustomBackgroundBlockItems.Add(new CustomBackgroundBlock(entry.offset, entry.typeLength, new SolidColorBrush(color)));
+                    HexEditor.UpdateVisual();
                 }
-                HexEditor.UpdateVisual();
-                
+
                 // var statusBarUpdate = HexEditor.GetType().GetMethod("UpdateStatusBar", BindingFlags.NonPublic | BindingFlags.Instance);
                 // statusBarUpdate?.Invoke(HexEditor, new object?[] { true });
 
@@ -644,7 +658,7 @@ namespace FFXIVMonReborn.Views
         private void EditPacketNoteClick(object sender, RoutedEventArgs e)
         {
             var packet = PacketListView.SelectedItem as PacketEntry;
-            var index = PacketListView.SelectedIndex;
+            var index = Packets.IndexOf(packet);
 
             packet.Note = new TextInputView(packet.Note, "Change the note that is attached to the packet and click OK.", "FFXIVMon Reborn").ShowDialog();
 
@@ -905,7 +919,7 @@ namespace FFXIVMonReborn.Views
             }
             else if (items.Count == 1)
             {
-                var packet = (PacketEntry)Packets[PacketListView.SelectedIndex];
+                var packet = (PacketEntry)PacketListView.SelectedItem;
 
                 var fileDialog = new SaveFileDialog { Filter = @"DAT|*.dat" };
 
@@ -1016,12 +1030,12 @@ namespace FFXIVMonReborn.Views
             }
             else if (items.Count == 1)
             {
-                var startPacket = (PacketEntry)Packets[PacketListView.SelectedIndex];
+                var startPacket = (PacketEntry)PacketListView.SelectedItem;
 
                 List<byte[]> packets = new List<byte[]>();
                 packets.Add(startPacket.Data);
 
-                int at = PacketListView.SelectedIndex - 1;
+                int at = Packets.IndexOf(startPacket) - 1;
                 while (true)
                 {
                     if (((PacketEntry)Packets[at]).Set == startPacket.Set)
@@ -1031,7 +1045,7 @@ namespace FFXIVMonReborn.Views
                     at--;
                 }
 
-                at = PacketListView.SelectedIndex + 1;
+                at = Packets.IndexOf(startPacket) + 1;
                 while (true)
                 {
                     if (((PacketEntry)Packets[at]).Set == startPacket.Set)

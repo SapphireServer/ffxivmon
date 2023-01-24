@@ -17,6 +17,7 @@ using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Properties;
 using FFXIVMonReborn.Scripting;
 using Machina.Infrastructure;
+using System.IO;
 
 namespace FFXIVMonReborn.Views
 {
@@ -568,8 +569,8 @@ namespace FFXIVMonReborn.Views
         private void SelectVersion(object sender, RoutedEventArgs e)
         {
             var view = new VersionSelectView(VersioningProvider.Api.Tags);
-            view.ShowDialog();
-            ((XivMonTab)MainTabControl.SelectedContent).SetDBViaVersion(view.GetSelectedVersion());
+            if (view.ShowDialog() == true)
+                ((XivMonTab)MainTabControl.SelectedContent).SetDBViaVersion(view.GetSelectedVersion());
         }
 
         private void ReloadExClick(object sender, RoutedEventArgs e)
@@ -730,6 +731,22 @@ namespace FFXIVMonReborn.Views
             
             if(selector.GetSelectedVersion() != null)
                 ((XivMonTab)MainTabControl.SelectedContent).SetDBViaCommit(selector.GetSelectedVersion());
+        }
+
+        private void OpenCurrentDbFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            XivMonTab currTab = (XivMonTab)MainTabControl.SelectedContent;
+            if (currTab != null)
+            {
+                var dbFolder = currTab.GetDbFolder();
+                var path = Path.Combine(Environment.CurrentDirectory, dbFolder);
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = path,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
         }
     }
 }

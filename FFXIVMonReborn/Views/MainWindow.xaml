@@ -41,6 +41,7 @@
                     <MenuItem Header="_Select Branch/Commit" Click="SelectBranch_OnClick"/>
                     <Separator></Separator>
                     <MenuItem x:Name="WatchDefFilesCheckBox" Header="_Enable File Watcher for Definition Files" IsCheckable="True" Checked="WatchDefFilesCheckBox_OnChecked" Unchecked="WatchDefFilesCheckBox_OnUnchecked"/>
+                    <MenuItem Header="_Open Current DB Folder" Click="OpenCurrentDbFolder_OnClick"/>
                 </MenuItem>
                 <MenuItem Header="_Filters">
                     <MenuItem Header="_Set Filter" Click="SetFilterRelay"/>
