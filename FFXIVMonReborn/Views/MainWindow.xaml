@@ -86,8 +86,23 @@
                 </MenuItem>
             </Menu>
         
+
         <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_OnSelectionChanged"> <!--MouseDoubleClick="MainTabControl_OnMouseDoubleClick" TODO:This makes every double click in XivMonTab spawn a new tab - investigate better methods -->
-            <TabControl.ItemContainerStyle>
+                <TabControl.Template>
+                    <ControlTemplate TargetType="{x:Type TabControl}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                <TabPanel x:Name="HeaderPanel" IsItemsHost="True" Margin="0,4,0,0"/>
+                            </ScrollViewer>
+                            <ContentPresenter x:Name="PART_SelectedContentHost" Margin="4" ContentSource="SelectedContent" Grid.Row="1"/>
+                        </Grid>
+                    </ControlTemplate>
+                </TabControl.Template>
+                <TabControl.ItemContainerStyle>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="ContextMenu">
                         <Setter.Value>

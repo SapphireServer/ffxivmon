@@ -758,31 +758,28 @@ namespace FFXIVMonReborn.Views
             _filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            
+
+            openFileDialog.Multiselect = true;
             openFileDialog.Filter = @"XML/Pcap|*.xml;*.pcap;*.pcapng";
             openFileDialog.Title = @"Select Capture file(s)";
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
-                if (res == MessageBoxResult.Yes)
+                if (openFileDialog.FileNames.Length > 1)
                 {
                     foreach (var filename in openFileDialog.FileNames)
                         _mainWindow.AddTab(filename);
-                    return;
-                }
-                else if (res == MessageBoxResult.No)
-                {
-                    foreach (var filename in openFileDialog.FileNames)
-                        LoadCapture(openFileDialog.FileName);
                 }
                 else
                 {
-                    return;
+                    MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
+
+                    if (res == MessageBoxResult.Yes)
+                        _mainWindow.AddTab(openFileDialog.FileName);
+                    else
+                        LoadCapture(openFileDialog.FileName);
                 }
-
             }
-
             UpdateInfoLabel();
         }
 
