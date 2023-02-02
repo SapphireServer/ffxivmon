@@ -58,23 +58,26 @@ namespace FFXIVMonReborn
         {
             Debug.WriteLine(input);
             List<FilterSet> output = new List<FilterSet>();
-            
+
             if (input.Length == 0)
                 return output.ToArray();
-            
-            for (int i = 0; i < input.Length; i++ )
+
+            string[] args = input.Split(';');            
+            for (int i = 0; i < args.Length; i++ )
             {
                 string thisFilter = "";
                 FilterType type;
 
-                thisFilter = input.Substring(0, input.IndexOf(";") + 1);
-                input = input.Replace(thisFilter, "");
+                thisFilter = args[i];
+
+                if (thisFilter.Length <= 1)
+                    break;
 
                 object value;
                 if (thisFilter[0] != '_')
                 {
                     type = FilterType.Message;
-                    string vstring = thisFilter.Substring(0, thisFilter.Length - 1);
+                    string vstring = thisFilter.Substring(0, thisFilter.Length);
                     value = vstring;
                 }
                 // _A(ActorControlType)
@@ -157,7 +160,7 @@ namespace FFXIVMonReborn
                 else
                 {
                     type = FilterType.Message;
-                    string vstring = thisFilter.Substring(0, thisFilter.Length - 1);
+                    string vstring = thisFilter.Substring(0, thisFilter.Length);
                     value = int.Parse(vstring, NumberStyles.HexNumber);
                 }
 
@@ -167,8 +170,7 @@ namespace FFXIVMonReborn
 
                 Debug.WriteLine(input.Length);
 
-                if (input.Length <= 1)
-                    break;
+
             }
 
             return output.ToArray();
