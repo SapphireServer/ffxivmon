@@ -28,6 +28,10 @@ using Brushes = System.Windows.Media.Brushes;
 using Capture = FFXIVMonReborn.DataModel.Capture;
 using Color = System.Windows.Media.Color;
 using FFXIVMonReborn.Database.GitHub;
+using Newtonsoft.Json.Bson;
+using System.Text.Unicode;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FFXIVMonReborn.Views
 {
@@ -53,6 +57,7 @@ namespace FFXIVMonReborn.Views
         private string _currentFilePath = "";
 
         private bool _wasCapturedMs = false;
+        private uint _selfCharaId = 0x0;
 
         private FilterSet[] _filters;
 
@@ -606,7 +611,12 @@ namespace FFXIVMonReborn.Views
                 }
             }
 
-            item.IsForSelf = BitConverter.ToUInt32(item.Data, 0x04) == BitConverter.ToUInt32(item.Data, 0x08);
+            uint tmpCharaId = BitConverter.ToUInt32(item.Data, 0x04);
+            item.IsForSelf = tmpCharaId == BitConverter.ToUInt32(item.Data, 0x08);
+            
+            if (item.IsForSelf)
+                _selfCharaId = tmpCharaId;
+
             item.Category = item.Set.ToString();
 
             if (_mainWindow.RunScriptsOnNewCheckBox.IsChecked)
@@ -748,31 +758,28 @@ namespace FFXIVMonReborn.Views
             _filterString = "";
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            
+
+            openFileDialog.Multiselect = true;
             openFileDialog.Filter = @"XML/Pcap|*.xml;*.pcap;*.pcapng";
             openFileDialog.Title = @"Select Capture file(s)";
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
-                if (res == MessageBoxResult.Yes)
+                if (openFileDialog.FileNames.Length > 1)
                 {
                     foreach (var filename in openFileDialog.FileNames)
                         _mainWindow.AddTab(filename);
-                    return;
-                }
-                else if (res == MessageBoxResult.No)
-                {
-                    foreach (var filename in openFileDialog.FileNames)
-                        LoadCapture(openFileDialog.FileName);
                 }
                 else
                 {
-                    return;
+                    MessageBoxResult res = MessageBox.Show("No to open in current, Yes to open in new tab.", "Open in new tab?", MessageBoxButton.YesNoCancel);
+
+                    if (res == MessageBoxResult.Yes)
+                        _mainWindow.AddTab(openFileDialog.FileName);
+                    else
+                        LoadCapture(openFileDialog.FileName);
                 }
-
             }
-
             UpdateInfoLabel();
         }
 
@@ -906,10 +913,59 @@ namespace FFXIVMonReborn.Views
         }
         #endregion
 
+        byte[] ModifyPacket(byte[] packet, bool censorSelfId, string censorName)
+        {
+            //uint censoredId = 0xEFBEADDE;
+            //ulong censoredContentId = 0xEDEEEEEED1EFEEBE;
+
+            byte[] ret = new byte[packet.Length];
+            packet.CopyTo(ret, 0);
+
+            string paddedName = null;
+            if (!string.IsNullOrWhiteSpace(censorName))
+                paddedName = censorName.PadRight(31, '\0');
+
+            if (censorSelfId)
+            {
+                for (int i = 0; i < ret.Length; ++i)
+                {
+                    if (i + 3 < ret.Length && BitConverter.ToUInt32(ret, i) == _selfCharaId)
+                    {
+                        ret[i] = 0xDE;
+                        ret[i + 1] = 0xAD;
+                        ret[i + 2] = 0xBE;
+                        ret[i + 3] = 0xEF;
+                        i += 3;
+                    }
+                    else if (i + 31 < ret.Length && !string.IsNullOrWhiteSpace(paddedName))
+                    {
+                        string foundName = Encoding.ASCII.GetString(ret, i, 31);
+                        if (foundName == paddedName)
+                        {
+                            Array.Clear(ret, i, foundName.Length);
+                            Encoding.ASCII.GetBytes("Player One").CopyTo(ret, i);
+                            i += 31;
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
         #region PacketExporting
         private void ExportSelectedPacketToDat(object sender, RoutedEventArgs e)
         {
             var items = PacketListView.SelectedItems;
+
+            string censorSelfName = null;
+            bool censorSelfIds = false;
+            var res = MessageBox.Show("Would you like to censor your Character ID to DE AD BE EF (NOT Content ID)?\n\n" +
+                "WARNING: This will not censor IDs of other players you may come across or your GUID/Content ID.\n" +
+                "Content ID needs detecting and censoring manually, usually found in PlayerSetup/InitUI packet.",
+                "Censor?", MessageBoxButton.YesNo);
+            censorSelfIds = res == MessageBoxResult.Yes;
+            if (censorSelfIds)
+                censorSelfName = Microsoft.VisualBasic.Interaction.InputBox("Enter your character name (will be replaced with Player One)", "Censor character name", null);
 
             if (items.Count == 0)
             {
@@ -924,10 +980,11 @@ namespace FFXIVMonReborn.Views
                 var fileDialog = new SaveFileDialog { Filter = @"DAT|*.dat" };
 
                 var result = fileDialog.ShowDialog();
+                var data = ModifyPacket(packet.Data, censorSelfIds, censorSelfName);
 
                 if (result == DialogResult.OK)
                 {
-                    File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSingle(packet.Data));
+                    File.WriteAllBytes(fileDialog.FileName, InjectablePacketBuilder.BuildSingle(data));
                     MessageBox.Show($"Packet saved to {fileDialog.FileName}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 }
             }
@@ -940,8 +997,9 @@ namespace FFXIVMonReborn.Views
                     int count = 0;
                     foreach (PacketEntry item in items)
                     {
+                        var data = ModifyPacket(item.Data, censorSelfIds, censorSelfName);
                         File.WriteAllBytes(System.IO.Path.Combine(dialog.SelectedPath, $"{item.Message}-{String.Join("_", item.Timestamp.Split(System.IO.Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')}-No{count}.dat"),
-                            InjectablePacketBuilder.BuildSingle(item.Data));
+                            InjectablePacketBuilder.BuildSingle(data));
 
                         count++;
                     }
@@ -1022,6 +1080,16 @@ namespace FFXIVMonReborn.Views
         {
             var items = PacketListView.SelectedItems;
 
+            string censorSelfName = null;
+            bool censorSelfIds = false;
+            var res = MessageBox.Show("Would you like to censor your Character ID to DE AD BE EF (NOT Content ID)?\n\n" +
+                "WARNING: This will not censor IDs of other players you may come across or your GUID/Content ID.\n" +
+                "Content ID needs detecting and censoring manually, usually found in PlayerSetup/InitUI packet.",
+                "Censor?", MessageBoxButton.YesNo);
+            censorSelfIds = res == MessageBoxResult.Yes;
+            if (censorSelfIds)
+                censorSelfName = Microsoft.VisualBasic.Interaction.InputBox("Enter your character name (will be replaced with Player One)", "Censor character name", null);
+
             if (items.Count == 0)
             {
                 MessageBox.Show("No packet selected.", "Error", MessageBoxButton.OK,
@@ -1033,13 +1101,13 @@ namespace FFXIVMonReborn.Views
                 var startPacket = (PacketEntry)PacketListView.SelectedItem;
 
                 List<byte[]> packets = new List<byte[]>();
-                packets.Add(startPacket.Data);
+                packets.Add(ModifyPacket(startPacket.Data, censorSelfIds, censorSelfName));
 
                 int at = Packets.IndexOf(startPacket) - 1;
                 while (true)
                 {
                     if (((PacketEntry)Packets[at]).Set == startPacket.Set)
-                        packets.Insert(0, ((PacketEntry)Packets[at]).Data);
+                        packets.Insert(0, ModifyPacket(((PacketEntry)Packets[at]).Data, censorSelfIds, censorSelfName));
                     else
                         break;
                     at--;
@@ -1049,7 +1117,7 @@ namespace FFXIVMonReborn.Views
                 while (true)
                 {
                     if (((PacketEntry)Packets[at]).Set == startPacket.Set)
-                        packets.Add(((PacketEntry)Packets[at]).Data);
+                        packets.Add(ModifyPacket(((PacketEntry)Packets[at]).Data, censorSelfIds, censorSelfName));
                     else
                         break;
                     at++;
