@@ -101,6 +101,28 @@ namespace FFXIVMonReborn.Database
             }
         }
 
+        public string GetClosestDatabaseHash(string version)
+        {
+            float targetVer = 4.18f;
+            float.TryParse(version, out targetVer);
+
+            float prevDiff = 10000.0f;
+            string ret = null;
+            foreach (var tag in Api.Tags)
+            {
+                float tagVer = 0.0f;
+                float.TryParse(tag.Name.Substring(1), out tagVer);
+
+                float diff = MathF.Abs(MathF.Abs(targetVer) - MathF.Abs(tagVer));
+                if (diff < prevDiff)
+                {
+                    prevDiff = diff;
+                    ret = tag.TagCommit.Sha;
+                }
+            }
+            return ret;
+        }
+
         public string GetVersionInfo(int version)
         {
             if (Api.Tags.Length > version && version >= 0)

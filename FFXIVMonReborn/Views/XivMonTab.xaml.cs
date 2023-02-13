@@ -58,6 +58,7 @@ namespace FFXIVMonReborn.Views
 
         private bool _wasCapturedMs = false;
         private uint _selfCharaId = 0x0;
+        private ulong _selfContentId = 0x0;
 
         private FilterSet[] _filters;
 
@@ -467,7 +468,6 @@ namespace FFXIVMonReborn.Views
                         
                     StructListView.Items.Add(entry);
                     HexEditor.CustomBackgroundBlockItems.Add(new CustomBackgroundBlock(entry.offset, entry.typeLength, new SolidColorBrush(color)));
-                    HexEditor.UpdateVisual();
                 }
 
                 // var statusBarUpdate = HexEditor.GetType().GetMethod("UpdateStatusBar", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -478,11 +478,13 @@ namespace FFXIVMonReborn.Views
             }
             catch (Exception exc)
             {
+                HexEditor.UpdateVisual();
+
 #if !DEBUG
                 if (_erroredOpcodes.Contains(item.Message))
                 {
 #endif
-                    new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
+                new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
 #if !DEBUG
                     _erroredOpcodes.Add(item.Message);
                 }
@@ -492,6 +494,7 @@ namespace FFXIVMonReborn.Views
                 StructListView.Items.Add(infoItem);
                 return;
             }
+            HexEditor.UpdateVisual();
 
             UpdateInfoLabel();
         }
@@ -506,7 +509,7 @@ namespace FFXIVMonReborn.Views
 
             if (_mainWindow.IsPausedCheckBox.IsChecked && !silent)
                 return;
-            
+
             if (_encryptionProvider != null && !item.IsDecrypted &&
                 item.Data[0x0C] != 0x09 && item.Data[0x0C] != 0x07 &&
                 item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
@@ -614,7 +617,7 @@ namespace FFXIVMonReborn.Views
             uint tmpCharaId = BitConverter.ToUInt32(item.Data, 0x04);
             item.IsForSelf = tmpCharaId == BitConverter.ToUInt32(item.Data, 0x08);
             
-            if (item.IsForSelf)
+            if (item.IsForSelf && _selfCharaId == 0)
                 _selfCharaId = tmpCharaId;
 
             item.Category = item.Set.ToString();
@@ -704,7 +707,11 @@ namespace FFXIVMonReborn.Views
 
         public void ReloadDb()
         {
-            _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+            if (_version != -1)
+                _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+            if (_commitSha != null)
+                _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
+
             if (_db != null)
             {
                 ReloadCurrentPackets();
@@ -858,6 +865,7 @@ namespace FFXIVMonReborn.Views
         public void LoadCapture(string path)
         {
             Packets.Clear();
+            _ResetFilter();
             _currentFilePath = path;
             ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(_currentFilePath));
             
@@ -872,10 +880,18 @@ namespace FFXIVMonReborn.Views
 
                 _commitSha = capture.ServerCommitHash;
                 _version = capture.Version;
+
+                var versionStr = new DirectoryInfo(Path.GetDirectoryName(_currentFilePath)).Name;
+
+                // attempt to pick version by folder name
+                if (string.IsNullOrEmpty(_commitSha) && _version == -1)
+                    _commitSha = _mainWindow.VersioningProvider.GetClosestDatabaseHash(versionStr);
+                
                 if (_version != -1)
                     _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
                 else
                     _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
+
                 foreach (var packet in capture.Packets)
                 {
                     // Add a packet to the view, but no update to the label
@@ -894,6 +910,7 @@ namespace FFXIVMonReborn.Views
                 throw;
                 #endif
             }
+            
         }
 
         public void LoadCapture(PacketEntry[] packets)
@@ -929,15 +946,7 @@ namespace FFXIVMonReborn.Views
             {
                 for (int i = 0; i < ret.Length; ++i)
                 {
-                    if (i + 3 < ret.Length && BitConverter.ToUInt32(ret, i) == _selfCharaId)
-                    {
-                        ret[i] = 0xDE;
-                        ret[i + 1] = 0xAD;
-                        ret[i + 2] = 0xBE;
-                        ret[i + 3] = 0xEF;
-                        i += 3;
-                    }
-                    else if (i + 31 < ret.Length && !string.IsNullOrWhiteSpace(paddedName))
+                    if (i + 31 < ret.Length && !string.IsNullOrWhiteSpace(paddedName))
                     {
                         string foundName = Encoding.ASCII.GetString(ret, i, 31);
                         if (foundName == paddedName)
@@ -947,6 +956,23 @@ namespace FFXIVMonReborn.Views
                             i += 31;
                         }
                     }
+                    if (i + 7 < ret.Length && _selfContentId != 0 && BitConverter.ToUInt64(ret, i) == _selfContentId)
+                    {
+                        ret[i]      = 0xBE; ret[i + 1] = 0xEE;
+                        ret[i + 2]  = 0xEF; ret[i + 3] = 0xD1;
+                        ret[i + 4]  = 0xEE; ret[i + 5] = 0xEE;
+                        ret[i + 6]  = 0xEE; ret[i + 7] = 0xED;
+                        i += 7;
+                    }
+                    if (i + 3 < ret.Length && _selfCharaId != 0 && (BitConverter.ToUInt32(ret, i) == _selfCharaId || Encoding.ASCII.GetString(ret, i, 3) == _selfCharaId.ToString()))
+                    {
+                        ret[i]     = 0xDE;
+                        ret[i + 1] = 0xAD;
+                        ret[i + 2] = 0xBE;
+                        ret[i + 3] = 0xEF;
+                        i += 3;
+                    }
+                    
                 }
             }
             return ret;

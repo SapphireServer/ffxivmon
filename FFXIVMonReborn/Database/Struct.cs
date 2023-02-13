@@ -103,10 +103,12 @@ namespace FFXIVMonReborn.Database
                             }
 
                             int pos = 0;
-                            while (!Char.IsLetter(line[pos]))
+                            while (pos < line.Length && !Char.IsLetter(line[pos]))
                             {
                                 ++pos;
                             }
+                            if (pos == line.Length)
+                                break;
 
                             if (currentNestedStructName != null)
                             {

@@ -130,6 +130,7 @@ namespace FFXIVMonReborn.Importers
             device.Close();
             {
                 Capture capture = new Capture();
+                capture.Version = -1;
                 capture.Packets = packetEntries.ToArray();
                 return capture;
             }
