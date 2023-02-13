@@ -709,7 +709,7 @@ namespace FFXIVMonReborn.Views
         {
             if (_version != -1)
                 _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
-            else
+            if (_commitSha != null)
                 _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
 
             if (_db != null)

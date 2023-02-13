@@ -54,8 +54,8 @@ namespace FFXIVMonReborn.Database.GitHub
         
         private void LoadCommits()
         {
-            // TODO: This is hardcoded to develop right now to make version switching obsolete and make it easier to use tagged versions
-            Commits = GitHubCommit.FromJson(Request($"/repos/{Repository}/commits?sha=develop"));
+            // TODO: This is hardcoded to master right now to make version switching obsolete and make it easier to use tagged versions
+            Commits = GitHubCommit.FromJson(Request($"/repos/{Repository}/commits?sha=master"));
         }
 
         private string Request(string endpoint, bool ignoreCache = false)
