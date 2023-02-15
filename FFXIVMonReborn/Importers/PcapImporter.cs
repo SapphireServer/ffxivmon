@@ -28,6 +28,8 @@ namespace FFXIVMonReborn.Importers
         {
             List<PacketEntry> packetEntries = new List<PacketEntry>();
             FFXIVNetworkMonitor monitor = new FFXIVNetworkMonitor();
+
+            long lastTimeStamp = 0;
             #region packet parse
             void MessageReceived(TCPConnection connection, long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
             {
@@ -46,7 +48,7 @@ namespace FFXIVMonReborn.Importers
                     Set = set,
                     RouteID = res.header.RouteID.ToString(),
                     PacketUnixTime = res.header.Seconds,
-                    SystemMsTime = epoch,
+                    SystemMsTime = lastTimeStamp,
                     Connection = connectionType
                 };
                 packetEntries.Add(item);
@@ -69,7 +71,7 @@ namespace FFXIVMonReborn.Importers
                     Set = set,
                     RouteID = res.header.RouteID.ToString(),
                     PacketUnixTime = res.header.Seconds,
-                    SystemMsTime = epoch,
+                    SystemMsTime = lastTimeStamp,
                     Connection = connectionType
                 };
                 packetEntries.Add(item);
@@ -101,6 +103,7 @@ namespace FFXIVMonReborn.Importers
                 tcpConn.LocalPort = tcpPacket.SourcePort;
                 tcpConn.RemoteIP = BitConverter.ToUInt32(ipPacket.DestinationAddress.GetAddressBytes());
                 tcpConn.RemotePort = tcpPacket.DestinationPort;
+                lastTimeStamp = (long)(e.Header.Timeval.Value * 1000);
 
                 var ip2 = ipPacket.SourceAddress.GetAddressBytes();
                 //var ipStr = ipPacket.SourceAddress.ToString().Split(".");
