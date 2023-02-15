@@ -46,7 +46,7 @@ namespace FFXIVMonReborn.Importers
                     Set = set,
                     RouteID = res.header.RouteID.ToString(),
                     PacketUnixTime = res.header.Seconds,
-                    SystemMsTime = (long.MaxValue + DateTime.Now.ToBinary()) / 10000,
+                    SystemMsTime = epoch,
                     Connection = connectionType
                 };
                 packetEntries.Add(item);
@@ -69,7 +69,7 @@ namespace FFXIVMonReborn.Importers
                     Set = set,
                     RouteID = res.header.RouteID.ToString(),
                     PacketUnixTime = res.header.Seconds,
-                    SystemMsTime = (long.MaxValue + DateTime.Now.ToBinary()) / 10000,
+                    SystemMsTime = epoch,
                     Connection = connectionType
                 };
                 packetEntries.Add(item);
