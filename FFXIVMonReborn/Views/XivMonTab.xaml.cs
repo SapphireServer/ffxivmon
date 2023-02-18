@@ -1281,13 +1281,15 @@ namespace FFXIVMonReborn.Views
         #endregion
 
         #region Scripting
-        public void Scripting_RunOnCapture(bool silent = false)
+        public void Scripting_RunOnCapture(bool silent = false, bool parseStructs = true)
         {
             var res = silent;
-            
-            if(!res)
-                res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + Packets.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
 
+            if (!res)
+            {
+                res = MessageBox.Show("Do you want to execute scripts on shown packets? This can take some time, depending on the amount of packets.\n\nPackets: " + Packets.Count, "FFXIVMon Reborn", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
+                parseStructs = MessageBox.Show("'Yes' if you wish to access the packet as a parsed object (can be considerably slow).", "Process structs?", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+            }
             if (!res) return;
             
             if (_mainWindow.ScriptProvider == null)
@@ -1304,7 +1306,7 @@ namespace FFXIVMonReborn.Views
 
                     if (packet.IsVisible)
                     {
-                        Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider);
+                        Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider, parseStructs);
                     }
                 }
             }
@@ -1316,13 +1318,13 @@ namespace FFXIVMonReborn.Views
             }
         }
 
-        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider)
+        private void Scripting_RunOnPacket(PacketEntry item, ScriptingProvider provider, bool parseStructs = true)
         {
             PacketEventArgs args = null;
 
             string structText = null;
-            structText = item.Direction == "S" ? _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber)) : _db.GetClientZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
-
+            if (parseStructs)
+                structText = item.Direction == "S" ? _db.GetServerZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber)) : _db.GetClientZoneStruct(int.Parse(item.Message, NumberStyles.HexNumber));
 
             if (structText != null)
             {

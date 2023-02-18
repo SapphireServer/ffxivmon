@@ -709,6 +709,8 @@ namespace FFXIVMonReborn.Views
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
+                var res = MessageBox.Show("'Yes' if you wish to access the packet as a parsed object (can be considerably slow).", "Process structs?", MessageBoxButton.YesNo);
+
                 foreach (var fileName in openFileDialog.FileNames)
                 {
                     var tab = new XivMonTab();
@@ -716,7 +718,7 @@ namespace FFXIVMonReborn.Views
                     tab.SetParents(null, this);
                     tab.LoadCapture(fileName);
                     
-                    tab.Scripting_RunOnCapture(true);
+                    tab.Scripting_RunOnCapture(true, res == MessageBoxResult.Yes);
                 }
 
                 MessageBox.Show("Ran loaded scripts on captures.", "FFXIVMon Reborn", MessageBoxButton.OK,
