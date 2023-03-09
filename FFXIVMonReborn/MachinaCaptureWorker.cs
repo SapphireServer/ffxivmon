@@ -140,7 +140,7 @@ namespace FFXIVMonReborn
             monitor.MessageReceivedEventHandler = MessageReceived;
             monitor.MessageSentEventHandler = MessageSent;
 
-            monitor.OodleImplementation = OodleImplementation.FfxivUdp;
+            monitor.OodleImplementation = OodleImplementation.FfxivTcp;
 
             // GamePath points to sqpack
             monitor.OodlePath = GetOodlePath();
