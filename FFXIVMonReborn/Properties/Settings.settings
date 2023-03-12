@@ -47,5 +47,10 @@
     <Setting Name="OodleEnforced" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="OodleImplementation" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="OodleLibraryPath" Type="System.String" Scope="User">
+    </Setting>
   </Settings>
 </SettingsFile>

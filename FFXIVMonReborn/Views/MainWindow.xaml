@@ -75,9 +75,19 @@
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
                     <MenuItem x:Name="StickPacketViewBottomCheckBox" Header="_Stick Packet View to bottom" IsCheckable="True" Checked="StickPacketViewBottomCheckBox_OnChecked" Unchecked="StickPacketViewBottomCheckBox_OnUnchecked"/>
                     <MenuItem x:Name="OodleEnforcedCheckbox" Header="_Require valid Oodle to capture" IsCheckable="True" Checked="OodleEnforcedCheckbox_OnChecked" Unchecked="OodleEnforcedCheckbox_OnUnchecked"/>
+                    <MenuItem x:Name="OodleImplementationTypeCheckbox" Header="_Oodle Implementation Type" ItemsSource="{Binding}" Click="OodleImplementationTypeCheckbox_OnClick" >
+                        <MenuItem.ItemContainerStyle>
+                            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" >
+                                <Setter Property="IsCheckable" Value="True" />
+                                <Setter Property="Header" Value="{Binding .Name}" />
+                                <Setter Property="IsChecked" Value="{Binding .IsChecked}" />
+                            </Style>
+                        </MenuItem.ItemContainerStyle>
+                    </MenuItem>
                     <Separator></Separator>
                     <MenuItem Header="_Set Repository" Click="SetRepository"/>
                     <MenuItem Header="_Set Game Path" Click="SetGamePath"/>
+                    <MenuItem Header="_Set Oodle Library" Click="SetOoodleLibraryPath"/>
                     <Separator></Separator>
                     <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>
                     <MenuItem x:Name="SwitchModePcap" Header="_Capture mode: WinPCap" Click="SwitchModePcap_OnClick"/>

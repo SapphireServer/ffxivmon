@@ -35,14 +35,16 @@ namespace FFXIVMonReborn
         private readonly XivMonTab _myTab;
         private readonly NetworkMonitorType _monitorType;
         private readonly ConfigFlags _configFlags;
+        private readonly OodleImplementation _oodleImplementation;
 
         private volatile bool _shouldStop;
 
-        public MachinaCaptureWorker(XivMonTab window, NetworkMonitorType monitorType, ConfigFlags flags)
+        public MachinaCaptureWorker(XivMonTab window, NetworkMonitorType monitorType, ConfigFlags flags, OodleImplementation oodleImplementation)
         {
             this._myTab = window;
             this._monitorType = monitorType;
             this._configFlags = flags;
+            this._oodleImplementation = oodleImplementation;
         }
 
         private void MessageReceived(TCPConnection connection, long epoch, byte[] message, int set, FFXIVNetworkMonitor.ConnectionType connectionType)
@@ -123,6 +125,13 @@ namespace FFXIVMonReborn
 
         private static string GetOodlePath()
         {
+            var oodleImplementation = (OodleImplementation) Settings.Default.OodleImplementation;
+
+            if (oodleImplementation is OodleImplementation.LibraryTcp or OodleImplementation.LibraryUdp)
+            {
+                return Settings.Default.OodleLibraryPath;
+            }
+
             // GamePath points to sqpack
             var gamePath = Settings.Default.GamePath;
             return Path.GetFullPath(Path.Combine(gamePath, "..", "ffxiv_dx11.exe"));
@@ -140,7 +149,7 @@ namespace FFXIVMonReborn
             monitor.MessageReceivedEventHandler = MessageReceived;
             monitor.MessageSentEventHandler = MessageSent;
 
-            monitor.OodleImplementation = OodleImplementation.FfxivTcp;
+            monitor.OodleImplementation = _oodleImplementation;
 
             // GamePath points to sqpack
             monitor.OodlePath = GetOodlePath();
