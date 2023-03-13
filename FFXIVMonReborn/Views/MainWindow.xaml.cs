@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 using FFXIVMonReborn.Database;
-using Machina;
 using Microsoft.VisualBasic;
 using MessageBox = System.Windows.MessageBox;
 using FFXIVMonReborn.Importers;
@@ -18,6 +18,8 @@ using FFXIVMonReborn.Properties;
 using FFXIVMonReborn.Scripting;
 using Machina.Infrastructure;
 using System.IO;
+using System.Runtime.CompilerServices;
+using Machina.FFXIV.Oodle;
 
 namespace FFXIVMonReborn.Views
 {
@@ -27,6 +29,7 @@ namespace FFXIVMonReborn.Views
     public partial class MainWindow : Window
     {
         private readonly KeyboardHook _kbHook = new KeyboardHook();
+        public ObservableCollection<OodleImplementationItem> OodleImplementationItems { get; set; }
 
         public readonly Versioning VersioningProvider = new Versioning();
         public ExdDataCache ExdProvider = null;
@@ -36,6 +39,7 @@ namespace FFXIVMonReborn.Views
         private string[] _selectedScripts = new string[0];
         
         public NetworkMonitorType CaptureMode;
+        public OodleImplementation OodleImplementation;
         public MachinaCaptureWorker.ConfigFlags CaptureFlags;
 
         public MainWindow()
@@ -141,6 +145,23 @@ namespace FFXIVMonReborn.Views
 
             if (Properties.Settings.Default.OodleEnforced)
                 OodleEnforcedCheckbox.IsChecked = true;
+            
+            OodleImplementation = (OodleImplementation) Settings.Default.OodleImplementation;
+            OodleImplementationItems = new ObservableCollection<OodleImplementationItem>();
+            
+            foreach (var oodleImplementationType in Enum.GetValues<OodleImplementation>())
+            {
+                var item = new OodleImplementationItem();
+                var name = Enum.GetName(oodleImplementationType);
+
+                item.Name = name;
+                item.Type = oodleImplementationType;
+                item.IsChecked = OodleImplementation == item.Type;
+
+                OodleImplementationItems.Add(item);
+            }
+            
+            OodleImplementationTypeCheckbox.DataContext = OodleImplementationItems;
             
             VersioningProvider.LocalDbChanged += VersioningProviderOnLocalDbChanged;
             LogView.Show();
@@ -749,6 +770,92 @@ namespace FFXIVMonReborn.Views
                     Verb = "open"
                 });
             }
+        }
+
+        private void OodleImplementationTypeCheckbox_OnClick(object sender, RoutedEventArgs e)
+        {
+            var originalSource = (MenuItem) e.OriginalSource;
+            var currentItem = (OodleImplementationItem) originalSource.DataContext;
+            
+            Settings.Default.OodleImplementation = (int) currentItem.Type;
+            Settings.Default.Save();
+            OodleImplementation = currentItem.Type;
+
+            foreach (var oodleImplementation in OodleImplementationItems)
+            {
+                if (oodleImplementation.Type == currentItem.Type) continue;
+                
+                oodleImplementation.IsChecked = false;
+            }
+        }
+
+
+        private void SetOoodleLibraryPath(object sender, RoutedEventArgs e)
+        {
+            using OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "DLL|*.dll";
+            openFileDialog.Title = "Select the Oodle library to be used";
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                var libraryPath = openFileDialog.FileName;
+
+                Settings.Default.OodleLibraryPath = libraryPath;
+                Settings.Default.Save();
+                
+            }
+        }
+    }
+
+    public class OodleImplementationItem : INotifyPropertyChanged
+    {
+        private string _name = string.Empty;
+
+        private OodleImplementation _type = OodleImplementation.FfxivTcp;
+
+        private bool _isChecked = true;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (value == _name) return;
+                _name = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public OodleImplementation Type
+        {
+            get => _type;
+            set
+            {
+                if (value == _type) return;
+                _type = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsChecked
+        {
+            get => _isChecked;
+            set
+            {
+                if (value == _isChecked) return;
+                _isChecked = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        // This method is called by the Set accessor of each property.  
+        // The CallerMemberName attribute that is applied to the optional propertyName  
+        // parameter causes the property name of the caller to be substituted as an argument.  
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
