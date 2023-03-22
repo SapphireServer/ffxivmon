@@ -15,7 +15,6 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using FFXIVMonReborn.DataModel;
@@ -28,9 +27,6 @@ using Brushes = System.Windows.Media.Brushes;
 using Capture = FFXIVMonReborn.DataModel.Capture;
 using Color = System.Windows.Media.Color;
 using FFXIVMonReborn.Database.GitHub;
-using Newtonsoft.Json.Bson;
-using System.Text.Unicode;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace FFXIVMonReborn.Views
@@ -458,7 +454,7 @@ namespace FFXIVMonReborn.Views
                 foreach (var entry in structEntries.Item1)
                 {
                     if (entry.isArrayDeclaration)
-                        lastArrayColor = Struct.TypeColours[entry.DataTypeCol];
+                        Struct.TypeColours.TryGetValue(entry.DataTypeCol, out lastArrayColor);
                     else if (entry.isArrayElement && entry.DataTypeCol == null)
                         color = lastArrayColor;
                     else if (!Struct.TypeColours.TryGetValue(entry.DataTypeCol, out color))
