@@ -42,6 +42,7 @@ namespace FFXIVMonReborn
 
         private void ButtonOK_OnClick(object sender, RoutedEventArgs e)
         {
+            this.DialogResult = true;
             this.Close();
         }
     }
