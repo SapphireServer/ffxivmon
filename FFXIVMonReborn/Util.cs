@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualBasic.ApplicationServices;
 
 namespace FFXIVMonReborn
 {
@@ -103,10 +100,10 @@ namespace FFXIVMonReborn
 
         public static byte[] StringToByteArray(String hex)
         {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            int numberChars = hex.Length;
+            byte[] bytes = new byte[numberChars / 2];
+            for (int i = 0; i < numberChars; i += 2)
+                byte.TryParse(hex.AsSpan(i, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out bytes[i / 2]);
             return bytes;
         }
 

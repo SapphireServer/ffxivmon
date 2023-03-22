@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Media;
 using FFXIVMonReborn.Database.DataTypes;
 
@@ -66,7 +64,7 @@ namespace FFXIVMonReborn.Database
 
         public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
         {
-            string debugMsg = "";
+            StringBuilder debugMsg = new StringBuilder();
             try
             {
                 // Get rid of any comments
@@ -97,7 +95,7 @@ namespace FFXIVMonReborn.Database
 
                             if (String.IsNullOrEmpty(line))
                             {
-                                debugMsg += $"Line {at} is empty\n";
+                                debugMsg.Append($"Line {at} is empty\n");
                                 at++;
                                 continue;
                             }
@@ -115,10 +113,10 @@ namespace FFXIVMonReborn.Database
                                 if (line.Contains("}"))
                                 {
                                     _nestedStructDictionary.Add(currentNestedStructName, currentNestedStruct);
-                                    debugMsg += $"Finished nested struct:{currentNestedStructName} - {currentNestedStruct.Count} Entries\n\n";
+                                    debugMsg.Append($"Finished nested struct:{currentNestedStructName} - {currentNestedStruct.Count} Entries\n\n");
 
                                     var aryItems = ParseCNestedArray(currentNestedStruct, reader, line, currentNestedStructName, ref exobj
-                                        , ref debugMsg);
+                                        , debugMsg);
                                     
                                     output.AddRange(aryItems);
                                     
@@ -139,7 +137,9 @@ namespace FFXIVMonReborn.Database
 
                             string dataType = "";
 
-                            while (line[pos] != ' ')
+                            //Nested structs don't end in whitespace, thus short-circuit should we reach line lenght
+                            //to prevent an out of bounds exception.
+                            while (!pos.Equals(line.Length) && line[pos] != ' ')
                             {
                                 dataType += line[pos];
                                 pos++;
@@ -158,7 +158,7 @@ namespace FFXIVMonReborn.Database
                                 currentNestedStruct = new List<StructParseDirective>();
                                 currentNestedStructName = structName;
 
-                                debugMsg += $"Start nested struct parse of {currentNestedStructName}\n";
+                                debugMsg.Append($"Start nested struct parse of {currentNestedStructName}\n");
                                 at += 2;
                                 continue;
                             }
@@ -175,7 +175,7 @@ namespace FFXIVMonReborn.Database
                                 pos++;
                             }
 
-                            debugMsg += $"Expected:{name} - {dataType} - {line} - {at}\n";
+                            debugMsg.Append($"Expected:{name} - {dataType} - {line} - {at}\n");
 
                             item.NameCol = name;
 
@@ -187,9 +187,9 @@ namespace FFXIVMonReborn.Database
                                 StructListItem[] aryItems = null;
 
                                 if (!name.EndsWith("]"))
-                                    ParseCType(dataType, reader, ref item, ref debugMsg);
+                                    ParseCType(dataType, reader, ref item, debugMsg);
                                 else
-                                    aryItems = ParseCArray(dataType, reader, ref item, name, ref exobj, ref debugMsg);
+                                    aryItems = ParseCArray(dataType, reader, ref item, name, ref exobj, debugMsg);
 
                                 output.Add(item);
 
@@ -206,7 +206,7 @@ namespace FFXIVMonReborn.Database
                                     ((IDictionary<String, Object>) exobj).Add(Regex.Replace(aryItems[0].NameCol, "(\\[.*\\])|(\".*\")|('.*')|(\\(.*\\))", ""), values.ToArray());
                                 }
 
-                                debugMsg += $"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n";
+                                debugMsg.Append($"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n");
 
                                 if (aryItems != null)
                                     output.AddRange(aryItems);
@@ -215,14 +215,14 @@ namespace FFXIVMonReborn.Database
                             else
                             {
                                 currentNestedStruct.Add(new StructParseDirective { ArrayCount = 0, Name = item.NameCol, DataType = item.DataTypeCol});
-                                debugMsg += $"Added to nested:{item.NameCol} - {item.DataTypeCol}\n\n";
+                                debugMsg.Append($"Added to nested:{item.NameCol} - {item.DataTypeCol}\n\n");
                             }
                             at++;
                         }
                     }
                 }
 
-                LogView.Instance?.WriteLine($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs. {debugMsg}");
+                LogView.Instance?.WriteLine($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs. \n{debugMsg}");
 
                 return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
             }
@@ -234,7 +234,7 @@ namespace FFXIVMonReborn.Database
         }
 
         private StructListItem[] ParseCNestedArray(List<StructParseDirective> nestedStruct, BinaryReader reader,
-            string name, string structName, ref ExpandoObject exobj, ref string debugMsg)
+            string name, string structName, ref ExpandoObject exobj, StringBuilder debugMsg)
         {
             List<StructListItem> output = new List<StructListItem>();
 
@@ -244,7 +244,7 @@ namespace FFXIVMonReborn.Database
             else
                 count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
 
-            debugMsg += $"Nested Array Start - {name} - {count}\n";
+            debugMsg.Append($"Nested Array Start - {name} - {count}\n");
 
             output.Add(new StructListItem{DataTypeCol = structName, NameCol = name.Replace("}", "").Replace(";", "").Replace(" ", ""), OffsetCol = reader.BaseStream.Position.ToString()});
 
@@ -263,9 +263,9 @@ namespace FFXIVMonReborn.Database
                     
                     //TODO: All of this is fucked and should be redone also this isn't gonna be in the expando object i'm pretty sure
                     if (!item.NameCol.EndsWith("]"))
-                        ParseCType(item.DataTypeCol, reader, ref item, ref debugMsg);
+                        ParseCType(item.DataTypeCol, reader, ref item, debugMsg);
                     else
-                        aryItems = ParseCArray(item.DataTypeCol, reader, ref item, item.NameCol, ref exobj, ref debugMsg);
+                        aryItems = ParseCArray(item.DataTypeCol, reader, ref item, item.NameCol, ref exobj, debugMsg);
                     
                     output.Add(item);
                     
@@ -277,7 +277,7 @@ namespace FFXIVMonReborn.Database
             return output.ToArray();
         }
 
-        private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref ExpandoObject exobj, ref string debugMsg)
+        private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref ExpandoObject exobj, StringBuilder debugMsg)
         {
             var output = new List<StructListItem>();
             item.isArrayDeclaration = true;
@@ -288,7 +288,7 @@ namespace FFXIVMonReborn.Database
             else
                 count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
 
-            debugMsg += $"Array Start - {name} - {count} - {dataType}\n";
+            debugMsg.Append($"Array Start - {name} - {count} - {dataType}\n");
 
             for (int i = 0; i < count; i++)
             {
@@ -300,11 +300,11 @@ namespace FFXIVMonReborn.Database
                     isArrayElement = true,
                 };
 
-                ParseCType(dataType, reader, ref arrayItem, ref debugMsg);
+                ParseCType(dataType, reader, ref arrayItem, debugMsg);
                 
                 output.Add(arrayItem);
 
-                debugMsg += $"  ->{arrayItem.NameCol} - {arrayItem.OffsetCol} - {arrayItem.DataTypeCol} - {arrayItem.ValueCol}\n";
+                debugMsg.Append( $"  ->{arrayItem.NameCol} - {arrayItem.OffsetCol} - {arrayItem.DataTypeCol} - {arrayItem.ValueCol}\n");
             }
 
             item.fullArraySize = count * output[0].typeLength;
@@ -314,7 +314,7 @@ namespace FFXIVMonReborn.Database
         /// <summary>
         /// Parse value as string and it's lenght to a StructListItem
         /// </summary>
-        public void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, ref string debugMsg)
+        public void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, StringBuilder debugMsg)
         {
             Tuple<Type, int, TypePrintMode, string> type;
             if (DataTypeDictionary.TryGetValue(dataType, out type))
@@ -351,7 +351,7 @@ namespace FFXIVMonReborn.Database
             }
             else
             {
-                debugMsg += $"No info for native type: {dataType}. Please add this type in Struct.cs.\n\n";
+                debugMsg.Append( $"No info for native type: {dataType}. Please add this type in Struct.cs.\n\n");
             }
         }
 

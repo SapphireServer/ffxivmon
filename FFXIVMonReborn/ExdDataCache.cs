@@ -15,7 +15,7 @@ namespace FFXIVMonReborn
 
         public ExdDataCache(string gamePath)
         {
-            GameData data = new GameData(gamePath);
+            GameData data = new GameData(gamePath, new LuminaOptions {PanicOnSheetChecksumMismatch = false});
             _bnpcNames = data.Excel.GetSheet<BNpcName>().ToDictionary(row => row.RowId, row => row.Singular.ToString());
             _placeNames = data.Excel.GetSheet<PlaceName>().ToDictionary(row => row.RowId, row => row.Name.ToString());
             _actionNames = data.Excel.GetSheet<Action>().ToDictionary(row => row.RowId, row => row.Name.ToString());
