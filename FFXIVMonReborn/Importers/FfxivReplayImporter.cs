@@ -9,6 +9,16 @@ namespace FFXIVMonReborn.Importers
 {
     public static class FfxivReplayImporter
     {
+        private static int _Version3Offset = 0x354;
+        private static int _Version4Offset = 0x364;
+
+        private static int GetDataOffset(int headerVersion)
+        {
+            if (headerVersion == 0x03)
+                return _Version3Offset;
+            return _Version4Offset;
+        }
+
         public static int GetNumPackets(byte[] replay)
         {
             using (MemoryStream stream = new MemoryStream(replay))
@@ -19,8 +29,11 @@ namespace FFXIVMonReborn.Importers
                     if (magic != "FFXIVREPLAY")
                         throw new ArgumentException("Not a FFXIV Replay file: " + magic);
 
-                    stream.Position = 0x354;
+                    stream.Position = 0x0C;
+                    int version = reader.ReadByte();
 
+                    stream.Position = GetDataOffset(version);
+                    
                     int num = 0;
                     while (stream.Position < replay.Length)
                     {
@@ -51,6 +64,9 @@ namespace FFXIVMonReborn.Importers
                     if (magic != "FFXIVREPLAY")
                         throw new ArgumentException("Not a FFXIV Replay file: " + magic);
 
+                    stream.Position = 0x0C;
+                    int version = reader.ReadByte();
+
                     stream.Position = 0x14;
                     long recordTime = reader.ReadInt32();
                     DateTime time = Util.UnixTimeStampToDateTime(recordTime);
@@ -68,6 +84,8 @@ namespace FFXIVMonReborn.Importers
                     int contentFinderCondition = reader.ReadInt16();
                     log += $"ContentFinderCondition: {contentFinderCondition}\n";
 
+                    ulong selfCharacterId = 0;
+                    byte[] selfCharacterIdBytes = null;
                     stream.Position = 0x38;
                     log += "Party ClassJob: ";
                     int[] classJobAry = new int[8];
@@ -78,7 +96,7 @@ namespace FFXIVMonReborn.Importers
                     }
                     log += "\n\n";
 
-                    stream.Position = 0x354;
+                    stream.Position = GetDataOffset(version);
 
                     int lastTime = 0;
                     for(int i = 0; i < end; i++)
@@ -86,12 +104,30 @@ namespace FFXIVMonReborn.Importers
                         int opcode = reader.ReadInt16();
                         int length = reader.ReadInt16();
                         int timeOffset = reader.ReadInt32();
-                        int actorId = reader.ReadInt32();
-                        
-                        var data = new byte[0x20 + length];
-                        reader.Read(data, 0x20, length);
+                        uint actorId = reader.ReadUInt32();
 
                         time = time.AddMilliseconds(timeOffset - lastTime);
+
+                        var actorIdBytes = BitConverter.GetBytes(actorId);
+                        var timeBytes = BitConverter.GetBytes((uint)time.Subtract(DateTime.UnixEpoch).TotalSeconds);
+                        var lengthBytes = BitConverter.GetBytes((uint)(length + 0x20));
+                        var opcodeBytes = BitConverter.GetBytes((ushort)opcode);
+
+                        // first packet is always InitZone
+                        if (selfCharacterId == 0)
+                        {
+                            selfCharacterId = actorId;
+                            selfCharacterIdBytes = actorIdBytes;
+                        }
+
+                        var data = new byte[0x20 + length];
+                        lengthBytes.CopyTo(data, 0x00);
+                        actorIdBytes.CopyTo(data, 0x04);
+                        selfCharacterIdBytes.CopyTo(data, 0x08);
+                        opcodeBytes.CopyTo(data, 0x12);
+                        timeBytes.CopyTo(data, 0x18);
+                        reader.Read(data, 0x20, length);
+
                         lastTime = timeOffset;
                         
                         if(i >= start)
