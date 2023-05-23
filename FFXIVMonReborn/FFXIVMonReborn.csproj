@@ -68,8 +68,8 @@
   <ItemGroup>
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0" />
     <PackageReference Include="IndexRange" Version="1.0.1-beta.1" />
-    <PackageReference Include="Lumina" Version="3.10.0" />
-    <PackageReference Include="Lumina.Excel" Version="6.3.2" />
+    <PackageReference Include="Lumina" Version="3.10.2" />
+    <PackageReference Include="Lumina.Excel" Version="6.4.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
