@@ -153,7 +153,13 @@ namespace FFXIVMonReborn
 
             // GamePath points to sqpack
             monitor.OodlePath = GetOodlePath();
-            
+
+            // Set game window name for CN/KO client.
+            if (!string.IsNullOrWhiteSpace(Settings.Default.GameWindowName))
+            {
+                monitor.WindowName = Settings.Default.GameWindowName;
+            }
+
             monitor.Start();
 
             while (!_shouldStop)

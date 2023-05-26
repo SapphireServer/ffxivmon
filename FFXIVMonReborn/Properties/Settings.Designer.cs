@@ -48,6 +48,21 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string GameWindowName
+        {
+            get
+            {
+                return ((string)(this["GameWindowName"]));
+            }
+            set
+            {
+                this["GameWindowName"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("255, 198, 95")]
         public global::System.Drawing.Color ColorServerSet0 {
             get {

@@ -582,6 +582,13 @@ namespace FFXIVMonReborn.Views
                 MessageBoxImage.Asterisk);
         }
 
+        public void SetGameWindowName(object sender, RoutedEventArgs e)
+        {
+            string name = Interaction.InputBox("Enter the window name of the game.\nYou should restart capture after change.", "FFXIVMon Reborn", Properties.Settings.Default.GameWindowName);
+            Properties.Settings.Default.GameWindowName = name;
+            Properties.Settings.Default.Save();
+        }
+
         private void LoadFFXIVReplayRelay(object sender, RoutedEventArgs e)
         {
             ((XivMonTab)MainTabControl.SelectedContent).LoadFfxivReplay();
