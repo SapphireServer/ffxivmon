@@ -88,15 +88,13 @@ namespace FFXIVMonReborn.Views
                             thisItem.ValueCol = $"{DateTimeOffset.FromUnixTimeSeconds(BitConverter.ToUInt32(data, offset)).ToLocalTime()}";
                         else if (thisItem.DataTypeCol == "string (ascii)")
                         {
-                            var str = Encoding.ASCII.GetString(data);
-                            var terminatorOffset = str.IndexOf((char)0, offset);
-                            thisItem.ValueCol = str.Substring(offset, terminatorOffset - offset);
+                            var term = getTerminator(data, offset);
+                            thisItem.ValueCol = Encoding.ASCII.GetString(data, offset, term - offset);
                         }
                         else if (thisItem.DataTypeCol == "string (utf8)")
                         {
-                            var str = Encoding.UTF8.GetString(data);
-                            var terminatorOffset = str.IndexOf((char)0, offset);
-                            thisItem.ValueCol = str.Substring(offset, terminatorOffset - offset);
+                            var term = getTerminator(data, offset);
+                            thisItem.ValueCol = Encoding.UTF8.GetString(data, offset, term - offset);
                         }
                         else if (thisItem.DataTypeCol == "binary")
                         {
@@ -127,7 +125,14 @@ namespace FFXIVMonReborn.Views
                 DataTypeListView.Items.Add(thisItem);
             }
         }
-
+        int getTerminator(byte[] data, int offset)
+        {
+            for (int i = offset; i < data.Length; i++)
+            {
+                if (data[i] == 0) return i;
+            }
+            return data.Length;
+        }
         private void DataTypeListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataTypeListView.IsKeyboardFocusWithin)
