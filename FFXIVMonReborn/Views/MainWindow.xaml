@@ -92,6 +92,7 @@
                     <Separator></Separator>
                     <MenuItem x:Name="SwitchModeSockets" Header="_Capture mode: Sockets" Click="SwitchModeSockets_OnClick"/>
                     <MenuItem x:Name="SwitchModePcap" Header="_Capture mode: WinPCap" Click="SwitchModePcap_OnClick"/>
+                    <MenuItem x:Name="SwitchModeDeucalion" Header="_Inject the Deucalion library for Capture" IsCheckable="True" Click="SwitchModeDeucalion_OnClick" Checked="SwitchModeDeucalion_OnChecked" Unchecked="SwitchModeDeucalion_OnUnchecked"/>
                     <Separator></Separator>
                     <MenuItem Header="_About" Click="AboutButton_OnClick"/>
                 </MenuItem>
