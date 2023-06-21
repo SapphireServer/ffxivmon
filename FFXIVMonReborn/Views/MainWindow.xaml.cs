@@ -145,6 +145,11 @@ namespace FFXIVMonReborn.Views
 
             if (Properties.Settings.Default.OodleEnforced)
                 OodleEnforcedCheckbox.IsChecked = true;
+
+            if (Properties.Settings.Default.UseDeucalion)
+            {
+                SwitchModeDeucalion.IsChecked = true;
+            }
             
             OodleImplementation = (OodleImplementation) Settings.Default.OodleImplementation;
             OodleImplementationItems = new ObservableCollection<OodleImplementationItem>();
@@ -811,6 +816,42 @@ namespace FFXIVMonReborn.Views
                 Settings.Default.Save();
                 
             }
+        }
+        
+        private void SwitchModeDeucalion_OnChecked(object sender, RoutedEventArgs e)
+        {
+            if (AreTabsCapturing())
+            {
+                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            
+            Settings.Default.UseDeucalion = true;
+            Settings.Default.Save();
+        }
+
+        private void SwitchModeDeucalion_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (AreTabsCapturing())
+            {
+                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            
+            Settings.Default.UseDeucalion = false;
+            Settings.Default.Save();
+        }
+
+        private void SwitchModeDeucalion_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (Settings.Default.UseDeucalion)
+                MessageBox.Show("Deucalion allows you to capture packets by injecting a DLL into the game, " +
+                                "skipping network capturing and Oodle. " +
+                                "However, Deucalion might not work with all game versions.", 
+                    "FFXIVMon Reborn", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
         }
     }
 

@@ -52,5 +52,8 @@
     </Setting>
     <Setting Name="OodleLibraryPath" Type="System.String" Scope="User">
     </Setting>
+    <Setting Name="UseDeucalion" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

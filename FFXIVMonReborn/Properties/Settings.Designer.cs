@@ -240,5 +240,17 @@ namespace FFXIVMonReborn.Properties {
                 this["OodleLibraryPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseDeucalion {
+            get {
+                return ((bool)(this["UseDeucalion"]));
+            }
+            set {
+                this["UseDeucalion"] = value;
+            }
+        }
     }
 }
