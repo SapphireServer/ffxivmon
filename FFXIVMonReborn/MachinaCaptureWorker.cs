@@ -1,20 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
 using FFXIVMonReborn.DataModel;
 using FFXIVMonReborn.Properties;
 using FFXIVMonReborn.Views;
-using Machina;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers;
 using Machina.FFXIV.Oodle;
@@ -150,7 +142,18 @@ namespace FFXIVMonReborn
             monitor.MessageSentEventHandler = MessageSent;
 
             monitor.OodleImplementation = _oodleImplementation;
+            monitor.UseDeucalion = Settings.Default.UseDeucalion;
 
+            if (monitor.UseDeucalion)
+            {
+                int? id = Process.GetProcessesByName("ffxiv_dx11").FirstOrDefault()?.Id;
+                
+                if (id == null)
+                    throw new ThreadStateException("No ffxiv_dx11.exe process was found, please ensure that the DirectX 11 version of the game is running and try again.");
+                
+                monitor.ProcessID = (uint)id;
+            }
+            
             // GamePath points to sqpack
             monitor.OodlePath = GetOodlePath();
 
