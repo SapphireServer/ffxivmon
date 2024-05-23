@@ -79,7 +79,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.1.0-1.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="4.1.0-1.final" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="RestSharp" Version="107.0.0-preview.14" />
     <PackageReference Include="RestSharp.Newtonsoft.Json" Version="1.5.1" />
     <PackageReference Include="SharpPcap" Version="6.2.5" />
     <PackageReference Include="WPFHexaEditor" Version="2.1.7" />

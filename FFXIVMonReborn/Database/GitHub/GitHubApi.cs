@@ -5,31 +5,33 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FFXIVMonReborn.Database.GitHub.Model;
 using Newtonsoft.Json;
-using RestSharp;
+
 
 namespace FFXIVMonReborn.Database.GitHub
 {
     public class GitHubApi
     {
         public readonly string Repository;
-        
+
         public GitHubBranch[] Branches { get; private set; }
         public GitHubTag[] Tags { get; private set; }
         public GitHubCommit[] Commits { get; private set; }
 
-        private RestClient _client = new RestClient("https://api.github.com");
+        private HttpClient _client = new HttpClient();
         public static readonly string _cacheFolder = "downloaded";
         private readonly string _apiCacheFile = "ApiCache.json";
 
         public GitHubApi(string repo)
         {
             this.Repository = repo;
-            
+
             Directory.CreateDirectory(_cacheFolder);
-            
+            _client.DefaultRequestHeaders.UserAgent.ParseAdd("ffxivmon");
+
             Update();
         }
 
@@ -51,7 +53,7 @@ namespace FFXIVMonReborn.Database.GitHub
 
             Tags = Tags.OrderBy(tag => decimal.Parse(tag.Name.Substring(1), CultureInfo.InvariantCulture)).ToArray();
         }
-        
+
         private void LoadCommits()
         {
             // TODO: This is hardcoded to master right now to make version switching obsolete and make it easier to use tagged versions
@@ -71,20 +73,21 @@ namespace FFXIVMonReborn.Database.GitHub
 
             if (cache.ContainsKey(endpoint) && !ignoreCache)
                 return cache[endpoint];
-            
-            var request = new RestRequest(endpoint);
-            var task = Task.Run(async () => await _client.ExecuteAsync(request));
+
+            var task = Task.Run(async () => await _client.GetAsync(new Uri(new Uri("https://api.github.com"), endpoint)));
+
             if (task.IsFaulted && task.Exception != null)
                 throw task.Exception;
             var result = task.Result;
 
-            if (result.ResponseStatus != ResponseStatus.Completed && result.StatusCode != HttpStatusCode.OK)
+            if (!result.IsSuccessStatusCode)
                 throw new Exception("Could not complete Request.");
 
-            cache[endpoint] = result.Content;
+            var responseResult = Task.Run(result.Content.ReadAsStringAsync).Result;
+            cache[endpoint] = responseResult;
             File.WriteAllText(apiCachePath, JsonConvert.SerializeObject(cache));
 
-            return result.Content;
+            return responseResult;
         }
 
         public void ResetCache()
@@ -100,7 +103,7 @@ namespace FFXIVMonReborn.Database.GitHub
             {
                 var filePath = Path.Combine(_cacheFolder, sourceCommitSha, path.Substring(1));
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                
+
                 if (File.Exists(filePath) && !ignoreCache)
                     return File.ReadAllText(filePath);
 
@@ -113,14 +116,14 @@ namespace FFXIVMonReborn.Database.GitHub
                 {
                     var response = exc.Response as HttpWebResponse;
 
-                    if (response.StatusCode != HttpStatusCode.NotFound) 
+                    if (response.StatusCode != HttpStatusCode.NotFound)
                         throw;
-                    
+
                     Debug.WriteLine($"404 getting: {path} for {sourceCommitSha}");
                     return null;
                 }
-                
-                if(!ignoreCache || !File.Exists(filePath))
+
+                if (!ignoreCache || !File.Exists(filePath))
                     File.WriteAllText(filePath, content);
 
                 return content;
