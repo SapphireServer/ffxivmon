@@ -5,27 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FFXIVMonReborn.Views"
         mc:Ignorable="d"
-        Title="AnonymiseView" Height="476" Width="818">
-    <Grid>
+        Title="AnonymiseView" Height="519" Width="818">
+    <Grid Margin="0,0,0,1" HorizontalAlignment="Center" Width="818">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="42*"/>
             <ColumnDefinition Width="367*"/>
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.ColumnSpan="2">
+        <Grid Grid.ColumnSpan="2" Height="479" VerticalAlignment="Top" HorizontalAlignment="Right" Width="818">
             <Label Content="Content ID: (My Games/FINAL FANTASY XIV - A REALM REBORN/FFXIV__CHR################)" HorizontalAlignment="Left" VerticalAlignment="Top" Width="569" FontWeight="Bold" Margin="10,4,0,0"/>
             <TextBox x:Name="_ContentIDs" HorizontalAlignment="Left" Margin="10,30,0,0" TextChanged="_ContentIDs_TextChanged" TextWrapping="Wrap" Text="004000AABBCCDDEE" VerticalAlignment="Top" Width="250" Height="24"/>
             <Label x:Name="_ParsedContentId" Content="UInt64: " HorizontalAlignment="Left" Margin="272,28,0,0" VerticalAlignment="Top" Width="203"/>
 
-            <Label Content="Character Name (ASCII string):" HorizontalAlignment="Left" Margin="10,78,0,328" Width="191" FontWeight="Bold"/>
-            <TextBox x:Name="_CharacterNames" HorizontalAlignment="Left" Margin="10,106,0,0" TextWrapping="Wrap" Text="Main Character" VerticalAlignment="Top" Width="250" Height="25"/>
+            <Label Content="Character Name (ASCII string):" HorizontalAlignment="Left" Margin="10,65,0,384" Width="191" FontWeight="Bold"/>
+            <TextBox x:Name="_CharacterNames" HorizontalAlignment="Left" Margin="10,88,0,0" TextWrapping="Wrap" Text="Main Character" VerticalAlignment="Top" Width="250" Height="25"/>
 
-            <Label Content="Replace Strings (ASCII string, case-insensitive find):&#xA;" HorizontalAlignment="Left" Margin="10,150,0,0" VerticalAlignment="Top" Width="300" Height="29" FontWeight="Bold"/>
-            <Label Content="findString&#xA;replaceString&#xA;&#xA;findString#&#xA;replaceString#" HorizontalAlignment="Left" Margin="10,171,0,170" Width="95"/>
-            <Label Content="Linkshell/FC names go here (and anything else that needs scrubbing).&#xA;&#xD;&#xA;NOTE: (replaceString.length &lt;= findString.length)&#xA;Replacement strings shorter than the find string will be \0 padded to the find string length.&#xA;Excess whitespace will be stripped." HorizontalAlignment="Left" Margin="106,171,0,170" Width="494"/>
-            <TextBox x:Name="_ReplaceStrings" HorizontalAlignment="Left" Margin="10,268,0,0" TextWrapping="Wrap"   AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Text="Find some string case-insensitive&#xD;&#xA;Replace Case Sensitive&#xA;&#xD;&#xA;Find me three&#xD;&#xA;Replace Me3" VerticalAlignment="Top" Width="737" Height="90"/>
-            <Label Content="NOTE:&#xD;&#xA;This does not guarantee full anonymisation of data, just makes it slightly harder for anyone to immediately tell who this belongs to.&#xD;&#xA;Chat packets cannot be reliably found so must be manually modified." HorizontalAlignment="Left" Margin="10,363,0,21" Width="737"/>
+            <Label Content="Replace Strings (ASCII string, case-insensitive find):&#xA;" HorizontalAlignment="Left" Margin="10,123,0,0" VerticalAlignment="Top" Width="300" Height="29" FontWeight="Bold"/>
+            <Label Content="findString&#xA;replaceString&#xA;&#xA;findString#&#xA;replaceString#" HorizontalAlignment="Left" Margin="10,139,0,202" Width="95"/>
+            <Label Content="Linkshell/FC names go here (and anything else that needs scrubbing).&#xA;&#xD;&#xA;NOTE: (replaceString.length &lt;= findString.length)&#xA;Replacement strings shorter than the find string will be \0 padded to the find string length.&#xA;Excess whitespace will be stripped." HorizontalAlignment="Left" Margin="106,139,0,202" Width="494"/>
+            <TextBox x:Name="_ReplaceStrings" HorizontalAlignment="Left" Margin="10,227,0,0" TextWrapping="Wrap"   AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Text="Find some string case-insensitive&#xD;&#xA;Replace Case Sensitive&#xA;&#xD;&#xA;Find me three&#xD;&#xA;Replace Me3" VerticalAlignment="Top" Width="737" Height="90"/>
+            <Label Content="NOTE:&#xA;This does not guarantee full anonymisation of data, just makes it slightly harder for anyone to immediately tell who this belongs to.&#xA;Chat packets cannot be reliably found so may need to be manually modified although an attempt is made based on packet name.&#xA;&#xD;&#xA;Anonymised Content ID:           BE EE EE EF D1 EE EE ED&#xD;&#xA;Anonymised Character Name:  Player One&#xD;&#xA;Anonymised Character ID:        DE AD BE EF" HorizontalAlignment="Left" Margin="10,325,0,40" Width="737" FontSize="11" FontWeight="Bold"/>
         </Grid>
-        <Button x:Name="OK" Content="OK" HorizontalAlignment="Left" Margin="665,398,0,0" VerticalAlignment="Top" Height="26" Width="41" Click="OK_Click" Grid.Column="1"/>
+        <Button x:Name="OK" Content="OK" Margin="683,443,0,0" Click="OK_Click" Grid.Column="1" Height="31" VerticalAlignment="Top" HorizontalAlignment="Left" Width="41"/>
     </Grid>
 </Window>

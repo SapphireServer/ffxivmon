@@ -541,6 +541,14 @@ namespace FFXIVMonReborn.Views
                         {
                             switch (item.Name.Trim())
                             {
+                                case "Chat":
+                                case "ZoneChat":
+                                case "ZoneChatUp":
+                                case "ZoneChatDown":
+                                    {
+                                        item.IsChat = true;
+                                    }
+                                    break;
                                 case "NpcSpawn":
                                     {
                                         Struct structProvider = new Struct();
@@ -602,12 +610,23 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-                
+
                 if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
                     _encryptionProvider = new LobbyEncryptionProvider(item.Data);
 
                     item.Comment = "Lobby Encryption INIT";
+                }
+                switch (item.Name.Trim())
+                {
+                    case "Chat":
+                    case "ZoneChat":
+                    case "ZoneChatUp":
+                    case "ZoneChatDown":
+                        {
+                            item.IsChat = true;
+                        }
+                        break;
                 }
             }
 
@@ -899,8 +918,13 @@ namespace FFXIVMonReborn.Views
                 }
 
                 foreach (var packet in capture.Packets)
-                    packet.Data = ModifyPacket(packet.Data, true, charName, replaceStrs);
-                // Backwards compatibility
+                {
+                    if (packet.IsChat)
+                        packet.Data = new byte[packet.Data.Length];
+                    else
+                        packet.Data = ModifyPacket(packet.Data, true, charName, replaceStrs);
+                }
+                    // Backwards compatibility
                 _wasCapturedMs = capture.UsingSystemTime != null && bool.Parse(capture.UsingSystemTime);
 
                 UpdateInfoLabel();
