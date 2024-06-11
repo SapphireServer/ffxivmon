@@ -27,6 +27,8 @@
                     <Separator></Separator>
                     <MenuItem Header="_New Tab" Click="NewTab"/>
                     <MenuItem Header="_New Instance" Click="NewInstance"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Anonymise Captures" Click="AnonymiseCaptures"/>
                 </MenuItem>
                 <MenuItem Header="_Capture">
                     <MenuItem Header="_Start (CTRL+ALT+F12)" Click="StartCaptureRelay"/>
@@ -79,8 +81,8 @@
                         <MenuItem.ItemContainerStyle>
                             <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" >
                                 <Setter Property="IsCheckable" Value="True" />
-                                <Setter Property="Header" Value="{Binding .Name}" />
-                                <Setter Property="IsChecked" Value="{Binding .IsChecked}" />
+                                <Setter Property="Header" Value="{Binding Name}" />
+                                <Setter Property="IsChecked" Value="{Binding IsChecked}" />
                             </Style>
                         </MenuItem.ItemContainerStyle>
                     </MenuItem>

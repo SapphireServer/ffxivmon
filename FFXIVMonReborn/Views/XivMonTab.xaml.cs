@@ -859,6 +859,76 @@ namespace FFXIVMonReborn.Views
             UpdateInfoLabel();
         }
 
+        public void AnonymiseCapture(string path, string contentId, string charName, Dictionary<string, string> replaceStrs)
+        {
+            Packets.Clear();
+            _ResetFilter();
+            _currentFilePath = path;
+            var filename = Path.GetFileNameWithoutExtension(_currentFilePath);
+
+            ChangeTitle(filename);
+            try
+            {
+                Capture capture = null;
+
+                if (path.EndsWith("xml"))
+                    capture = XmlCaptureImporter.Load(path);
+                else
+                    capture = PcapImporter.Load(path);
+
+                _commitSha = capture.ServerCommitHash;
+                _version = capture.Version;
+
+                var versionStr = new DirectoryInfo(Path.GetDirectoryName(_currentFilePath)).Name;
+
+                // attempt to pick version by folder name
+                if (string.IsNullOrEmpty(_commitSha) && _version == -1)
+                    _commitSha = _mainWindow.VersioningProvider.GetClosestDatabaseHash(versionStr);
+
+                if (_version != -1)
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                else
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
+
+                _selfContentId = Convert.ToUInt64("0x" + contentId.Trim(), 16);
+
+                foreach (var packet in capture.Packets)
+                {
+                    // Add a packet to the view, but no update to the label
+                    AddPacketToListView(packet, true);
+                }
+
+                foreach (var packet in capture.Packets)
+                    packet.Data = ModifyPacket(packet.Data, true, charName, replaceStrs);
+                // Backwards compatibility
+                _wasCapturedMs = capture.UsingSystemTime != null && bool.Parse(capture.UsingSystemTime);
+
+                UpdateInfoLabel();
+
+                filename += "_ANON.xml";
+
+                try
+                {
+                    capture.LastSavedAppCommit = Util.GetGitHash();
+                    _currentFilePath = Path.Combine(Path.GetDirectoryName(path), filename);
+                    XmlCaptureImporter.Save(capture, Path.Combine(Path.GetDirectoryName(path), filename));
+                    //MessageBox.Show($"Capture saved to {filename}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(filename));
+                }
+                catch (Exception ex)
+                {
+                    new ExtendedErrorView("Could not save capture.", ex.ToString(), "Error").ShowDialog();
+                }
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView($"Could not load capture at {path}.", exc.ToString(), "Error").ShowDialog();
+#if DEBUG
+                throw;
+#endif
+            }
+        }
+
         public void LoadCapture(string path)
         {
             Packets.Clear();
@@ -927,7 +997,7 @@ namespace FFXIVMonReborn.Views
         }
         #endregion
 
-        byte[] ModifyPacket(byte[] packet, bool censorSelfId, string censorName)
+        byte[] ModifyPacket(byte[] packet, bool censorSelfId, string censorName, Dictionary<string, string> replaceStrs = null)
         {
             //uint censoredId = 0xEFBEADDE;
             //ulong censoredContentId = 0xEDEEEEEED1EFEEBE;
@@ -953,7 +1023,7 @@ namespace FFXIVMonReborn.Views
                             i += 31;
                         }
                     }
-                    if (i + 7 < ret.Length && _selfContentId != 0 && BitConverter.ToUInt64(ret, i) == _selfContentId)
+                    if (i + 7 < ret.Length && _selfContentId != 0 && BitConverter.ToUInt64(ret, i) == _selfContentId || i + 8 < ret.Length && Encoding.ASCII.GetString(ret, i, 8) == _selfContentId.ToString())
                     {
                         ret[i]      = 0xBE; ret[i + 1] = 0xEE;
                         ret[i + 2]  = 0xEF; ret[i + 3] = 0xD1;
@@ -961,13 +1031,36 @@ namespace FFXIVMonReborn.Views
                         ret[i + 6]  = 0xEE; ret[i + 7] = 0xED;
                         i += 7;
                     }
-                    if (i + 3 < ret.Length && _selfCharaId != 0 && (BitConverter.ToUInt32(ret, i) == _selfCharaId || Encoding.ASCII.GetString(ret, i, 3) == _selfCharaId.ToString()))
+                    if (i + 3 < ret.Length && _selfCharaId != 0 && (BitConverter.ToUInt32(ret, i) == _selfCharaId || i + 4 < ret.Length && Encoding.ASCII.GetString(ret, i, 4) == _selfCharaId.ToString()))
                     {
                         ret[i]     = 0xDE;
                         ret[i + 1] = 0xAD;
                         ret[i + 2] = 0xBE;
                         ret[i + 3] = 0xEF;
                         i += 3;
+                    }
+                    if (replaceStrs != null)
+                    {
+                        foreach (var pair in replaceStrs)
+                        {
+                            var findStr = pair.Key;
+                            var replaceStr = pair.Value;
+
+                            if (replaceStr.Length > findStr.Length)
+                                throw new Exception("Replace str length must be <= find str length.");
+
+                            if (i + findStr.Length - 1 < ret.Length && Encoding.ASCII.GetString(ret, i, findStr.Length).ToLower() == findStr)
+                            {
+                                for (int j = 0; j < findStr.Length; j++)
+                                {
+                                    if (j < replaceStr.Length)
+                                        ret[i + j] = (byte)replaceStr[j];
+                                    else
+                                        ret[i + j] = 0;
+                                }
+                                i += findStr.Length - 1;
+                            }
+                        }
                     }
                     
                 }

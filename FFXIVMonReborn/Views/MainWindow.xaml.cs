@@ -853,6 +853,38 @@ namespace FFXIVMonReborn.Views
                     "FFXIVMon Reborn", MessageBoxButton.OK,
                     MessageBoxImage.Information);
         }
+
+        private void AnonymiseCaptures(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = @"XML/Pcap|*.xml;*.pcap;*.pcapng";
+            openFileDialog.Title = "Select captures";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                AnonymiseView anonView = new AnonymiseView();
+
+                if (anonView.ShowDialog() == true)
+                {
+                    var contentId = anonView.GetContentID();
+                    var charName = anonView.GetCharacterName();
+                    var replaceStrs = anonView.GetReplacementStrings();
+
+                    foreach (var fileName in openFileDialog.FileNames)
+                    {
+                        var tab = new XivMonTab();
+
+                        tab.SetParents(null, this);
+                        tab.AnonymiseCapture(fileName, contentId, charName, replaceStrs);
+                    }
+
+
+                    MessageBox.Show("Anonymised captures saved as *_ANON.xml.", "FFXIVMon Reborn", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+        }
     }
 
     public class OodleImplementationItem : INotifyPropertyChanged
