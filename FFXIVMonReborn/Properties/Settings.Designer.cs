@@ -286,5 +286,17 @@ namespace FFXIVMonReborn.Properties {
                 this["GameWindowName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SuppressParsingErrors {
+            get {
+                return ((bool)(this["SuppressParsingErrors"]));
+            }
+            set {
+                this["SuppressParsingErrors"] = value;
+            }
+        }
     }
 }

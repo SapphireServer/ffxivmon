@@ -28,6 +28,7 @@ using Capture = FFXIVMonReborn.DataModel.Capture;
 using Color = System.Windows.Media.Color;
 using FFXIVMonReborn.Database.GitHub;
 using System.Text;
+using FFXIVMonReborn.Properties;
 
 namespace FFXIVMonReborn.Views
 {
@@ -481,7 +482,8 @@ namespace FFXIVMonReborn.Views
                 if (_erroredOpcodes.Contains(item.Message))
                 {
 #endif
-                new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
+                if (!Settings.Default.SuppressParsingErrors)
+                    new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
 #if !DEBUG
                     _erroredOpcodes.Add(item.Message);
                 }
@@ -1033,6 +1035,8 @@ namespace FFXIVMonReborn.Views
             if (!string.IsNullOrWhiteSpace(censorName))
                 paddedName = censorName.PadRight(31, '\0');
 
+            var charIdStr = _selfCharaId.ToString();
+            var contentIdStr = _selfContentId.ToString();
             if (censorSelfId)
             {
                 for (int i = 0; i < ret.Length; ++i)
@@ -1047,7 +1051,7 @@ namespace FFXIVMonReborn.Views
                             i += 31;
                         }
                     }
-                    if (i + 7 < ret.Length && _selfContentId != 0 && BitConverter.ToUInt64(ret, i) == _selfContentId || i + 8 < ret.Length && Encoding.ASCII.GetString(ret, i, 8) == _selfContentId.ToString())
+                    if (i + 7 < ret.Length && _selfContentId != 0 && BitConverter.ToUInt64(ret, i) == _selfContentId)
                     {
                         ret[i]      = 0xBE; ret[i + 1] = 0xEE;
                         ret[i + 2]  = 0xEF; ret[i + 3] = 0xD1;
@@ -1055,13 +1059,29 @@ namespace FFXIVMonReborn.Views
                         ret[i + 6]  = 0xEE; ret[i + 7] = 0xED;
                         i += 7;
                     }
-                    if (i + 3 < ret.Length && _selfCharaId != 0 && (BitConverter.ToUInt32(ret, i) == _selfCharaId || i + 4 < ret.Length && Encoding.ASCII.GetString(ret, i, 4) == _selfCharaId.ToString()))
+                    if (i + 3 < ret.Length && _selfCharaId != 0 && BitConverter.ToUInt32(ret, i) == _selfCharaId)
                     {
                         ret[i]     = 0xDE;
                         ret[i + 1] = 0xAD;
                         ret[i + 2] = 0xBE;
                         ret[i + 3] = 0xEF;
                         i += 3;
+                    }
+                    if (i + charIdStr.Length - 1 < ret.Length && Encoding.ASCII.GetString(ret, i, charIdStr.Length) == _selfCharaId.ToString())
+                    {
+                        var deadbeef = "DEADBEEF";
+                        for (int j = 0; j < charIdStr.Length; ++j)
+                        {
+                            ret[i + j] = (byte)deadbeef[j % deadbeef.Length];
+                        }
+                    }
+                    if (i + contentIdStr.Length - 1 < ret.Length && Encoding.ASCII.GetString(ret, i, contentIdStr.Length) == _selfContentId.ToString())
+                    {
+                        var beefdied = "BEEEEFD1EEEEEEED";
+                        for (int j = 0; j < contentIdStr.Length; ++j)
+                        {
+                            ret[i + j] = (byte)beefdied[j % beefdied.Length];
+                        }
                     }
                     if (replaceStrs != null)
                     {

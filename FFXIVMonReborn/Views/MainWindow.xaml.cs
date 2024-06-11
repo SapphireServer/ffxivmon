@@ -445,6 +445,13 @@ namespace FFXIVMonReborn.Views
         }
         #endregion
 
+        private void SuppressParsingErrors_OnClick(object sender, RoutedEventArgs e)
+        {
+            SuppressParsingErrors.IsChecked = !SuppressParsingErrors.IsChecked;
+            Settings.Default.SuppressParsingErrors = SuppressParsingErrors.IsChecked;
+            Settings.Default.Save();
+        }
+
         private void DontUsePacketTimestamp_OnClick(object sender, RoutedEventArgs e)
         {
             if (AreTabsCapturing())
