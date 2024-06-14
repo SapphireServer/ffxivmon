@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using FFXIVMonReborn.Database;
 using FFXIVMonReborn.Database.GitHub.Model;
+using FFXIVMonReborn.Properties;
 using Microsoft.VisualBasic;
 
 namespace FFXIVMonReborn.Views
@@ -37,7 +38,7 @@ namespace FFXIVMonReborn.Views
             }
 
             BranchListBox.SelectedIndex =
-                branches.Select((v, i) => new {v, i}).Where(x => x.v.Name == "master").Select(x => x.i).ToArray()[0];
+                branches.Select((v, i) => new {v, i}).Where(x => x.v.Name == Settings.Default.RepoBranch).Select(x => x.i).ToArray()[0];
         }
 
         public string GetSelectedVersion()

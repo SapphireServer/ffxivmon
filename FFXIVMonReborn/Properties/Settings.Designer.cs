@@ -25,18 +25,6 @@ namespace FFXIVMonReborn.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("SapphireServer/Sapphire")]
-        public string Repo {
-            get {
-                return ((string)(this["Repo"]));
-            }
-            set {
-                this["Repo"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:/Program Files (x86)/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack")]
         public string GamePath {
             get {
@@ -296,6 +284,30 @@ namespace FFXIVMonReborn.Properties {
             }
             set {
                 this["SuppressParsingErrors"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Sapphire_Retail")]
+        public string RepoBranch {
+            get {
+                return ((string)(this["RepoBranch"]));
+            }
+            set {
+                this["RepoBranch"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("SapphireServer/Sapphire")]
+        public string Repo {
+            get {
+                return ((string)(this["Repo"]));
+            }
+            set {
+                this["Repo"] = value;
             }
         }
     }

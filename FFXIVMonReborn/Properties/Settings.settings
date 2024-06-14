@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FFXIVMonReborn.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Repo" Type="System.String" Scope="User">
-      <Value Profile="(Default)">SapphireServer/Sapphire</Value>
-    </Setting>
     <Setting Name="GamePath" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:/Program Files (x86)/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack</Value>
     </Setting>
@@ -70,6 +67,12 @@
     </Setting>
     <Setting Name="SuppressParsingErrors" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="RepoBranch" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Sapphire_Retail</Value>
+    </Setting>
+    <Setting Name="Repo" Type="System.String" Scope="User">
+      <Value Profile="(Default)">SapphireServer/Sapphire</Value>
     </Setting>
   </Settings>
 </SettingsFile>

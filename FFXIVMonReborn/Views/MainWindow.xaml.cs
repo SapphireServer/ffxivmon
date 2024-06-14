@@ -559,12 +559,14 @@ namespace FFXIVMonReborn.Views
         public void SetRepository(object sender, RoutedEventArgs e)
         {
             string repo = Interaction.InputBox("Enter the GitHub repository for the definition files to be downloaded from.\nThis will reset all downloaded definitions.", "FFXIVMon Reborn", Properties.Settings.Default.Repo);
-            
+            string branch = Interaction.InputBox($"Enter the default branch for repository {repo}.", "FFXIVMon Reborn", Settings.Default.RepoBranch);
+
             // Dialog dismissed or empty input box, we don't want that
             if (repo == "")
                 return;
             
             Properties.Settings.Default.Repo = repo;
+            Properties.Settings.Default.RepoBranch = branch;
             Properties.Settings.Default.Save();
             VersioningProvider.ForceReset();
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
