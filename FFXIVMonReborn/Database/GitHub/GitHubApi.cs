@@ -45,19 +45,19 @@ namespace FFXIVMonReborn.Database.GitHub
 
         private void LoadBranches()
         {
-            Branches = GitHubBranch.FromJson(Request($"/repos/{Repository}/branches"));
+            Branches = GitHubBranch.FromJson(Request($"/repos/{Settings.Default.Repo}/branches"));
         }
 
         private void LoadTags()
         {
-            Tags = GitHubTag.FromJson(Request($"/repos/{Repository}/tags"));
+            Tags = GitHubTag.FromJson(Request($"/repos/{Settings.Default.Repo}/tags"));
 
             Tags = Tags.OrderBy(tag => decimal.Parse(tag.Name.Substring(1), CultureInfo.InvariantCulture)).ToArray();
         }
 
         private void LoadCommits()
         {
-            Commits = GitHubCommit.FromJson(Request($"/repos/{Repository}/commits?sha={Settings.Default.RepoBranch}"));
+            Commits = GitHubCommit.FromJson(Request($"/repos/{Settings.Default.Repo}/commits?sha={Settings.Default.RepoBranch}"));
         }
 
         private string Request(string endpoint, bool ignoreCache = false)
