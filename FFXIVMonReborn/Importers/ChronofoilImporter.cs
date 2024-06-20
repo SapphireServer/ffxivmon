@@ -48,7 +48,7 @@ public static class ChronofoilImporter
                     Message = type.ToString("X4"),
                     Direction = frame.Header.Direction == Direction.Rx ? "S" : "C",
                     Category = set.ToString(),
-                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds((long)frameHeader.TimeValue).ToString(@"MM\/dd\/yyyy HH:mm:ss"),
+                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds((long)frameHeader.TimeValue).ToLocalTime().ToString(@"MM\/dd\/yyyy HH:mm:ss"),
                     Size = packet.Header.Size.ToString(),
                     Set = set,
                     RouteID = routeId.ToString(),
