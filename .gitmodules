@@ -1,3 +1,6 @@
 [submodule "lib/Machina"]
 	path = lib/Machina
 	url = https://github.com/MapleHinata/machina
+[submodule "lib/Chronofoil.CaptureFile"]
+	path = lib/Chronofoil.CaptureFile
+	url = https://github.com/ProjectChronofoil/Chronofoil.CaptureFile

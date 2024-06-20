@@ -785,7 +785,7 @@ namespace FFXIVMonReborn.Views
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
             openFileDialog.Multiselect = true;
-            openFileDialog.Filter = @"XML/Pcap|*.xml;*.pcap;*.pcapng";
+            openFileDialog.Filter = @"XML/Pcap/Chronofoil|*.xml;*.pcap;*.pcapng;*.ccfcap;*.cfcap";
             openFileDialog.Title = @"Select Capture file(s)";
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -968,6 +968,8 @@ namespace FFXIVMonReborn.Views
 
                 if (path.EndsWith("xml"))
                     capture = XmlCaptureImporter.Load(path);
+                else if (path.EndsWith("cfcap"))
+                    capture = ChronofoilImporter.Load(path);
                 else
                     capture = PcapImporter.Load(path);
 
