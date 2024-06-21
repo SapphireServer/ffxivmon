@@ -36,6 +36,7 @@ namespace FFXIVMonReborn.DataModel
         [XmlIgnore]
         public bool IsForSelf { get; set; }
 
+        public bool IsChat { get; set; }
         public PacketEntry()
         {
             IsVisible = true;

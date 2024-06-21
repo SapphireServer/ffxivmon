@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FFXIVMonReborn.Database.GitHub.Model;
+using FFXIVMonReborn.Properties;
 using Newtonsoft.Json;
 
 
@@ -44,20 +45,19 @@ namespace FFXIVMonReborn.Database.GitHub
 
         private void LoadBranches()
         {
-            Branches = GitHubBranch.FromJson(Request($"/repos/{Repository}/branches"));
+            Branches = GitHubBranch.FromJson(Request($"/repos/{Settings.Default.Repo}/branches"));
         }
 
         private void LoadTags()
         {
-            Tags = GitHubTag.FromJson(Request($"/repos/{Repository}/tags"));
+            Tags = GitHubTag.FromJson(Request($"/repos/{Settings.Default.Repo}/tags"));
 
             Tags = Tags.OrderBy(tag => decimal.Parse(tag.Name.Substring(1), CultureInfo.InvariantCulture)).ToArray();
         }
 
         private void LoadCommits()
         {
-            // TODO: This is hardcoded to master right now to make version switching obsolete and make it easier to use tagged versions
-            Commits = GitHubCommit.FromJson(Request($"/repos/{Repository}/commits?sha=master"));
+            Commits = GitHubCommit.FromJson(Request($"/repos/{Settings.Default.Repo}/commits?sha={Settings.Default.RepoBranch}"));
         }
 
         private string Request(string endpoint, bool ignoreCache = false)
@@ -81,7 +81,7 @@ namespace FFXIVMonReborn.Database.GitHub
             var result = task.Result;
 
             if (!result.IsSuccessStatusCode)
-                throw new Exception("Could not complete Request.");
+                throw new Exception("Could not complete Request.\n" + result.ReasonPhrase ?? "" );
 
             var responseResult = Task.Run(result.Content.ReadAsStringAsync).Result;
             cache[endpoint] = responseResult;

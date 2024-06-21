@@ -445,6 +445,13 @@ namespace FFXIVMonReborn.Views
         }
         #endregion
 
+        private void SuppressParsingErrors_OnClick(object sender, RoutedEventArgs e)
+        {
+            SuppressParsingErrors.IsChecked = !SuppressParsingErrors.IsChecked;
+            Settings.Default.SuppressParsingErrors = SuppressParsingErrors.IsChecked;
+            Settings.Default.Save();
+        }
+
         private void DontUsePacketTimestamp_OnClick(object sender, RoutedEventArgs e)
         {
             if (AreTabsCapturing())
@@ -552,12 +559,14 @@ namespace FFXIVMonReborn.Views
         public void SetRepository(object sender, RoutedEventArgs e)
         {
             string repo = Interaction.InputBox("Enter the GitHub repository for the definition files to be downloaded from.\nThis will reset all downloaded definitions.", "FFXIVMon Reborn", Properties.Settings.Default.Repo);
-            
+            string branch = Interaction.InputBox($"Enter the default branch for repository {repo}.", "FFXIVMon Reborn", Settings.Default.RepoBranch);
+
             // Dialog dismissed or empty input box, we don't want that
             if (repo == "")
                 return;
             
             Properties.Settings.Default.Repo = repo;
+            Properties.Settings.Default.RepoBranch = branch;
             Properties.Settings.Default.Save();
             VersioningProvider.ForceReset();
             ((XivMonTab)MainTabControl.SelectedContent).ReloadDb();
@@ -852,6 +861,38 @@ namespace FFXIVMonReborn.Views
                                 "However, Deucalion might not work with all game versions.", 
                     "FFXIVMon Reborn", MessageBoxButton.OK,
                     MessageBoxImage.Information);
+        }
+
+        private void AnonymiseCaptures(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = @"XML/Pcap|*.xml;*.pcap;*.pcapng";
+            openFileDialog.Title = "Select captures";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                AnonymiseView anonView = new AnonymiseView();
+
+                if (anonView.ShowDialog() == true)
+                {
+                    var contentId = anonView.GetContentID();
+                    var charName = anonView.GetCharacterName();
+                    var replaceStrs = anonView.GetReplacementStrings();
+
+                    foreach (var fileName in openFileDialog.FileNames)
+                    {
+                        var tab = new XivMonTab();
+
+                        tab.SetParents(null, this);
+                        tab.AnonymiseCapture(fileName, contentId, charName, replaceStrs);
+                    }
+
+
+                    MessageBox.Show("Anonymised captures saved as *_ANON.xml.", "FFXIVMon Reborn", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
         }
     }
 

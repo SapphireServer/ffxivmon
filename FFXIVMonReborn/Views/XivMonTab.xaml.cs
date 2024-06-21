@@ -28,6 +28,7 @@ using Capture = FFXIVMonReborn.DataModel.Capture;
 using Color = System.Windows.Media.Color;
 using FFXIVMonReborn.Database.GitHub;
 using System.Text;
+using FFXIVMonReborn.Properties;
 
 namespace FFXIVMonReborn.Views
 {
@@ -481,7 +482,8 @@ namespace FFXIVMonReborn.Views
                 if (_erroredOpcodes.Contains(item.Message))
                 {
 #endif
-                new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
+                if (!Settings.Default.SuppressParsingErrors)
+                    new ExtendedErrorView($"Struct error! Could not get struct for {item.Name} - {item.Message}", exc.ToString(), "Error").ShowDialog();
 #if !DEBUG
                     _erroredOpcodes.Add(item.Message);
                 }
@@ -541,6 +543,14 @@ namespace FFXIVMonReborn.Views
                         {
                             switch (item.Name.Trim())
                             {
+                                case "Chat":
+                                case "ZoneChat":
+                                case "ZoneChatUp":
+                                case "ZoneChatDown":
+                                    {
+                                        item.IsChat = true;
+                                    }
+                                    break;
                                 case "NpcSpawn":
                                     {
                                         Struct structProvider = new Struct();
@@ -602,12 +612,23 @@ namespace FFXIVMonReborn.Views
             {
                 item.Name = _db.GetClientZoneOpName(int.Parse(item.Message, NumberStyles.HexNumber));
                 item.Comment = _db.GetClientZoneOpComment(int.Parse(item.Message, NumberStyles.HexNumber));
-                
+
                 if (item.Data[0x0C] == 0x09 && item.Message == "0000" && item.Connection == FFXIVNetworkMonitor.ConnectionType.Lobby)
                 {
                     _encryptionProvider = new LobbyEncryptionProvider(item.Data);
 
                     item.Comment = "Lobby Encryption INIT";
+                }
+                switch (item.Name.Trim())
+                {
+                    case "Chat":
+                    case "ZoneChat":
+                    case "ZoneChatUp":
+                    case "ZoneChatDown":
+                        {
+                            item.IsChat = true;
+                        }
+                        break;
                 }
             }
 
@@ -859,6 +880,81 @@ namespace FFXIVMonReborn.Views
             UpdateInfoLabel();
         }
 
+        public void AnonymiseCapture(string path, string contentId, string charName, Dictionary<string, string> replaceStrs)
+        {
+            Packets.Clear();
+            _ResetFilter();
+            _currentFilePath = path;
+            var filename = Path.GetFileNameWithoutExtension(_currentFilePath);
+
+            ChangeTitle(filename);
+            try
+            {
+                Capture capture = null;
+
+                if (path.EndsWith("xml"))
+                    capture = XmlCaptureImporter.Load(path);
+                else
+                    capture = PcapImporter.Load(path);
+
+                _commitSha = capture.ServerCommitHash;
+                _version = capture.Version;
+
+                var versionStr = new DirectoryInfo(Path.GetDirectoryName(_currentFilePath)).Name;
+
+                // attempt to pick version by folder name
+                if (string.IsNullOrEmpty(_commitSha) && _version == -1)
+                    _commitSha = _mainWindow.VersioningProvider.GetClosestDatabaseHash(versionStr);
+
+                if (_version != -1)
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForVersion(_version);
+                else
+                    _db = _mainWindow.VersioningProvider.GetDatabaseForCommitHash(_commitSha);
+
+                _selfContentId = Convert.ToUInt64("0x" + contentId.Trim(), 16);
+
+                foreach (var packet in capture.Packets)
+                {
+                    // Add a packet to the view, but no update to the label
+                    AddPacketToListView(packet, true);
+                }
+
+                foreach (var packet in capture.Packets)
+                {
+                    if (packet.IsChat)
+                        packet.Data = new byte[packet.Data.Length];
+                    else
+                        packet.Data = ModifyPacket(packet.Data, true, charName, replaceStrs);
+                }
+                    // Backwards compatibility
+                _wasCapturedMs = capture.UsingSystemTime != null && bool.Parse(capture.UsingSystemTime);
+
+                UpdateInfoLabel();
+
+                filename += "_ANON.xml";
+
+                try
+                {
+                    capture.LastSavedAppCommit = Util.GetGitHash();
+                    _currentFilePath = Path.Combine(Path.GetDirectoryName(path), filename);
+                    XmlCaptureImporter.Save(capture, Path.Combine(Path.GetDirectoryName(path), filename));
+                    //MessageBox.Show($"Capture saved to {filename}.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    ChangeTitle(System.IO.Path.GetFileNameWithoutExtension(filename));
+                }
+                catch (Exception ex)
+                {
+                    new ExtendedErrorView("Could not save capture.", ex.ToString(), "Error").ShowDialog();
+                }
+            }
+            catch (Exception exc)
+            {
+                new ExtendedErrorView($"Could not load capture at {path}.", exc.ToString(), "Error").ShowDialog();
+#if DEBUG
+                throw;
+#endif
+            }
+        }
+
         public void LoadCapture(string path)
         {
             Packets.Clear();
@@ -927,7 +1023,7 @@ namespace FFXIVMonReborn.Views
         }
         #endregion
 
-        byte[] ModifyPacket(byte[] packet, bool censorSelfId, string censorName)
+        byte[] ModifyPacket(byte[] packet, bool censorSelfId, string censorName, Dictionary<string, string> replaceStrs = null)
         {
             //uint censoredId = 0xEFBEADDE;
             //ulong censoredContentId = 0xEDEEEEEED1EFEEBE;
@@ -939,6 +1035,8 @@ namespace FFXIVMonReborn.Views
             if (!string.IsNullOrWhiteSpace(censorName))
                 paddedName = censorName.PadRight(31, '\0');
 
+            var charIdStr = _selfCharaId.ToString();
+            var contentIdStr = _selfContentId.ToString();
             if (censorSelfId)
             {
                 for (int i = 0; i < ret.Length; ++i)
@@ -961,13 +1059,52 @@ namespace FFXIVMonReborn.Views
                         ret[i + 6]  = 0xEE; ret[i + 7] = 0xED;
                         i += 7;
                     }
-                    if (i + 3 < ret.Length && _selfCharaId != 0 && (BitConverter.ToUInt32(ret, i) == _selfCharaId || Encoding.ASCII.GetString(ret, i, 3) == _selfCharaId.ToString()))
+                    if (i + 3 < ret.Length && _selfCharaId != 0 && BitConverter.ToUInt32(ret, i) == _selfCharaId)
                     {
                         ret[i]     = 0xDE;
                         ret[i + 1] = 0xAD;
                         ret[i + 2] = 0xBE;
                         ret[i + 3] = 0xEF;
                         i += 3;
+                    }
+                    if (i + charIdStr.Length - 1 < ret.Length && Encoding.ASCII.GetString(ret, i, charIdStr.Length) == _selfCharaId.ToString())
+                    {
+                        var deadbeef = "DEADBEEF";
+                        for (int j = 0; j < charIdStr.Length; ++j)
+                        {
+                            ret[i + j] = (byte)deadbeef[j % deadbeef.Length];
+                        }
+                    }
+                    if (i + contentIdStr.Length - 1 < ret.Length && Encoding.ASCII.GetString(ret, i, contentIdStr.Length) == _selfContentId.ToString())
+                    {
+                        var beefdied = "BEEEEFD1EEEEEEED";
+                        for (int j = 0; j < contentIdStr.Length; ++j)
+                        {
+                            ret[i + j] = (byte)beefdied[j % beefdied.Length];
+                        }
+                    }
+                    if (replaceStrs != null)
+                    {
+                        foreach (var pair in replaceStrs)
+                        {
+                            var findStr = pair.Key;
+                            var replaceStr = pair.Value;
+
+                            if (replaceStr.Length > findStr.Length)
+                                throw new Exception("Replace str length must be <= find str length.");
+
+                            if (i + findStr.Length - 1 < ret.Length && Encoding.ASCII.GetString(ret, i, findStr.Length).ToLower() == findStr)
+                            {
+                                for (int j = 0; j < findStr.Length; j++)
+                                {
+                                    if (j < replaceStr.Length)
+                                        ret[i + j] = (byte)replaceStr[j];
+                                    else
+                                        ret[i + j] = 0;
+                                }
+                                i += findStr.Length - 1;
+                            }
+                        }
                     }
                     
                 }

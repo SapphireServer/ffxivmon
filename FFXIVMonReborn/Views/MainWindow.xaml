@@ -27,6 +27,8 @@
                     <Separator></Separator>
                     <MenuItem Header="_New Tab" Click="NewTab"/>
                     <MenuItem Header="_New Instance" Click="NewInstance"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Anonymise Captures" Click="AnonymiseCaptures"/>
                 </MenuItem>
                 <MenuItem Header="_Capture">
                     <MenuItem Header="_Start (CTRL+ALT+F12)" Click="StartCaptureRelay"/>
@@ -70,6 +72,7 @@
                     <MenuItem Header="_Reload" Click="ReloadExClick"/>
                 </MenuItem>
                 <MenuItem Header="_Options">
+                    <MenuItem x:Name="SuppressParsingErrors" Header="_Suppress struct parsing errors" Click="SuppressParsingErrors_OnClick"/>
                     <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
@@ -79,8 +82,8 @@
                         <MenuItem.ItemContainerStyle>
                             <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" >
                                 <Setter Property="IsCheckable" Value="True" />
-                                <Setter Property="Header" Value="{Binding .Name}" />
-                                <Setter Property="IsChecked" Value="{Binding .IsChecked}" />
+                                <Setter Property="Header" Value="{Binding Name}" />
+                                <Setter Property="IsChecked" Value="{Binding IsChecked}" />
                             </Style>
                         </MenuItem.ItemContainerStyle>
                     </MenuItem>
