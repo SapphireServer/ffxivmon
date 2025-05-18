@@ -17,6 +17,7 @@ namespace FFXIVMonReborn.DataModel
         public int Set { get; set; }
         public uint PacketUnixTime { get; set; }
         public long SystemMsTime { get; set; }
+        public long HeaderEpoch { get; set; }
         public bool IsDecrypted { get; set; }
         public FFXIVNetworkMonitor.ConnectionType Connection { get; set; }
 

@@ -120,9 +120,23 @@ namespace FFXIVMonReborn.Views
             }
             else
             {
+                UseHeaderEpochTimestamp.IsChecked = false;
                 CaptureFlags |= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
                 DontUsePacketTimestamp.IsChecked = true;
                 Properties.Settings.Default.DontUsePacketTimestamp = true;
+            }
+
+            if (!Properties.Settings.Default.UseHeaderEpochTimestamp)
+            {
+                UseHeaderEpochTimestamp.IsChecked = false;
+                Properties.Settings.Default.UseHeaderEpochTimestamp = false;
+            }
+            else
+            {
+                DontUsePacketTimestamp.IsChecked = false;
+                CaptureFlags |= MachinaCaptureWorker.ConfigFlags.UseHeaderEpochTimestamp;
+                DontUsePacketTimestamp.IsChecked = true;
+                Properties.Settings.Default.UseHeaderEpochTimestamp = true;
             }
 
             if (Properties.Settings.Default.ForceRealtimePriority)
@@ -451,8 +465,41 @@ namespace FFXIVMonReborn.Views
             Settings.Default.SuppressParsingErrors = SuppressParsingErrors.IsChecked;
             Settings.Default.Save();
         }
-
         private void DontUsePacketTimestamp_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (AreTabsCapturing())
+            {
+                MessageBox.Show("A capture is in progress.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            if (UseHeaderEpochTimestamp.IsChecked)
+            {
+                MessageBox.Show("Uncheck Use Header 64bit Timestamp before using this.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            else
+            {
+                if (DontUsePacketTimestamp.IsChecked)
+                {
+                    CaptureFlags ^= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
+                    DontUsePacketTimestamp.IsChecked = false;
+                    Properties.Settings.Default.DontUsePacketTimestamp = false;
+                }
+                else
+                {
+                    CaptureFlags |= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
+                    DontUsePacketTimestamp.IsChecked = true;
+                    Properties.Settings.Default.DontUsePacketTimestamp = true;
+                }
+            }
+
+            Properties.Settings.Default.Save();
+        }
+
+        private void UseHeaderEpochTimestamp_OnClick(object sender, RoutedEventArgs e)
         {
             if (AreTabsCapturing())
             {
@@ -463,17 +510,26 @@ namespace FFXIVMonReborn.Views
 
             if (DontUsePacketTimestamp.IsChecked)
             {
-                CaptureFlags ^= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
-                DontUsePacketTimestamp.IsChecked = false;
-                Properties.Settings.Default.DontUsePacketTimestamp = false;
+                MessageBox.Show("Uncheck Self-stamp Packet Timestamp before using this.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
             }
             else
             {
-                CaptureFlags |= MachinaCaptureWorker.ConfigFlags.DontUsePacketTimestamp;
-                DontUsePacketTimestamp.IsChecked = true;
-                Properties.Settings.Default.DontUsePacketTimestamp = true;
+                if (UseHeaderEpochTimestamp.IsChecked)
+                {
+                    CaptureFlags ^= MachinaCaptureWorker.ConfigFlags.UseHeaderEpochTimestamp;
+                    UseHeaderEpochTimestamp.IsChecked = false;
+                    Properties.Settings.Default.UseHeaderEpochTimestamp = false;
+                }
+                else
+                {
+                    CaptureFlags |= MachinaCaptureWorker.ConfigFlags.UseHeaderEpochTimestamp;
+                    UseHeaderEpochTimestamp.IsChecked = true;
+                    Properties.Settings.Default.UseHeaderEpochTimestamp = true;
+                }
             }
-            
+
             Properties.Settings.Default.Save();
         }
 

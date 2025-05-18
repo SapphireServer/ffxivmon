@@ -19,9 +19,10 @@ namespace FFXIVMonReborn
         [Flags]
         public enum ConfigFlags
         {
-            None                   = 0,
-            StripHeaderActors      = 1 << 0,
-            DontUsePacketTimestamp = 1 << 1
+            None                    = 0,
+            StripHeaderActors       = 1 << 0,
+            DontUsePacketTimestamp  = 1 << 1,
+            UseHeaderEpochTimestamp = 1 << 2
         }
 
         private readonly XivMonTab _myTab;
@@ -43,7 +44,7 @@ namespace FFXIVMonReborn
         {
             var res = Parse(message);
 
-            var item = new PacketEntry 
+            var item = new PacketEntry
             { 
                 IsVisible = true,
                 ActorControl = -1,
@@ -57,12 +58,17 @@ namespace FFXIVMonReborn
                 RouteID = res.header.RouteID.ToString(),
                 PacketUnixTime = res.header.Seconds,
                 SystemMsTime = Millis(),
+                HeaderEpoch = epoch,
                 Connection = connectionType
             };
 
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
                 item.Timestamp = DateTime.Now.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
+            }
+            else if (_configFlags.HasFlag(ConfigFlags.UseHeaderEpochTimestamp))
+            {
+                item.Timestamp = DateTime.UnixEpoch.AddMilliseconds(epoch).ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
             }
 
             _myTab.Dispatcher.Invoke(() => { _myTab.AddPacketToListView(item); });
@@ -72,7 +78,7 @@ namespace FFXIVMonReborn
         {
             var res = Parse(message);
 
-            var item = new PacketEntry 
+            var item = new PacketEntry
             { 
                 IsVisible = true,
                 ActorControl = -1,
@@ -92,6 +98,10 @@ namespace FFXIVMonReborn
             if (_configFlags.HasFlag(ConfigFlags.DontUsePacketTimestamp))
             {
                 item.Timestamp = DateTime.Now.ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
+            }
+            else if (_configFlags.HasFlag(ConfigFlags.UseHeaderEpochTimestamp))
+            {
+                item.Timestamp = DateTime.UnixEpoch.AddMilliseconds(epoch).ToString(@"MM\/dd\/yyyy HH:mm:ss.fff tt");
             }
 
             _myTab.Dispatcher.Invoke(new Action(() => { _myTab.AddPacketToListView(item); }));
