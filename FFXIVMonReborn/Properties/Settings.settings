@@ -74,5 +74,8 @@
     <Setting Name="Repo" Type="System.String" Scope="User">
       <Value Profile="(Default)">SapphireServer/Sapphire</Value>
     </Setting>
+    <Setting Name="UseHeaderEpochTimestamp" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

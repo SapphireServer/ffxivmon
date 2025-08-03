@@ -73,7 +73,8 @@
                 </MenuItem>
                 <MenuItem Header="_Options">
                     <MenuItem x:Name="SuppressParsingErrors" Header="_Suppress struct parsing errors" Click="SuppressParsingErrors_OnClick"/>
-                    <MenuItem x:Name="DontUsePacketTimestamp" Header="_Don't use Packet Timestamp(enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
+                    <MenuItem x:Name="DontUsePacketTimestamp" Header="_Self-stamp Packet Timestamp (enables millisecond precision)" Click="DontUsePacketTimestamp_OnClick"/>
+                    <MenuItem x:Name="UseHeaderEpochTimestamp" Header="_Use Header 64bit Timestamp (enables millisecond precision)" Click="UseHeaderEpochTimestamp_OnClick"/>
                     <MenuItem x:Name="ForceRealtimePriority" Header="_Force Realtime Process Priority(enable when dropping packets)" Click="ForceRealtimePriority_OnClick"/>
                     <MenuItem x:Name="HideHexBoxActorIdCheckBox" Header="_Hide Actor IDs in the hex editor" IsCheckable="True" Checked="HideHexBoxActorIdCheckBox_OnChecked" Unchecked="HideHexBoxActorIdCheckBox_OnUnchecked"/>
                     <MenuItem x:Name="StickPacketViewBottomCheckBox" Header="_Stick Packet View to bottom" IsCheckable="True" Checked="StickPacketViewBottomCheckBox_OnChecked" Unchecked="StickPacketViewBottomCheckBox_OnUnchecked"/>
