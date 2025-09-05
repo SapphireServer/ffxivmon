@@ -113,7 +113,10 @@
                                             <Setter Property="Background"
                                                     Value="#FFB7E3FF" />
                                         </MultiDataTrigger>
-
+                                        <Trigger Property="IsSelected" Value="true" >
+                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="Background" Value="DarkOrange" />
+                                        </Trigger>
                                         <DataTrigger Binding="{Binding IsVisible}" Value="False">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                         </DataTrigger>
@@ -141,7 +144,7 @@
 
                         <!-- <TextBlock Grid.Row="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Bottom</TextBlock> -->
 
-                        <Grid Grid.Row="2" Grid.ColumnSpan="2">
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,10,0" Grid.RowSpan="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
@@ -151,8 +154,33 @@
                                 <RowDefinition Height="25" />
                             </Grid.RowDefinitions>
 
-                            <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
-                                <views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
+                            <DockPanel Grid.Row="0" Grid.ColumnSpan="2">
+                                <ListView DockPanel.Dock="Right" x:Name="BookmarksView" MouseDoubleClick="BookmarksView_OnMouseDoubleClick" FontFamily="Consolas" Grid.Column="1" Grid.RowSpan="2">
+                                    <ListView.Resources>
+                                        <Style TargetType="{x:Type ListViewItem}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListView.Resources>
+                                    <ListView.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Name="EditDescription" Header="Edit Description" Click="BookmarksView_EditDescription_Click"/>
+                                            <MenuItem Name="DeleteBookmark" Header="Delete Bookmark" Click="BookmarksView_DeleteBookmark_Click"/>
+                                            <MenuItem Name="Help" Header="Help" Click="BookmarksView_Help_Click"/>
+                                        </ContextMenu>
+                                    </ListView.ContextMenu>
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
+                                            <GridViewColumn Header="Offset" DisplayMemberBinding="{Binding Offset}"/>
+                                            <GridViewColumn Header="Description" Width="110" DisplayMemberBinding="{Binding Description}"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <views:DataTypeView x:Name="DataTypeViewer" MinWidth="200" DockPanel.Dock="Right" />
                                 <wpfHexaEditor:HexEditor
                                     DockPanel.Dock="Right"
                                     x:Name="HexEditor"
@@ -163,12 +191,12 @@
                                     Foreground="Black"
                                     ForegroundSecondColor="Black"
                                     SelectionStartChanged="HexEditor_OnSelectionStartChanged"
-                                    SelectionStopChanged="HexEditor_OnSelectionStopChanged"/>
+                                    SelectionStopChanged="HexEditor_OnSelectionStopChanged" KeyDown="HexEditor_KeyDown"/>
                             </DockPanel>
                         </Grid>
                     </Grid>
                     <GridSplitter Grid.Column="1" Grid.RowSpan="2"  Width="5" HorizontalAlignment="Stretch" />
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="Consolas" KeyDown="StructListView_KeyDown" Margin="0,0,0,24">
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" SelectionChanged="StructListView_OnSelectionChanged" MouseDoubleClick="StructListView_OnMouseDoubleClick" FontFamily="Consolas" KeyDown="StructListView_KeyDown" Margin="0,0,0,512">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>
