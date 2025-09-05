@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using FFXIVMonReborn.Database;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace FFXIVMonReborn.Views
 {
@@ -36,6 +37,7 @@ namespace FFXIVMonReborn.Views
                 new StructListItem{ DataTypeCol = "int32_t", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "uint64_t", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "int64_t", typeLength = 8, ValueCol = "Cannot parse." },
+                new StructListItem{ DataTypeCol = "half", typeLength=2, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "float", typeLength = 4, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "double", typeLength = 8, ValueCol = "Cannot parse." },
                 new StructListItem{ DataTypeCol = "time_t", typeLength = 4, ValueCol = "Cannot parse." },
@@ -80,6 +82,8 @@ namespace FFXIVMonReborn.Views
                             thisItem.ValueCol = $"{BitConverter.ToInt64(data, offset)}";
                         else if (thisItem.DataTypeCol == "uint64_t")
                             thisItem.ValueCol = $"{BitConverter.ToUInt64(data, offset)}";
+                        else if (thisItem.DataTypeCol == "half")
+                            thisItem.ValueCol = $"{BitConverter.ToHalf(data, offset)}";
                         else if (thisItem.DataTypeCol == "float")
                             thisItem.ValueCol = $"{BitConverter.ToSingle(data, offset)}";
                         else if (thisItem.DataTypeCol == "double")

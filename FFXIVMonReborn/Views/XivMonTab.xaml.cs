@@ -1202,7 +1202,7 @@ namespace FFXIVMonReborn.Views
                     packets.Add(startPacket.Data);
 
                     int at = index - 1;
-                    while (true && at != 0 && at != -1)
+                    while (at > -1)
                     {
                         if (((PacketEntry)Packets[at]).Set == startPacket.Set)
                         {
@@ -1215,7 +1215,7 @@ namespace FFXIVMonReborn.Views
                     }
 
                     at = index + 1;
-                    while (true && at < Packets.Count)
+                    while (at < Packets.Count)
                     {
                         if (((PacketEntry)Packets[at]).Set == startPacket.Set)
                         {
@@ -1266,7 +1266,8 @@ namespace FFXIVMonReborn.Views
                 packets.Add(ModifyPacket(startPacket.Data, censorSelfIds, censorSelfName));
 
                 int at = Packets.IndexOf(startPacket) - 1;
-                while (true)
+                
+                while (at > -1)
                 {
                     if (((PacketEntry)Packets[at]).Set == startPacket.Set)
                         packets.Insert(0, ModifyPacket(((PacketEntry)Packets[at]).Data, censorSelfIds, censorSelfName));
@@ -1276,7 +1277,7 @@ namespace FFXIVMonReborn.Views
                 }
 
                 at = Packets.IndexOf(startPacket) + 1;
-                while (true)
+                while (at < Packets.Count)
                 {
                     if (((PacketEntry)Packets[at]).Set == startPacket.Set)
                         packets.Add(ModifyPacket(((PacketEntry)Packets[at]).Data, censorSelfIds, censorSelfName));
@@ -1675,7 +1676,73 @@ namespace FFXIVMonReborn.Views
             }
             return (begin, end);
         }
+
+        private void HexEditor_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && e.Key == Key.D)
+            {
+                var desc = Interaction.InputBox("Enter description", "Bookmark Description", null);
+                if (PacketListView.SelectedItem != null)
+                {
+                    var packetEntry = PacketListView.SelectedItem as PacketEntry;
+                    var bookmark = new PacketBookmark();
+                    var (begin, end) = GetRealHexEditorSelectionBounds();
+                    bookmark.Message = packetEntry.Message;
+                    bookmark.Offset = (int)begin;
+                    bookmark.Description = desc;
+                    bookmark.PacketEntry = packetEntry;
+                    BookmarksView.Items.Add(bookmark);
+                }
+            }
+        }
         #endregion
+
+        #region BookmarksView
+        private void BookmarksView_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var selected = (PacketBookmark)BookmarksView.SelectedItem;
+            if (selected != null)
+            {
+                var packet = selected.PacketEntry;
+
+                PacketListView.SelectedItem = packet;
+                PacketListView.ScrollIntoView(PacketListView.SelectedItem);
+                PacketListView.UpdateLayout();
+
+                HexEditor.SelectionStart = selected.Offset;
+                HexEditor.SelectionStop = selected.Offset;
+                HexEditor_OnSelectionStartChanged(null, null);
+            }
+        }
+
+        private void BookmarksView_DeleteBookmark_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = (PacketBookmark)BookmarksView.SelectedItem;
+            if (selected != null)
+                BookmarksView.Items.Remove(selected);
+        }
+        private void BookmarksView_EditDescription_Click(object sender, RoutedEventArgs e)
+        {
+            // todo: this doesnt update description currently
+            var selected = (PacketBookmark)BookmarksView.SelectedItem;
+            if (selected != null)
+            {
+                var desc = Interaction.InputBox("Enter description", "Bookmark Description", ((PacketBookmark)BookmarksView.SelectedItem).Description);
+                if (desc != null)
+                    ((PacketBookmark)BookmarksView.SelectedItem).Description = desc;
+                BookmarksView.UpdateLayout();
+                BookmarksView.Refresh();
+            }
+        }
+
+        private void BookmarksView_Help_Click(object sender, RoutedEventArgs e)
+        {
+            var desc = "Select offset in HexBox. \r\nCtrl + D to Bookmark. \r\nDouble click item to scroll Packet into view.";
+            MessageBox.Show(desc);
+        }
+        #endregion
+
+
     }
 }
 
