@@ -456,6 +456,7 @@ namespace FFXIVMonReborn.Views
         private void Scripting_RunOnCaptureRelay(object sender, RoutedEventArgs e)
         {
             ((XivMonTab)MainTabControl.SelectedContent).Scripting_RunOnCapture();
+            MessageBox.Show("Scripts finished running.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         #endregion
 

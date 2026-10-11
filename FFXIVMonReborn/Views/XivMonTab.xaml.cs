@@ -1441,7 +1441,7 @@ namespace FFXIVMonReborn.Views
                 {
                     var packet = item as PacketEntry;
 
-                    if (packet.IsVisible)
+                    //if (packet.IsVisible)
                     {
                         Scripting_RunOnPacket(packet, _mainWindow.ScriptProvider, parseStructs);
                     }
