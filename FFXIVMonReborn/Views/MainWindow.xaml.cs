@@ -379,19 +379,19 @@ namespace FFXIVMonReborn.Views
                 $"goatmon reborn\n\nVersion: {Util.GetGitHash()}\n\nA FFXIV Packet analysis tool for Sapphire\nCapture backend(Machina) by Ravahn of ACT fame\n\nhttps://github.com/SapphireServer\nhttps://github.com/ravahn/machina", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         
-        private void Scripting_SelectScripts(object sender, RoutedEventArgs e)
+        private async void Scripting_SelectScripts(object sender, RoutedEventArgs e)
         {
             var scriptView = new ScriptSelectView("Scripts");
             scriptView.ShowDialog();
             var toLoad = scriptView.GetSelectedScripts();
 
             ScriptProvider = new ScriptingProvider();
-            ScriptProvider.LoadScripts(toLoad);
+            await ScriptProvider.LoadScriptsAsync(toLoad);
 
             _selectedScripts = toLoad;
         }
 
-        private void Scripting_ReloadScripts(object sender, RoutedEventArgs e)
+        private async void Scripting_ReloadScripts(object sender, RoutedEventArgs e)
         {
             if (_selectedScripts.Length == 0)
             {
@@ -401,7 +401,7 @@ namespace FFXIVMonReborn.Views
             }
 
             ScriptProvider = new ScriptingProvider();
-            ScriptProvider.LoadScripts(_selectedScripts);
+            await ScriptProvider.LoadScriptsAsync(_selectedScripts);
         }
 
         private void Scripting_ResetDataStorage(object sender, RoutedEventArgs e)
@@ -456,6 +456,7 @@ namespace FFXIVMonReborn.Views
         private void Scripting_RunOnCaptureRelay(object sender, RoutedEventArgs e)
         {
             ((XivMonTab)MainTabControl.SelectedContent).Scripting_RunOnCapture();
+            MessageBox.Show("Scripts finished running.", "FFXIVMon Reborn", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
         #endregion
 

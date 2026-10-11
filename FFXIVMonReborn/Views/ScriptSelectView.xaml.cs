@@ -28,8 +28,16 @@ namespace FFXIVMonReborn
         {
             InitializeComponent();
             ScriptListBox.DataContext = ScriptList;
+            string[] files = Array.Empty<string>();
 
-            var files = Directory.GetFiles(folderPath);
+            try
+            {
+                files = Directory.GetFiles(folderPath);
+            }
+            catch (Exception e)
+            {
+                Directory.CreateDirectory(folderPath);
+            }
 
             foreach (var file in files)
             {

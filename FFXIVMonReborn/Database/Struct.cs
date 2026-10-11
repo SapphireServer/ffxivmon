@@ -1,17 +1,16 @@
-﻿using System;
+﻿using FFXIVMonReborn.Database.DataTypes;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Documents;
 using System.Windows.Media;
-using FFXIVMonReborn.Database.DataTypes;
 
 namespace FFXIVMonReborn.Database
 {
-
-    //TODO: Clean this up and make it a bit faster
     class Struct
     {
         internal enum TypePrintMode
@@ -36,330 +35,285 @@ namespace FFXIVMonReborn.Database
             { "int16_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(Int16),  2, TypePrintMode.ObjectToString, "") },
             { "int32_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(Int32),  4, TypePrintMode.ObjectToString, "") },
             { "int64_t",  new Tuple<Type, int, TypePrintMode, string>(typeof(Int64),  8, TypePrintMode.ObjectToString, "") },
-
-            { "float",    new Tuple<Type, int, TypePrintMode, string>(typeof(float), 4, TypePrintMode.ObjectToString, "") },
-
-            //Sapphire Common Types
-            { "Common::StatusEffect", new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
-            { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(typeof(FfxivArrPosition3DataType), 12, TypePrintMode.CustomDataType, "") },
-            { "Common::SkillType", new Tuple<Type, int, TypePrintMode, string>(typeof(byte), sizeof(byte), TypePrintMode.ObjectToString, "") },
+            { "float",    new Tuple<Type, int, TypePrintMode, string>(typeof(float),  4, TypePrintMode.ObjectToString, "") },
+            { "bool",     new Tuple<Type, int, TypePrintMode, string>(typeof(bool),   1, TypePrintMode.ObjectToString, "") },
             
-            // Types in IPC (TODO: Parse?)
-            { "effectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
-            { "EffectEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") }, //used in FFXIVIpcEffect
-            { "PlayerEntry",  new Tuple<Type, int, TypePrintMode, string>(null, 88, TypePrintMode.Raw, "") }, //used in FFXIVIpcSocialList
+            // custom types
+            { "Common::StatusEffect",       new Tuple<Type, int, TypePrintMode, string>(null, 12, TypePrintMode.Raw, "") },
+            { "Common::FFXIVARR_POSITION3", new Tuple<Type, int, TypePrintMode, string>(typeof(FfxivArrPosition3DataType), 12, TypePrintMode.CustomDataType, "") },
+            { "Common::Vector3",            new Tuple<Type, int, TypePrintMode, string>(typeof(FfxivArrPosition3DataType), 12, TypePrintMode.CustomDataType, "") },
+            { "Common::SkillType",          new Tuple<Type, int, TypePrintMode, string>(typeof(byte), 1, TypePrintMode.ObjectToString, "") },
+            { "effectEntry",                new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") },
+            { "EffectEntry",                new Tuple<Type, int, TypePrintMode, string>(null, 8, TypePrintMode.Raw, "") },
+            { "PlayerEntry",                new Tuple<Type, int, TypePrintMode, string>(null, 88, TypePrintMode.Raw, "") }
         };
 
         public static readonly Dictionary<string, Color> TypeColours = new Dictionary<string, Color>
         {
-            { "uint8_t",Color.FromArgb(0xff, 0xab, 0xc8, 0xf4) },
+            { "uint8_t",  Color.FromArgb(0xff, 0xab, 0xc8, 0xf4) },
             { "uint16_t", Color.FromArgb(0xff, 0xd7, 0x89, 0x8c) },
             { "uint32_t", Color.FromArgb(0xff, 0x89, 0xd7, 0xb7) },
             { "uint64_t", Color.FromArgb(0xff, 0x89, 0xd7, 0xd7) },
-            { "char", Color.FromArgb(0xff, 0x7b, 0xc8, 0xf4) },
-            { "float", Color.FromArgb(0xff, 0x7f, 0xc0, 0xc0) },
+            { "char",     Color.FromArgb(0xff, 0x7b, 0xc8, 0xf4) },
+            { "float",    Color.FromArgb(0xff, 0x7f, 0xc0, 0xc0) },
         };
 
-        private readonly Dictionary<string, List<StructParseDirective>> _nestedStructDictionary = new Dictionary<string, List<StructParseDirective>>();
-
-        public Tuple<StructListItem[], System.Dynamic.ExpandoObject> Parse(string structText, byte[] packet)
+        public Tuple<StructListItem[], ExpandoObject> Parse(string headerText, byte[] packet)
         {
             StringBuilder debugMsg = new StringBuilder();
+            List<StructListItem> uiItemsList = new List<StructListItem>();
+            ExpandoObject dynamicObject = new ExpandoObject();
+
             try
             {
-                // Get rid of any comments
-                Regex r = new Regex("\\/\\*(.*)\\*\\/");
-                structText = r.Replace(structText, "");
-                r = new Regex("\\/\\/(.*)");
-                structText = r.Replace(structText, "");
+                var parser = new SimpleCppParser();
+                var definitions = parser.ParseDefinitions(headerText);
 
-                List<StructListItem> output = new List<StructListItem>();
-                ExpandoObject exobj = new ExpandoObject();
+                if (definitions.Count == 0)
+                    throw new Exception("No valid struct definitions found in header.");
 
-                var lines = Regex.Split(structText, "\r\n|\r|\n");
-                int at = 3;
-
-                List<StructParseDirective> currentNestedStruct = null;
-                string currentNestedStructName = null;
+                var mainStruct = definitions.Last();
+                debugMsg.AppendLine($"Target Main Struct: {mainStruct.Name}");
 
                 using (MemoryStream stream = new MemoryStream(packet))
                 {
-                    stream.Position = 0x20;
+                    stream.Position = 0x20; // skip header
                     using (BinaryReader reader = new BinaryReader(stream))
                     {
-                        while (at != lines.Length - 1)
-                        {
-                            StructListItem item = new StructListItem();
-
-                            var line = lines[at];
-
-                            if (String.IsNullOrEmpty(line))
-                            {
-                                debugMsg.Append($"Line {at} is empty\n");
-                                at++;
-                                continue;
-                            }
-
-                            int pos = 0;
-                            while (pos < line.Length && !Char.IsLetter(line[pos]))
-                            {
-                                ++pos;
-                            }
-                            if (pos == line.Length)
-                                break;
-
-                            if (currentNestedStructName != null)
-                            {
-                                if (line.Contains("}"))
-                                {
-                                    _nestedStructDictionary.Add(currentNestedStructName, currentNestedStruct);
-                                    debugMsg.Append($"Finished nested struct:{currentNestedStructName} - {currentNestedStruct.Count} Entries\n\n");
-
-                                    var aryItems = ParseCNestedArray(currentNestedStruct, reader, line, currentNestedStructName, ref exobj
-                                        , debugMsg);
-                                    
-                                    output.AddRange(aryItems);
-                                    
-                                    List<Object> values = new List<object>();
-                                    foreach (var aryItem in aryItems)
-                                    {
-                                        values.Add(aryItem.RawValue);   
-                                    }
-                                    
-                                    ((IDictionary<String, Object>) exobj).Add(Regex.Replace(aryItems[0].NameCol, "(\\[.*\\])|(\".*\")|('.*')|(\\(.*\\))", ""), values.ToArray());
-
-                                    currentNestedStructName = null;
-                                    currentNestedStruct = null;
-                                    at++;
-                                    continue;
-                                }
-                            }
-
-                            string dataType = "";
-
-                            //Nested structs don't end in whitespace, thus short-circuit should we reach line lenght
-                            //to prevent an out of bounds exception.
-                            while (!pos.Equals(line.Length) && line[pos] != ' ')
-                            {
-                                dataType += line[pos];
-                                pos++;
-                            }
-
-                            if (dataType == "struct")
-                            {
-                                string structName = "";
-
-                                pos++;
-                                while (pos < line.Length)
-                                {
-                                    structName += line[pos];
-                                    pos++;
-                                }
-                                currentNestedStruct = new List<StructParseDirective>();
-                                currentNestedStructName = structName;
-
-                                debugMsg.Append($"Start nested struct parse of {currentNestedStructName}\n");
-                                at += 2;
-                                continue;
-                            }
-
-                            item.DataTypeCol = dataType;
-
-                            pos++;
-
-                            string name = "";
-
-                            while (line[pos] != ';')
-                            {
-                                name += line[pos];
-                                pos++;
-                            }
-
-                            debugMsg.Append($"Expected:{name} - {dataType} - {line} - {at}\n");
-
-                            item.NameCol = name;
-
-                            item.offset = stream.Position;
-                            item.OffsetCol = stream.Position.ToString("X");
-
-                            if (currentNestedStructName == null)
-                            {
-                                StructListItem[] aryItems = null;
-
-                                if (!name.EndsWith("]"))
-                                    ParseCType(dataType, reader, ref item, debugMsg);
-                                else
-                                    aryItems = ParseCArray(dataType, reader, ref item, name, ref exobj, debugMsg);
-
-                                output.Add(item);
-
-                                if (aryItems == null)
-                                    ((IDictionary<String, Object>) exobj).Add(item.NameCol, item.RawValue);
-                                else
-                                {
-                                    List<Object> values = new List<object>();
-                                    foreach (var aryItem in aryItems)
-                                    {
-                                        values.Add(aryItem.RawValue);
-                                    }
-                                    
-                                    ((IDictionary<String, Object>) exobj).Add(Regex.Replace(aryItems[0].NameCol, "(\\[.*\\])|(\".*\")|('.*')|(\\(.*\\))", ""), values.ToArray());
-                                }
-
-                                debugMsg.Append($"Parsed:{item.NameCol} - {item.OffsetCol} - {item.DataTypeCol} - {item.ValueCol}\n\n");
-
-                                if (aryItems != null)
-                                    output.AddRange(aryItems);
-
-                            }
-                            else
-                            {
-                                currentNestedStruct.Add(new StructParseDirective { ArrayCount = 0, Name = item.NameCol, DataType = item.DataTypeCol});
-                                debugMsg.Append($"Added to nested:{item.NameCol} - {item.DataTypeCol}\n\n");
-                            }
-                            at++;
-                        }
+                        ReadStruct(reader, mainStruct, definitions, dynamicObject, uiItemsList, debugMsg);
                     }
                 }
 
-                LogView.Instance?.WriteLine($"[Struct] Struct parsed, but there were unknown types. Please add them in Struct.cs. \n{debugMsg}");
-
-                return new Tuple<StructListItem[], ExpandoObject>(output.ToArray(), exobj);
+                return new Tuple<StructListItem[], ExpandoObject>(uiItemsList.ToArray(), dynamicObject);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw new Exception($"\nBase Exception:\n{e}\n\nTrace:\n{debugMsg}\n\nStruct:\n{structText}");
+                throw new Exception($"\nException:\n{e.Message}\n\nTrace:\n{debugMsg}");
             }
         }
 
-        private StructListItem[] ParseCNestedArray(List<StructParseDirective> nestedStruct, BinaryReader reader,
-            string name, string structName, ref ExpandoObject exobj, StringBuilder debugMsg)
+        private void ReadStruct(
+            BinaryReader reader,
+            StructDefinition def,
+            List<StructDefinition> allDefs,
+            ExpandoObject targetObj,
+            List<StructListItem> uiList,
+            StringBuilder debug)
         {
-            List<StructListItem> output = new List<StructListItem>();
+            var dict = (IDictionary<string, object>)targetObj;
 
-            int count;
-            if(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")).Contains("0x"))
-                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 3, name.LastIndexOf("]")), NumberStyles.HexNumber);
-            else
-                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
-
-            debugMsg.Append($"Nested Array Start - {name} - {count}\n");
-
-            output.Add(new StructListItem{DataTypeCol = structName, NameCol = name.Replace("}", "").Replace(";", "").Replace(" ", ""), OffsetCol = reader.BaseStream.Position.ToString()});
-
-            for (int i = 0; i < count; i++)
+            foreach (var field in def.Fields)
             {
-                output.Add(new StructListItem { DataTypeCol = structName, NameCol = $"  {structName}[{i}]", OffsetCol = reader.BaseStream.Position.ToString() });
-                foreach (var directive in nestedStruct)
-                {
-                    StructListItem item = new StructListItem();
-                    item.NameCol = "    ->" + directive.Name;
-                    item.DataTypeCol = directive.DataType;
-                    item.OffsetCol = reader.BaseStream.Position.ToString();
-                    item.offset = reader.BaseStream.Position;
+                long offset = reader.BaseStream.Position;
+                string offsetHex = offset.ToString("X");
 
-                    StructListItem[] aryItems = null;
-                    
-                    //TODO: All of this is fucked and should be redone also this isn't gonna be in the expando object i'm pretty sure
-                    if (!item.NameCol.EndsWith("]"))
-                        ParseCType(item.DataTypeCol, reader, ref item, debugMsg);
-                    else
-                        aryItems = ParseCArray(item.DataTypeCol, reader, ref item, item.NameCol, ref exobj, debugMsg);
-                    
-                    output.Add(item);
-                    
-                    if(aryItems != null)
-                        output.AddRange(aryItems);
+                if (field.IsArray)
+                {
+                    var headItem = new StructListItem
+                    {
+                        NameCol = $"{field.Name}[{field.ArraySize}]",
+                        DataTypeCol = field.TypeName,
+                        isArrayDeclaration = true,
+                        offset = offset,
+                        OffsetCol = offsetHex
+                    };
+                    uiList.Add(headItem);
+
+                    var arrayData = new List<object>();
+
+                    // pull nested struct
+                    var nestedDef = allDefs.FirstOrDefault(d => d.Name == field.TypeName);
+
+                    for (int i = 0; i < field.ArraySize; i++)
+                    {
+                        if (nestedDef != null)
+                        {
+                            // struct array
+                            uiList.Add(new StructListItem { NameCol = $"  [{i}]", DataTypeCol = field.TypeName, offset = reader.BaseStream.Position, OffsetCol = reader.BaseStream.Position.ToString("X") });
+                            dynamic nestedObj = new ExpandoObject();
+                            ReadStruct(reader, nestedDef, allDefs, nestedObj, uiList, debug);
+                            arrayData.Add(nestedObj);
+                        }
+                        else
+                        {
+                            // primitive array
+                            var itemUi = new StructListItem { NameCol = $"  [{i}]", DataTypeCol = field.TypeName, isArrayElement = true, offset = reader.BaseStream.Position, OffsetCol = reader.BaseStream.Position.ToString("X") };
+                            object val = ReadPrimitive(reader, field.TypeName, ref itemUi, debug);
+                            uiList.Add(itemUi);
+                            arrayData.Add(val);
+                        }
+                    }
+
+                    // total visual size
+                    if (uiList.Count > uiList.IndexOf(headItem) + 1)
+                    {
+                        int firstItemIndex = uiList.IndexOf(headItem) + 1;
+                        headItem.fullArraySize = field.ArraySize * uiList[firstItemIndex].typeLength;
+                    }
+
+                    dict[field.Name] = arrayData.ToArray();
+                }
+                // nested struct
+                else if (allDefs.Any(d => d.Name == field.TypeName))
+                {
+                    var nestedDef = allDefs.First(d => d.Name == field.TypeName);
+                    uiList.Add(new StructListItem { NameCol = field.Name, DataTypeCol = field.TypeName, offset = offset, OffsetCol = offsetHex });
+
+                    dynamic nestedObj = new ExpandoObject();
+                    ReadStruct(reader, nestedDef, allDefs, nestedObj, uiList, debug);
+                    dict[field.Name] = nestedObj;
+                }
+                // primitive
+                else
+                {
+                    var uiItem = new StructListItem { NameCol = field.Name, DataTypeCol = field.TypeName, offset = offset, OffsetCol = offsetHex };
+                    object val = ReadPrimitive(reader, field.TypeName, ref uiItem, debug);
+                    uiList.Add(uiItem);
+                    dict[field.Name] = val;
                 }
             }
-
-            return output.ToArray();
         }
 
-        private StructListItem[] ParseCArray(string dataType, BinaryReader reader, ref StructListItem item, string name, ref ExpandoObject exobj, StringBuilder debugMsg)
+        private static object ReadPrimitive(BinaryReader reader, string typeName, ref StructListItem item, StringBuilder debug)
         {
-            var output = new List<StructListItem>();
-            item.isArrayDeclaration = true;
-
-            int count;
-            if (name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")).Contains("0x"))
-                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 3, name.LastIndexOf("]")), NumberStyles.HexNumber);
-            else
-                count = int.Parse(name.SubstringBetweenIndexes(name.IndexOf("[") + 1, name.LastIndexOf("]")));
-
-            debugMsg.Append($"Array Start - {name} - {count} - {dataType}\n");
-
-            for (int i = 0; i < count; i++)
+            if (DataTypeDictionary.TryGetValue(typeName, out var meta))
             {
-                var arrayItem = new StructListItem
-                {
-                    NameCol = "  " + name.SubstringBetweenIndexes(0, name.IndexOf("[")) + $"[{i}]",
-                    offset = reader.BaseStream.Position,
-                    OffsetCol = reader.BaseStream.Position.ToString("X"),
-                    isArrayElement = true,
-                };
+                byte[] bytes = reader.ReadBytes(meta.Item2);
+                item.typeLength = meta.Item2;
 
-                ParseCType(dataType, reader, ref arrayItem, debugMsg);
-                
-                output.Add(arrayItem);
-
-                debugMsg.Append( $"  ->{arrayItem.NameCol} - {arrayItem.OffsetCol} - {arrayItem.DataTypeCol} - {arrayItem.ValueCol}\n");
-            }
-
-            item.fullArraySize = count * output[0].typeLength;
-            return output.ToArray();
-        }
-
-        /// <summary>
-        /// Parse value as string and it's lenght to a StructListItem
-        /// </summary>
-        public void ParseCType(string dataType, BinaryReader reader, ref StructListItem item, StringBuilder debugMsg)
-        {
-            Tuple<Type, int, TypePrintMode, string> type;
-            if (DataTypeDictionary.TryGetValue(dataType, out type))
-            {
-                byte[] data = reader.ReadBytes(type.Item2);
-                item.typeLength = type.Item2;
-
-                switch (type.Item3)
+                object result = null;
+                switch (meta.Item3)
                 {
                     case TypePrintMode.CustomDataType:
-                    {
-                        var value = (CustomDataType) Activator.CreateInstance(type.Item1);
-                        value.Parse(data);
-                        item.ValueCol = value.ToString();
-                        item.RawValue = value;
-                    }
+                        var custom = (CustomDataType)Activator.CreateInstance(meta.Item1);
+                        custom.Parse(bytes);
+                        result = custom;
+                        item.ValueCol = custom.ToString();
                         break;
                     case TypePrintMode.ObjectToString:
-                    {
-                        var value = data.GetValueByType(type.Item1, 0);
-                        item.ValueCol = value.ToString();
-                        item.RawValue = value;
-                    }
+                        result = bytes.GetValueByType(meta.Item1, 0);
+                        item.ValueCol = result.ToString();
                         break;
                     case TypePrintMode.Char:
-                        item.ValueCol = Encoding.ASCII.GetString(data);
-                        item.RawValue = (char)data[0];
+                        item.ValueCol = Encoding.ASCII.GetString(bytes).Trim('\0');
+                        result = (char)bytes[0];
                         break;
                     case TypePrintMode.Raw:
-                        item.ValueCol = data.ToHexString();
-                        item.RawValue = data;
+                        item.ValueCol = BitConverter.ToString(bytes).Replace("-", " ");
+                        result = bytes;
                         break;
                 }
+                item.RawValue = result;
+                return result;
             }
             else
             {
-                debugMsg.Append( $"No info for native type: {dataType}. Please add this type in Struct.cs.\n\n");
+                debug.AppendLine($"[Warning] Unknown Primitive Type: {typeName}");
+                return null;
             }
         }
 
-        internal class StructParseDirective
+        private class SimpleCppParser
         {
-            public string Name { get; set; }
-            public string DataType { get; set; }
-            public int ArrayCount { get; set; }
+            public List<StructDefinition> ParseDefinitions(string text)
+            {
+                var blockComments = @"/\*(.*?)\*/";
+                var lineComments = @"//.*$";
+
+                text = Regex.Replace(text, blockComments, "", RegexOptions.Singleline);
+                text = Regex.Replace(text, lineComments, "", RegexOptions.Multiline);
+
+                var definitions = new List<StructDefinition>();
+                int cursor = 0;
+                while (cursor < text.Length)
+                {
+                    int structIndex = text.IndexOf("struct", cursor);
+                    if (structIndex == -1) break;
+                    int braceStart = text.IndexOf('{', structIndex);
+                    if (braceStart == -1) break;
+
+                    string decl = text.Substring(structIndex + 6, braceStart - (structIndex + 6)).Trim();
+                    string structName = decl.Split(new[] { ' ', '\t', '\n' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+
+                    int braceEnd = FindMatchingBrace(text, braceStart);
+                    if (braceEnd == -1) break;
+                    string body = text.Substring(braceStart + 1, braceEnd - braceStart - 1);
+                    var def = new StructDefinition { Name = structName };
+                    def.Fields = ParseFields(body);
+                    definitions.Add(def);
+                    cursor = braceEnd + 1;
+                }
+                return definitions;
+            }
+
+            private static int FindMatchingBrace(string text, int start)
+            {
+                int depth = 0;
+                for (int i = start; i < text.Length; i++)
+                {
+                    if (text[i] == '{') depth++;
+                    else if (text[i] == '}')
+                    {
+                        depth--;
+                        if (depth == 0) return i;
+                    }
+                }
+                return -1;
+            }
+
+            private static List<FieldDefinition> ParseFields(string body)
+            {
+                var fields = new List<FieldDefinition>();
+                var lines = body.Split(';');
+
+                foreach (var rawLine in lines)
+                {
+                    string line = rawLine.Trim();
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    var match = Regex.Match(line, @"^(?<type>[\w: *]+?)\s+(?<name>\w+)(?:\[(?<size>.*?)\])?$");
+                    if (match.Success)
+                    {
+                        var field = new FieldDefinition
+                        {
+                            TypeName = match.Groups["type"].Value.Trim(),
+                            Name = match.Groups["name"].Value.Trim(),
+                        };
+                        if (match.Groups["size"].Success)
+                        {
+                            field.IsArray = true;
+                            string sizeStr = match.Groups["size"].Value.Trim();
+                            field.ArraySize = ParseSize(sizeStr);
+                        }
+                        fields.Add(field);
+                    }
+                }
+                return fields;
+            }
+
+            private static int ParseSize(string sizeStr)
+            {
+                if (sizeStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                    return int.Parse(sizeStr.Substring(2), System.Globalization.NumberStyles.HexNumber);
+                if (int.TryParse(sizeStr, out int val))
+                    return val;
+                return 0;
+            }
+        }
+
+        private class FieldDefinition
+        {
+            public string TypeName;
+            public string Name;
+            public bool IsArray;
+            public int ArraySize;
+        }
+
+        private class StructDefinition
+        {
+            public string Name;
+            public List<FieldDefinition> Fields = new List<FieldDefinition>();
         }
     }
 
@@ -369,7 +323,6 @@ namespace FFXIVMonReborn.Database
         public string NameCol { get; set; }
         public string ValueCol { get; set; }
         public string OffsetCol { get; set; }
-
         public long offset;
         public byte[] dataChunk;
         public int typeLength;

@@ -1,91 +1,79 @@
-﻿using System;
+﻿using FFXIVMonReborn.DataModel;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Reflection;
-using FFXIVMonReborn.DataModel;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using System.Linq;
 
 namespace FFXIVMonReborn.Scripting
 {
-    public class ScriptingProvider // Thanks to oatmeal
+
+
+    public class ScriptingProvider
     {
         private readonly ScriptOptions scriptOptions;
-
-        private List<Script<object>> scripts = new List<Script<object>>();
-
+        private readonly List<Script<object>> scripts = new List<Script<object>>();
         public ScriptingDataStorage DataStorage = new ScriptingDataStorage();
 
         public ScriptingProvider()
         {
-            // Create a custom ScriptOptions instance
             scriptOptions = ScriptOptions.Default
                 .WithReferences(
-                    typeof(PacketEntry).GetTypeInfo().Assembly)
+                    typeof(object).Assembly,
+                    typeof(PacketEntry).Assembly)
                 .WithImports(
+                    "System",
+                    "System.Collections.Generic",
                     "FFXIVMonReborn");
         }
 
-        public void LoadScripts(string[] files)
+        public async Task LoadScriptsAsync(string path)
         {
-            DataStorage.Reset();
-            scripts.Clear();
-
-            // Get each path
-            foreach (string filePath in files)
-            {
-                // Load the file's contents as text
-                string contents = File.ReadAllText(filePath);
-
-                // Create a new Script instance from the contents
-                Script<object> script = CSharpScript.Create(contents, scriptOptions, typeof(PacketEventArgs));
-
-                // Compile it
-                script.Compile();
-
-                // Add the Script to the List
-                scripts.Add(script);
-            }
-        }
-
-        public void LoadScripts(string path)
-        {
-            DataStorage.Reset();
-            scripts.Clear();
-
-            // Get all files on the path
+            if (!Directory.Exists(path)) return;
             string[] files = Directory.GetFiles(path);
+            await LoadScriptsAsync(files);
+        }
 
-            // Get each path
+        public async Task LoadScriptsAsync(string[] files)
+        {
+            DataStorage.Reset();
+            scripts.Clear();
+
             foreach (string filePath in files)
             {
-                // Load the file's contents as text
-                string contents = File.ReadAllText(filePath);
+                string contents = await File.ReadAllTextAsync(filePath);
 
-                // Create a new Script instance from the contents
                 Script<object> script = CSharpScript.Create(contents, scriptOptions, typeof(PacketEventArgs));
 
-                // Compile it
-                script.Compile();
+                await Task.Run(() =>
+                {
+                    var compilation = script.GetCompilation();
+                    var diagnostics = compilation.GetDiagnostics();
 
-                // Add the Script to the List
+                    if (diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+                    {
+                        throw new CompilationErrorException("Script syntax error", diagnostics);
+                    }
+                });
+
                 scripts.Add(script);
             }
         }
 
-        public void ExecuteScripts(object sender, PacketEventArgs eventArgs)
+        public async Task ExecuteScriptsAsync(object sender, PacketEventArgs eventArgs)
         {
             eventArgs.DataStorage = DataStorage;
 
-            // Get each script
             foreach (Script<object> script in scripts)
             {
-                // Execute it
-                script.RunAsync(eventArgs).Wait();
+                await script.RunAsync(eventArgs);
             }
         }
-
     }
 
     public class PacketEventArgs : EventArgs
