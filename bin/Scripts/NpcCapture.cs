@@ -54,7 +54,7 @@ if (Packet.Name == "Create")
 	var baseId = parsed.NpcId;
 	var nameId = parsed.NameId;
 
-	var fileName = Path.Combine(Environment.CurrentDirectory, "BNpcHp/BNpcHp.csv");
+	var fileName = Path.Combine(Environment.CurrentDirectory, $"BNpcHp/{CaptureFileName}.csv");
 	if (!File.Exists(fileName))
 	{
 		using (StreamWriter sw = File.CreateText(fileName))
@@ -63,4 +63,35 @@ if (Packet.Name == "Create")
 
 	using (StreamWriter sw = File.AppendText(fileName))
 		sw.WriteLine($"{layoutId}, {baseId}, {nameId}, {level}, {classJob}, {hp}");
+}
+else if (Packet.Name == "NpcSpawn")
+{
+    dynamic parsed = PacketObj;
+
+    if (!Directory.Exists("BNpcHp"))
+        Directory.CreateDirectory("BNpcHp");
+
+    if (parsed.type != 2)
+        return;
+
+    if (parsed.enemyType == 0)
+        return;
+
+    var layoutId = 0;
+    var level = parsed.level;
+    var classJob = parsed.classJob;
+    var hp = parsed.hPMax;
+    var hpCurr = parsed.hPCurr;
+    var baseId = parsed.bNPCBase;
+    var nameId = parsed.bNPCName;
+
+    var fileName = Path.Combine(Environment.CurrentDirectory, $"BNpcHp/{CaptureFileName}.csv");
+    if (!File.Exists(fileName))
+    {
+        using (StreamWriter sw = File.CreateText(fileName))
+            sw.WriteLine("LayoutId, BaseId, NameId, Level, ClassJob, Hp, Hp2\n");
+    }
+
+    using (StreamWriter sw = File.AppendText(fileName))
+        sw.WriteLine($"{layoutId}, {baseId}, {nameId}, {level}, {classJob}, {hp}, {hpCurr}");
 }
