@@ -1472,18 +1472,18 @@ namespace FFXIVMonReborn.Views
                         var structProvider = new Struct();
                         var structEntries = structProvider.Parse(structText, item.Data);
 
-                        args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.LogView);
+                        args = new PacketEventArgs(item, structEntries.Item2, _mainWindow.LogView, Path.GetFileNameWithoutExtension(_currentFilePath));
                     }
                     catch (Exception exc)
                     {
                         _mainWindow.LogView.WriteLine($"[EXCEPTION] Thrown for {item.Message} - {item.Name}: {exc}");
-                        args = new PacketEventArgs(item, null, _mainWindow.LogView);
+                        args = new PacketEventArgs(item, null, _mainWindow.LogView, Path.GetFileNameWithoutExtension(_currentFilePath));
                     }
                 }
             }
             else
             {
-                args = new PacketEventArgs(item, null, _mainWindow.LogView);
+                args = new PacketEventArgs(item, null, _mainWindow.LogView, Path.GetFileNameWithoutExtension(_currentFilePath));
             }
 
             if(args != null)

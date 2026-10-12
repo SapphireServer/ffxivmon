@@ -82,13 +82,15 @@ namespace FFXIVMonReborn.Scripting
         public readonly PacketEntry Packet;
         public readonly ExpandoObject PacketObj;
         public readonly LogView Debug;
+        public readonly string CaptureFileName;
         public ScriptingDataStorage DataStorage;
 
-        public PacketEventArgs(PacketEntry packet, ExpandoObject packetobj, LogView debugView)
+        public PacketEventArgs(PacketEntry packet, ExpandoObject packetobj, LogView debugView, string captureFileName)
         {
             this.Packet = packet;
             this.PacketObj = packetobj;
             this.Debug = debugView;
+            this.CaptureFileName = captureFileName;
         }
     }
 }
